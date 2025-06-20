@@ -14499,80 +14499,7 @@ margin-top: 10px;
 }
 
 
-.mintNFT {
-  border: none;
-  padding: unset;
-  display: flex;
-  height: 100%; /* Adjust as needed */
-  width: 100%; /* Adjust as needed */
-  position: relative; /* Ensures child items align properly */
-  right: 0;
-  svg {
-    width: 15px;
-    fill: rgb(var(--primary))
-  }
 
-  [data-testid="ockTextInput_Input"] {
-    background-color: rgb(var(--camel));;
-    border: none;
-    border-radius: 0.25rem;
-    
-  }
-  [data-testid="ockQuantitySelector_decrement"] {
-    border: 1px solid rgb(var(--secondary)); /* Set border thickness and color */
-    height: 38px;
-    border-radius: 0.25rem;
-    background-color: rgb(var(--camel-10));
-
-
-
-  }
-  [data-testid="ockQuantitySelector_increment"] {
-    border: 1px solid rgb(var(--secondary)); /* Set border thickness and color */
-    height: 38px;
-    border-radius: 0.25rem;
-    background-color: rgb(var(--camel-10));
-
-
-
-  }
-
-  [data-testid="ockTransactionButton_Button"] {
-    background-color: rgb(var(--secondary));
-    color:#ffffff;
-    border-radius: 0.25rem;
-    div div div{
-      padding-top: .625rem;
-      padding-bottom: .625rem;
-
-    }
-
-  }
-
-  
-  [data-testid="ockSwapAmountInput_Container"] {
-    background-color: rgb(var(--camel));
-    border-radius: 0.25rem;
-    margin: 10px;
-  }
-  [data-testid="ockTokenSelectButton_Button"] {
-    border-color: rgb(var(--secondary));
-    background-color: rgb(var(--swap));
-    border-radius: 0.25rem;
-
-  }
-  [data-testid="ockTokenRow_Container"] {
-    background-color: rgb(var(--swap));
-    border-radius: 10px;
-
-  }
-  [data-testid="ockNFTVideo"] {
-    height: 450px;
-
-
-  }
-
-}
 
 [data-testid="ockWalletDropdown"] {
 width: 320px;
@@ -14789,6 +14716,96 @@ display: none;
 filter: blur(4px);
 }
 
+[data-testid="ockTextInput_Input"] {
+      font-size: 2.5rem;
+      background-color: transparent;
+}
+
+
+
+.mintNFT {
+  border: none;
+  padding: unset;
+  display: flex;
+  height: 100%; /* Adjust as needed */
+  width: 100%; /* Adjust as needed */
+  position: relative; /* Ensures child items align properly */
+  right: 0;
+  svg {
+    width: 15px;
+    fill: rgb(var(--primary))
+  }
+
+  [data-testid="ockTextInput_Input"] {
+    background-color: rgb(var(--camel));;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    
+  }
+  [data-testid="ockQuantitySelector_decrement"] {
+    border: 1px solid rgb(var(--secondary)); /* Set border thickness and color */
+    height: 38px;
+    border-radius: 0.25rem;
+    background-color: rgb(var(--camel-10));
+
+
+
+  }
+  [data-testid="ockQuantitySelector_increment"] {
+    border: 1px solid rgb(var(--secondary)); /* Set border thickness and color */
+    height: 38px;
+    border-radius: 0.25rem;
+    background-color: rgb(var(--camel-10));
+
+
+
+  }
+
+  [data-testid="ockTransactionButton_Button"] {
+    background-color: rgb(var(--secondary));
+    color:#ffffff;
+    border-radius: 0.25rem;
+    div div div{
+      padding-top: .625rem;
+      padding-bottom: .625rem;
+
+    }
+
+  }
+
+  
+  [data-testid="ockSwapAmountInput_Container"] {
+    background-color: rgb(var(--camel));
+    border-radius: 0.25rem;
+    margin: 10px;
+  }
+  [data-testid="ockTokenSelectButton_Button"] {
+    border-color: rgb(var(--secondary));
+    background-color: rgb(var(--swap));
+    border-radius: 0.25rem;
+
+  }
+  [data-testid="ockTokenRow_Container"] {
+    background-color: rgb(var(--swap));
+    border-radius: 10px;
+
+  }
+  [data-testid="ockNFTVideo"] {
+    height: 450px;
+
+
+  }
+
+}
+
+[data-testid="ockQuantitySelector_decrement"] {
+      width: 2.75rem;
+}
+
+[data-testid="ockQuantitySelector_increment"] {
+      width: 2.75rem;
+}
 
 
 
