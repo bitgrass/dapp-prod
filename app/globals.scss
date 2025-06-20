@@ -1,0 +1,46 @@
+@import "../public/assets/css/style.css";
+
+ //Packages css
+ @import "filepond/dist/filepond.min.css"; //file pond css
+ @import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"; //dependencies plugin css for react file pond package
+ @import "react-datepicker/dist/react-datepicker.css"; //(datepicker)
+ 
+ @import 'react-range-slider-input/dist/style.css'; //(rangeslider)
+ @import 'react-quill/dist/quill.snow.css'; //  (Quill styles)
+
+@import "@simonwep/pickr/dist/themes/classic.min.css";
+@import "@simonwep/pickr/dist/themes/monolith.min.css";
+@import "@simonwep/pickr/dist/themes/nano.min.css";
+
+@import "simplebar-react/dist/simplebar.min.css";
+
+@import 'swiper/css';
+@import 'swiper/css/pagination';
+@import 'swiper/css/navigation';
+@import 'swiper/css/effect-coverflow';
+@import 'swiper/css/thumbs';
+@import 'swiper/css/effect-flip';
+@import 'swiper/css/effect-fade';
+@import 'swiper/css/effect-cube';
+@import "swiper/css/effect-cards"; // swiper effect-cards
+@import "swiper/css/zoom"; //Swipper Zoom css
+@import 'swiper/css/scrollbar';
+@import 'swiper/css/free-mode';
+
+@import "react-color-palette/css";
+
+  @media (max-width: 991.98px) {
+    [data-toggled="open"] {
+      #responsive-overlay {
+        @apply visible #{!important};
+        --tw-bg-opacity: 0.5;
+
+      }
+    } 
+  }
+
+  @media screen and (min-width: 992px) {
+    [data-vertical-style=doublemenu] .app-sidebar .slide.has-sub.active > .slide-menu {
+        display: block !important;
+    }
+}

@@ -1,0 +1,56 @@
+{
+  "env": {
+      "browser": true,
+      "es2021": true
+  },
+  "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended"
+  ],
+  "overrides": [
+  ],
+  "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+  },
+  "plugins": [
+      "react"
+  ],
+  "rules": {
+      "indent": [
+          "error",
+          "tab"
+      ],
+      "linebreak-style": [
+          "error",
+          "unix"
+      ],
+      "quotes": [
+          "error",
+          "double"
+      ],
+      "semi": [
+          "error",
+          "always"
+      ],
+      "no-multiple-empty-lines":["error", { "max": 1, "maxEOF": 1 }],
+      "no-console":"off",
+      "eol-last":"error",
+      "block-spacing":"error",
+      "no-img-element" : "off",
+      "vars-on-top":"error",
+      "no-useless-return":"error",
+      "no-useless-escape":"error",
+      "no-lone-blocks":"error",
+      "no-empty":"error",
+      "camelcase":"error",
+      "no-empty-function": "off",
+      "no-whitespace-before-property": "error",
+      "no-dupe-class-members":"off",
+      "react/no-unknown-property":"off",
+      "no-unused-vars":"off",
+      "eslint no-lone-blocks": "off",
+      "react/no-unescaped-entities": "off",
+      "eslint no-mixed-spaces-and-tabs": "smart-tabs"
+  }
+}
