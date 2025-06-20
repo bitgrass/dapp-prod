@@ -1,0 +1,359 @@
+.main-sidebar {
+  @apply mt-[3.72rem] pt-2 pb-20 h-screen relative overflow-auto;
+}
+
+.app-sidebar {
+  .side-menu__angle {
+    @apply rtl:rotate-180;
+  }
+}
+
+.sidemenu-toggle .header-link {
+  .header-link-icon {
+
+    @apply rtl:rotate-180;
+  }
+}
+
+.app-sidebar {
+  @apply w-[15rem] h-full bg-[#111c43] dark:bg-bodybg border-e border-e-white/10 fixed top-0 start-0 font-Montserrat z-[49] transition-all ease-linear duration-[0.05s];
+
+
+  .main-sidebar-header {
+    @apply h-[3.75rem] w-[15rem] fixed flex  dark:bg-bodybg z-[9] items-center justify-center py-[0.813rem] px-5 border-b border-b-white/10 border-e border-e-white/10 transition-all ease-linear duration-[0.05s];
+
+    .header-logo {
+      img {
+        @apply h-8 leading-8;
+      }
+
+      .desktop-dark,
+      {
+      @apply block;
+
+    }
+
+    .desktop-logo,
+    .toggle-logo,
+    .toggle-dark,.toggle-white {
+      @apply hidden;
+
+    }
+  }
+}
+
+.slide__category {
+
+  @apply text-[0.6rem] font-semibold tracking-[0.065rem] uppercase py-3 px-[1.65rem] whitespace-nowrap opacity-50 relative text-[#a3aed1] dark:text-[#8f9bb3];
+
+}
+
+.slide {
+  @apply mx-0 my-0.5 py-[0rem] px-3;
+
+}
+
+.side-menu__item {
+  @apply p-3 relative flex items-center no-underline text-[0.78rem] text-[#a3aed1] dark:text-[#8f9bb3] font-medium rounded-md;
+
+  &.active,
+  &:hover {
+    @apply text-white bg-white/[0.05] before:border-white;
+
+    .side-menu__label,
+    .side-menu__angle {
+      @apply text-white;
+    }
+
+    .side-menu__icon {
+      @apply fill-white text-white;
+
+    }
+  }
+
+  &.active {
+    @apply font-semibold;
+
+  }
+}
+
+.slide-menu {
+
+  &.child1,
+  &.child2,
+  &.child3 {
+    .side-menu__item.active {
+      @apply bg-transparent;
+
+    }
+  }
+}
+
+.slide-menu {
+  @apply p-[0rem];
+
+}
+
+.slide-menu {
+
+  &.child1,
+  &.child2 {
+    .side-menu__item {
+      @apply py-[0.45rem] px-[1.6rem];
+
+    }
+  }
+}
+
+.slide-menu {
+
+  &.child1,
+  &.child2,
+  &.child3 {
+    .side-menu__item {
+      &:before {
+        @apply absolute content-[""] w-[0.3rem] h-[0.3rem] border border-[#536485] dark:border-[#8f9bb3] rounded-full bg-transparent start-2 opacity-50;
+
+      }
+
+      &:hover {
+        @apply text-white;
+
+        &:before {
+          @apply content-[""] border border-white rounded-full bg-transparent opacity-100 #{!important};
+
+
+        }
+      }
+
+      &.active {
+        &:before {
+          @apply absolute content-[""] w-[0.3rem] h-[0.3rem] border border-white rounded-full bg-transparent opacity-100;
+
+        }
+      }
+    }
+
+    li {
+      @apply p-0 ps-6 relative;
+
+    }
+  }
+}
+
+.side-menu__label {
+  @apply whitespace-nowrap text-[#a3aed1] dark:text-[#8f9bb3] relative text-[0.85rem] leading-none align-middle;
+
+  .badge {
+    @apply p-2 rounded-sm;
+  }
+
+}
+
+.side-menu__icon {
+  @apply me-2.5 w-[1.15rem] h-[1.15rem] text-[1.15rem] text-center text-[#a3aed1] fill-[#a3aed1] dark:text-[#8f9bb3] rounded-md;
+
+}
+
+.side-menu__angle {
+  @apply origin-center absolute end-3 text-[0.85rem] text-[#a3aed1] dark:text-[#8f9bb3] transition-all ease-linear duration-[0.05s] #{!important};
+}
+
+.slide.side-menu__label1 {
+  @apply hidden;
+
+
+}
+}
+
+.horizontal-logo {
+  @apply py-[0.85rem] px-[0rem];
+
+
+}
+
+.slide.has-sub .slide-menu {
+  @apply visible translate-x-0 translate-y-0 #{!important};
+
+
+}
+
+.nav ul li {
+  @apply list-none;
+
+
+}
+
+.nav>ul {
+  @apply ps-0;
+
+
+}
+
+.slide-menu {
+  @apply hidden;
+
+
+}
+
+.slide.has-sub {
+  @apply grid;
+
+
+  &.open {
+    >.side-menu__item .side-menu__angle {
+      @apply rotate-90;
+
+
+    }
+  }
+}
+
+/* Start Responsive Styles */
+[data-toggled="open"] {
+  .app-sidebar {
+    @apply translate-x-0 transition-all duration-300;
+
+    .main-sidebar-header {
+      @apply hidden;
+    }
+
+    #sidebar-scroll {
+      @apply mt-0;
+    }
+
+    @apply lg:translate-x-0 #{!important};
+  }
+}
+
+[data-toggled="close"] {
+  .app-sidebar {
+    @apply transition-all duration-300 -translate-x-full;
+
+    .main-sidebar-header {
+      @apply hidden;
+    }
+
+    #sidebar-scroll {
+      @apply mt-0;
+    }
+
+    @apply lg:translate-x-0 #{!important};
+  }
+
+  &[dir="ltr"] {
+    .app-sidebar {
+      @apply -translate-x-full;
+    }
+  }
+
+  &[dir="rtl"] {
+    .app-sidebar {
+      @apply translate-x-full;
+    }
+  }
+}
+
+@media screen and (max-width: 991px) {
+  .main-sidebar-header {
+    @apply hidden;
+  }
+
+  #sidebar-scroll {
+    @apply mt-0 #{!important};
+  }
+}
+
+/* End Responsive Styles */
+
+
+/* Responsive Styles Start */
+
+@media (max-width: 991.98px) {
+  .horizontal-logo {
+    .header-logo {
+
+      .desktop-logo,
+      .desktop-dark,
+      .toggle-dark,
+      .desktop-white,.toggle-white {
+        @apply hidden;
+
+
+      }
+
+      .toggle-logo {
+        @apply block;
+
+
+      }
+    }
+  }
+  .main-sidebar-header {
+    @apply hidden #{!important};
+
+
+  }
+
+  .main-sidebar {
+    @apply mt-0;
+
+
+  }
+
+  .app-sidebar {
+    @apply top-0;
+
+
+  }
+}
+
+.slide-left,
+.slide-right {
+  @apply hidden;
+
+
+}
+
+[data-nav-layout="vertical"] {
+  .slide.has-sub {
+    &.active {
+      >.side-menu__item {
+        @apply mb-1;
+
+
+      }
+    }
+  }
+}
+
+@media (min-width:992px) {
+  .horizontal-logo {
+    @apply hidden;
+
+
+  }
+}
+
+/* Responsive Styles End */
+
+/* Responsive Overlay Start */
+#responsive-overlay {
+  @apply invisible fixed inset-0 z-[101] transition-all ease-in-out duration-100 bg-[#878b94];
+
+  &.active {
+    @apply visible;
+  }
+}
+
+/* Responsive Overlay End */
+
+
+@media (max-width: 991.98px) {
+  .main-menu {
+   @apply m-0 #{!important};
+  }
+  .app-sidebar {
+    @apply z-[50] #{!important};
+  }
+}

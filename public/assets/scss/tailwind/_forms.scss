@@ -1,0 +1,492 @@
+/* Start Form Styles */
+.ti-form-input {
+  @apply border border-inputborder block w-full text-sm focus:border-gray-200  focus:shadow-sm dark:shadow-white/10 dark:bg-bodybg dark:border-white/10 dark:focus:border-white/10 dark:text-white/70;
+}
+
+select {
+  @apply border dark:border-white/10 dark:bg-bodybg #{!important};
+}
+
+.ti-switch {
+  @apply relative w-[3.25rem] h-7 bg-gray-200 checked:bg-none checked:bg-primary border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 ring-0 ring-transparent focus:border-primary focus:shadow-none focus:ring-transparent focus:ring-offset-0 ring-offset-white focus:outline-0 appearance-none dark:bg-black/20 dark:checked:bg-primary dark:focus:ring-offset-white/10 before:inline-block before:w-6 before:h-6 before:bg-white checked:before:bg-white before:translate-x-0 ltr:checked:before:translate-x-full rtl:checked:before:-translate-x-full before:shadow before:rounded-full before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-black/20 dark:checked:before:bg-black/20;
+}
+
+.ti-form-select {
+  @apply py-3 px-4 pe-9 block w-full border-gray-200 rounded-sm text-sm focus:border-primary focus:ring-primary dark:dark:bg-bodybg dark:border-white/10 dark:text-white/70;
+}
+
+.ti-form-select-label {
+  @apply block text-sm font-medium mb-2 dark:text-white;
+}
+
+.ti-form-label {
+  @apply block text-sm font-medium mb-2 dark:text-white;
+}
+
+.ti-form-control {
+  @apply border-inputborder text-defaulttextcolor bg-white dark:bg-bodybg2 dark:border-white/10 text-[0.875rem] font-normal leading-[1.6] rounded-[0.35rem] py-2 px-[0.85rem] placeholder:text-defaulttextcolor dark:placeholder:text-defaulttextcolor/70;
+
+  &:focus {
+    @apply shadow-none border-inputborder bg-white dark:bg-bodybg text-defaulttextcolor dark:text-defaulttextcolor/70;
+  }
+}
+.form-select {
+  @apply block w-full py-[0.375rem] pe-[2.25rem] ps-[0.75rem] text-[1rem] font-normal leading-[1.5];
+}
+.form-select {
+  @apply bg-white dark:bg-bodybg border border-solid border-defaultborder dark:border-white/10 text-defaulttextcolor text-defaultsize rounded-md focus:border focus:border-primary;
+  option {
+    @apply bg-white dark:bg-bodybg py-[0.35rem] px-3 rounded-sm border border-primary/10;
+  }
+
+  option:checked {
+    @apply bg-primary/20 text-primary;
+  }
+}
+
+.form-check-input {
+  @apply h-[0.9rem] w-[0.9rem] bg-white dark:bg-bodybg dark:border-white/10 border border-solid border-inputborder rounded-sm;
+  &:focus {
+    @apply border border-defaultborder outline-none #{!important};
+  }
+
+  &:checked {
+    @apply bg-primary border-primary;
+  }
+
+  &.form-checked-outline {
+    &:checked {
+      @apply bg-transparent border-primary;
+    }
+  }
+
+  &.form-checked-secondary {
+    &:checked {
+      @apply bg-secondary border-secondary hover:bg-secondary;
+    }
+  }
+
+  &.form-checked-warning {
+    &:checked {
+      @apply bg-warning border-warning hover:bg-warning;
+    }
+  }
+
+  &.form-checked-info {
+    &:checked {
+      @apply bg-info border-info hover:bg-info;
+    }
+  }
+
+  &.form-checked-success {
+    &:checked {
+      @apply bg-success border-success focus:bg-success focus:border-success focus:shadow-success focus:ring-0;
+    }
+  }
+
+  &.form-checked-danger {
+    &:checked {
+      @apply bg-danger border-danger hover:bg-danger;
+    }
+  }
+
+  &.form-checked-light {
+    &:checked {
+      @apply bg-light border-light hover:bg-light;
+    }
+  }
+
+  &.form-checked-dark {
+    &:checked {
+      @apply bg-[#232323] border-[#232323] hover:bg-black;
+    }
+  }
+}
+[type="radio"] {
+  @apply dark:bg-bodybg dark:border-defaultborder/10 ring-primary;
+}
+.form-check-input {
+  @apply align-top appearance-none;
+}
+
+.form-check-input[type="checkbox"] {
+  @apply rounded-[0.25rem];
+}
+
+.form-check-input[type="radio"] {
+  @apply rounded-[50%] ring-primary;
+}
+
+.form-check-input:active {
+  @apply brightness-[90%];
+}
+
+.form-check-input:focus {
+  @apply border-[#86b7fe] outline-none #{!important};
+}
+
+.form-check-input:checked {
+  @apply bg-primary border-primary ring-primary;
+}
+.input-group-text {
+  @apply border-inputborder text-[0.875rem] rounded-[0.3125rem] bg-light text-defaulttextcolor;
+  .form-control {
+    @apply border-0 rounded-s-none #{!important};
+  }
+}
+.input-group-text {
+  @apply flex items-center py-[0.375rem] px-3 text-[0.875rem] font-normal leading-[1.5] text-center whitespace-nowrap border border-solid border-defaultborder dark:border-defaultborder/10;
+}
+.input-group {
+  @apply relative flex flex-wrap items-stretch w-full;
+}
+
+.input-group > .form-control,
+.input-group > .form-floating,
+.input-group > .form-select {
+  @apply relative w-[1%] min-w-0 flex-grow flex-shrink basis-auto;
+}
+.form-control {
+  @apply border-inputborder text-defaulttextcolor bg-white dark:border-white/10 dark:bg-bodybg text-[0.875rem] font-normal leading-[1] rounded-none  py-2 px-[0.85rem] placeholder:text-defaulttextcolor dark:placeholder:text-defaulttextcolor/70;
+  &:focus {
+    @apply shadow-none border-inputborder bg-white dark:bg-bodybg text-defaulttextcolor dark:text-defaulttextcolor/70;
+  }
+  @apply placeholder:opacity-40 placeholder:font-medium placeholder:text-[0.8rem];
+}
+.form-checked-outline:checked[type="checkbox"] {
+  @apply bg-none relative bg-transparent hover:bg-transparent before:absolute  before:text-primary before:w-[0.625rem] before:h-[0.625rem] before:-top-4 before:start-0 before:text-[0.688rem];
+  &.form-checked-success {
+    @apply before:text-success;
+  }
+}
+.form-control-lg {
+  @apply text-[.75rem] py-2 px-4;
+}
+.form-check-md .form-check-input {
+  @apply w-[1.15rem] h-[1.15rem];
+}
+.form-check-lg .form-check-input {
+  @apply w-[1.35rem] h-[1.35rem];
+}
+.form-check-reverse {
+  @apply pe-[1.5rem] ps-0 text-end;
+}
+.form-check-reverse .form-check-input {
+  @apply ltr:float-right rtl:float-left -me-[1.5em] ms-0;
+}
+[type="text"]:focus,
+input:where(:not([type])):focus,
+[type="email"]:focus,
+[type="url"]:focus,
+[type="password"]:focus,
+[type="number"]:focus,
+[type="date"]:focus,
+[type="datetime-local"]:focus,
+[type="month"]:focus,
+[type="search"]:focus,
+[type="tel"]:focus,
+[type="time"]:focus,
+[type="week"]:focus,
+[multiple]:focus,
+textarea:focus,
+select:focus {
+  @apply border-defaultborder dark:border-defaultborder/10 ring-0 #{!important};
+}
+[type="checkbox"]:checked:hover,
+[type="checkbox"]:checked:focus,
+[type="radio"]:checked:hover,
+[type="radio"]:checked:focus {
+  @apply bg-primary ring-primary;
+}
+/* Start:: toggle switches-1 */
+.toggle {
+  @apply w-[3.75rem] h-[1.563rem] bg-light ms-[0.625rem] mb-[0.313rem] p-[0.125rem] rounded-[0.188rem] relative overflow-hidden transition-all duration-[0.2s] ease-linear;
+
+  span {
+    @apply absolute top-[0.188rem] bottom-1 start-[0.188rem] block w-[1.25rem] rounded-[0.125rem] bg-white shadow-sm cursor-pointer transition-all duration-[0.2s] ease-linear
+    before:-start-[1.563rem] before:content-["on"] after:content-["off"] after:-end-[1.813rem] after:text-textmuted;
+    &::before,
+    &::after {
+      @apply absolute text-[0.625rem] font-medium space-x-2 rtl:space-x-reverse uppercase top-[0.188rem] leading-[1.38] transition-all duration-[0.2s] ease-linear;
+    }
+  }
+
+  &.on {
+    @apply bg-primary/30;
+
+    span {
+      @apply bg-primary before:text-primary start-[2.313rem];
+    }
+
+    &.toggle-secondary {
+      @apply bg-secondary/40;
+      span {
+        @apply bg-secondary before:text-secondary;
+      }
+    }
+
+    &.toggle-warning {
+      @apply bg-warning/40;
+      span {
+        @apply bg-warning before:text-warning;
+      }
+    }
+
+    &.toggle-info {
+      @apply bg-info/40;
+      span {
+        @apply bg-info before:text-info;
+      }
+    }
+
+    &.toggle-success {
+      @apply bg-success/40;
+      span {
+        @apply bg-success before:text-success;
+      }
+    }
+
+    &.toggle-danger {
+      @apply bg-danger/40;
+      span {
+        @apply bg-danger before:text-danger;
+      }
+    }
+
+    &.toggle-light {
+      @apply bg-light/40;
+      span {
+        @apply bg-light before:text-textmuted;
+      }
+    }
+
+    &.toggle-dark {
+      @apply bg-black/40;
+      span {
+        @apply bg-black before:text-white;
+      }
+    }
+
+    span {
+      @apply start-[2.313rem];
+    }
+
+    &.toggle-sm span {
+      @apply start-[2.313rem] before:-top-[1px] before:-start-[1.563rem];
+    }
+
+    &.toggle-lg span {
+      @apply start-[2.563rem] before:top-2 before:-start-[1.75rem];
+    }
+  }
+
+  &.toggle-sm {
+    @apply h-[1.063rem] w-[3.125rem];
+
+    span {
+      @apply w-[0.625rem] h-[0.625rem] after:-end-[1.875rem] after:-top-[1px];
+    }
+  }
+
+  &.toggle-lg {
+    @apply h-[2.125rem] w-[4.5rem];
+
+    span {
+      @apply w-[1.75rem] after:top-2 after:-end-[1.938rem];
+    }
+  }
+}
+/* Start:: toggle switches-2 */
+.custom-toggle-switch > input[type="checkbox"] {
+  @apply hidden;
+}
+
+.custom-toggle-switch > label {
+  @apply cursor-pointer h-0 relative w-[2.5rem];
+}
+
+.label-primary {
+  @apply bg-primary text-white;
+}
+
+.label-secondary {
+  @apply bg-secondary text-white;
+}
+
+.label-warning {
+  @apply bg-warning text-white;
+}
+
+.label-info {
+  @apply bg-info text-white;
+}
+
+.label-success {
+  @apply bg-success text-white;
+}
+
+.label-danger {
+  @apply bg-danger text-white;
+}
+
+.label-light {
+  @apply bg-light text-white;
+}
+
+.label-dark {
+  @apply bg-black text-white;
+}
+
+.custom-toggle-switch > input[type="checkbox"]:checked + label::before {
+  @apply bg-inherit opacity-[0.5];
+}
+
+.custom-toggle-switch > label {
+  @apply before:bg-textmuted before:rounded-md before:h-4 before:-mt-2 before:absolute before:opacity-[0.3] before:transition-all before:duration-[0.4s] before:ease-in-out before:w-[2.5rem]
+  after:bg-white after:rounded-[1rem] after:h-[1.5rem]  after:shadow-[0_0_0.313rem_rgba(228,229,237,0.8)] after:-start-1 after:-mt-2 after:absolute after:-top-1 after:transition-all after:duration-[0.3s] after:ease-in-out after:w-[1.5rem];
+}
+
+.custom-toggle-switch > input[type="checkbox"]:checked + label::after {
+  @apply bg-inherit start-[50%];
+}
+
+.custom-toggle-switch.toggle-sm > label::before {
+  @apply h-[10px] w-[27px] rounded-[10px];
+}
+
+.custom-toggle-switch.toggle-sm input[type="checkbox"]:checked + label::after {
+  @apply start-[13px];
+}
+
+.custom-toggle-switch.toggle-sm > label::after {
+  @apply h-[17px] w-[17px] rounded-full;
+}
+
+.custom-toggle-switch.toggle-lg > label::before {
+  @apply h-[27px] w-[55px] rounded-[20px];
+}
+
+.custom-toggle-switch.toggle-lg input[type="checkbox"]:checked + label::after {
+  @apply start-[77%];
+}
+
+.custom-toggle-switch.toggle-lg > label::after {
+  @apply h-[35px] w-[35px] -mt-[8px] rounded-full;
+}
+
+/* End:: toggle switches-2 */
+
+/* End:: toggle switches-1 */
+
+/* End Form Styles */
+
+.form-control-sm {
+  @apply text-[0.8rem] py-1 px-[0.8rem] border-inputborder  dark:border-white/10 #{!important};
+}
+
+.form-control {
+  @apply text-defaulttextcolor bg-white text-[0.875rem] font-normal leading-[1.6] rounded-[0.35rem] py-2 px-[0.85rem] w-full;
+  &:focus {
+    @apply shadow-none border-inputborder bg-white dark:bg-bodybg text-defaulttextcolor;
+  }
+}
+.form-control:disabled,
+.form-select:disabled {
+  @apply bg-light text-defaulttextcolor;
+}
+.form-control-plaintext {
+  @apply block w-full p-[0.375rem] mb-0 leading-6 bg-transparent border-transparent border-0;
+}
+.form-input-color {
+  @apply h-[2.25rem] w-[2.25rem] rounded-md overflow-hidden p-0;
+}
+.form-text {
+  @apply mt-1 text-[0.875em] #{!important};
+}
+.form-check {
+  // @apply block min-h-[1.5rem] ps-0 mb-[0.125rem];
+  @apply block ps-0 mb-[0.125rem];
+  .form-check-label {
+    @apply ps-2;
+  }
+}
+.form-check-input:disabled ~ .form-check-label,
+.form-check-input[disabled] ~ .form-check-label {
+  @apply cursor-default opacity-50;
+}
+.input-group
+  > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(
+    .valid-feedback
+  ):not(.invalid-tooltip):not(.invalid-feedback) {
+  @apply rounded-s-none #{!important};
+}
+
+.input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n + 3),
+.input-group:not(.has-validation)
+  > .form-floating:not(:last-child)
+  > .form-control,
+.input-group:not(.has-validation)
+  > .form-floating:not(:last-child)
+  > .form-select,
+.input-group:not(.has-validation)
+  > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(
+    .form-floating
+  ) {
+  @apply rounded-e-none #{!important};
+}
+.input-group-lg > .btn,
+.input-group-lg > .form-control,
+.input-group-lg > .form-select,
+.input-group-lg > .input-group-text {
+  @apply py-2 px-4 text-[1.25rem] rounded-md #{!important};
+}
+
+.input-group-sm > .btn,
+.input-group-sm > .form-control,
+.input-group-sm > .form-select,
+.input-group-sm > .input-group-text {
+  @apply py-1 px-2 text-[0.875rem] #{!important};
+}
+
+.form-range {
+  @apply w-full h-[0.5rem] p-0 bg-light rounded-md appearance-none;
+}
+
+.form-range:focus {
+  @apply outline-none;
+}
+.form-range:disabled {
+  @apply pointer-events-none;
+}
+.form-control-color {
+  @apply w-[1.75rem] h-[1.75rem] overflow-hidden p-0 rounded-md #{!important};
+}
+
+input {
+  &[type="week"],
+  &[type="month"],
+  &[type="date"],
+  &[type="datetime-local"],
+  &[type="time"] {
+    &::-webkit-calendar-picker-indicator {
+      @apply dark:invert #{!important};
+    }
+  }
+}
+input {
+  &[type="week"],
+  &[type="month"],
+  &[type="date"],
+  &[type="datetime-local"],
+  &[type="time"] {
+    @apply rtl:text-end rtl:dir-rtl #{!important};
+
+    &::-webkit-calendar-picker-indicator {
+      @apply rtl:text-end rtl:dir-rtl #{!important};
+    }
+  }
+}
+
+.form-select {
+  @apply rtl:bg-left rtl:bg-[0.5rem] #{!important};
+}

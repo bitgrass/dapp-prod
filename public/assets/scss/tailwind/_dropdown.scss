@@ -1,0 +1,135 @@
+/* Start Dropdown Styles */
+.ti-dropdown {
+    @apply relative inline-flex;
+}
+
+.ti-dropdown-toggle {
+    @apply py-3 px-4 inline-flex justify-center items-center gap-2 rounded-sm border dark:border-defaultborder/10 font-medium  shadow-sm align-middle;
+}
+
+.ti-dropdown-caret {
+    @apply w-2.5 h-2.5 text-gray-600 dark:text-white/70;
+}
+
+.ti-dropdown-menu {
+    @apply transition-[opacity,margin] hs-dropdown-open:opacity-100  opacity-0 z-[13] mt-2 min-w-[10rem] bg-white shadow-md border border-gray-200 rounded-sm dark:bg-bodybg dark:border-white/10 dark:divide-white/10;
+}
+
+.ti-dropdown-item {
+    @apply py-2 px-[0.9375rem] text-[0.8125rem] font-medium block w-full  text-gray-800 hover:bg-primary/[0.05] hover:text-primary focus:ring-0 focus:ring-primary dark:text-white dark:hover:bg-primary/5 dark:hover:text-primary;
+    &.active{
+        @apply bg-primary text-white #{!important};
+    }
+    &.disabled{
+        @apply text-textmuted bg-transparent pointer-events-none;
+    }
+}
+
+.ti-dropdown-menu-hover {
+    @apply after:h-4 after:absolute after:-bottom-4 after:start-0 after:w-full before:h-4 before:absolute before:-top-4 before:start-0 before:w-full;
+}
+
+.ti-dropdown-divider {
+    @apply py-2 first:pt-0 last:pb-0 dark:border-defaultborder/10;
+}
+hr{
+  @apply dark:border-defaultborder/10 #{!important};
+}
+.ti-dropdown-title {
+    @apply block py-2 px-3 text-xs font-medium uppercase text-gray-400 dark:text-white/70;
+}
+
+.ti-dropdown-header {
+    @apply py-3 px-5 -m-2 bg-gray-100 rounded-t-sm dark:bg-black/20;
+
+    .ti-dropdown-header-title {
+        @apply text-sm text-gray-500 dark:text-white;
+    }
+
+    .ti-dropdown-header-content {
+        @apply text-sm font-medium text-gray-800 dark:text-white;
+    }
+}
+
+.ti-dropdowm-profileimg {
+    @apply w-8 h-auto rounded-full;
+}
+
+.ti-dropdowm-profileimg-content {
+    @apply text-gray-600 font-medium truncate max-w-[7.5rem] dark:text-white/70;
+}
+
+.ti-dropdown-icon {
+    @apply w-4 h-4 text-gray-600 dark:text-white/70;
+}
+.ti-dropdown-toggle{
+    @apply relative;
+.ti-dropdown-toggle{
+    @apply after:inline-block after:ms-1 after:align-[0] after:content-["\f282"] after:border-0 after:text-[0.6rem] after:font-semibold;
+}
+  .ti-dropup .ti-dropdown-toggle{
+    @apply after:inline-block after:ms-1 after:align-[0] after:content-["\F286"] after:border-0 after:text-[0.6rem] after:font-semibold;
+  }
+  .dropend .ti-dropdown-toggle{
+    @apply after:inline-block after:ms-1 after:align-[0] after:content-["\F285"] after:border-0 after:text-[0.6rem] after:font-semibold;
+  }
+  .dropstart .ti-dropdown-toggle{
+    @apply before:inline-block before:ms-1 before:align-[0] before:content-["\F284"] before:border-0 before:text-[0.6rem] before:font-semibold;
+  }
+  .dropdown-toggle-split {
+    @apply opacity-[0.85];
+  }
+}
+.dropmenu-item-warning {
+    .ti-dropdown-item {
+      &:hover,
+      &:focus,
+      &:active,
+      &.active {
+        @apply bg-warning/10 text-warning #{!important};
+      }
+    }
+  }
+  .dropmenu-item-info {
+    .ti-dropdown-item {
+      &:hover,
+      &:focus,
+      &:active,
+      &.active {
+        @apply bg-info/10 text-info #{!important};
+      }
+    }
+  }
+  .dropmenu-light-success{
+    @apply bg-success/10 backdrop-blur-3xl;
+    .ti-dropdown-item {
+        &:hover,
+        &:focus,
+        &:active,
+        &.active {
+            @apply text-white bg-success #{!important};
+        }
+      }
+  }
+  .dropmenu-light-danger{
+    @apply bg-danger/10 backdrop-blur-3xl;
+    .ti-dropdown-item {
+        &:hover,
+        &:focus,
+        &:active,
+        &.active {
+            @apply text-white bg-danger #{!important};
+        }
+      }
+  }
+  .ti-btn-list a{
+    @apply me-0;
+  }
+  .bd-example>.dropdown-menu {
+    @apply static block;
+}
+.dropdown-header {
+    @apply block py-2 px-4 mb-0 text-[0.875rem] #{!important};
+}
+/* End Dropdown Styles */
+

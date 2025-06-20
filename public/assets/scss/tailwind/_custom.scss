@@ -1,0 +1,393 @@
+/* Start Custom Styles */
+.page-header {
+  @apply py-5;
+}
+
+.main-content {
+  @apply sm:px-6 px-6;
+}
+
+.content {
+  @apply lg:ms-60 mt-[60px] transition-all ms-0;
+}
+
+pre {
+  @apply border-gray-200 border dark:border-white/10 bg-slate-200 text-[0.75rem] p-5;
+}
+
+html {
+  @apply font-inter scroll-smooth text-start;
+}
+html {
+  &[dir="rtl"] {
+    @apply dir-rtl #{!important};
+  }
+}
+body {
+  @apply scroll-smooth bg-bodybg h-full text-defaulttextcolor dark:text-white m-0 font-inter font-normal text-[0.813rem] relative text-start rtl:dir-rtl;
+}
+
+.page {
+  @apply flex flex-col h-full min-h-screen;
+}
+
+::-webkit-scrollbar {
+  @apply w-[0px] h-[5px] bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply w-[0px] h-[2px] bg-gray-300;
+}
+.dark {
+  ::-webkit-scrollbar {
+    @apply bg-black/20;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-black/20;
+  }
+}
+
+code {
+  @apply text-danger text-sm;
+}
+
+.icons-list {
+  @apply list-none mt-0 -me-[1px] -mb-[1px] ms-0 p-0 flex flex-wrap;
+}
+
+.icons-list .icons-list-item {
+  @apply flex flex-col text-center p-2 no-underline relative items-center justify-center border border-gray-200 dark:border-white/10 rounded-md;
+
+  &:hover {
+    i {
+      @apply scale-150;
+    }
+  }
+}
+
+.icons-list .icons-list-item i {
+  @apply text-2xl text-primary;
+}
+
+.icon-label {
+  @apply text-gray-500 dark:text-white/70 text-xs mt-4;
+}
+
+.simplebar-scrollbar:before {
+  @apply bg-gray-200 #{!important};
+}
+.app-sidebar .simplebar-track.simplebar-horizontal {
+    @apply hidden #{!important};
+}
+.simplebar-track.simplebar-vertical {
+  @apply w-[10px] #{!important};
+}
+.simplebar-track,
+.simplebar-scrollbar {
+  @apply -right-px rtl:-left-px #{!important}; 
+}
+
+[data-toggled="icon-overlay-close"] {
+  .content {
+    @apply lg:ms-24;
+  }
+}
+
+/* Start:: Back to Top */
+.scrollToTop {
+  @apply fixed bottom-5 end-5 hidden bg-primary text-white  items-center justify-center text-center z-10 h-10 w-10 bg-no-repeat bg-center transition duration-100 rounded-md shadow-lg;
+}
+
+/* Start:: Back to Top */
+select option:active,
+select option:hover,
+select option:focus {
+  background-color: green !important;
+}
+
+/* End Custom Styles */
+select {
+  @apply pe-9 ps-2;
+}
+
+#drag-right,
+#drag-center,
+#drag-left {
+  .box {
+    @apply touch-none;
+  }
+}
+
+.ti-img-thumbnail{
+  @apply p-1 rounded-md border border-defaultborder dark:border-defaultborder/10 max-w-full h-auto dark:bg-bodybg2 mx-auto;
+}
+.ti-img-thumbnail-rounded{
+  @apply p-1 rounded-full border border-defaultborder dark:border-defaultborder/10 max-w-full h-auto dark:bg-bodybg2 mx-auto;
+}
+
+#responsive-overlay {
+  @apply transition-all duration-100 fixed inset-0 z-[49] bg-gray-900 invisible bg-opacity-0;
+
+  &.active {
+    @apply bg-opacity-50 dark:bg-opacity-80 visible;
+  }
+}
+
+.container,
+.container-fluid {
+  @apply w-full px-[calc(1.5rem*0.5)] mx-auto;
+}
+.container {
+  @apply sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] xxl:max-w-[1320px];
+}
+
+@media (min-width: 576px) {
+  .container,
+  .container-sm {
+    @apply max-w-[540px] mx-auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .container,
+  .container-md,
+  .container-sm {
+    @apply max-w-[720px] mx-auto;
+  }
+}
+
+@media (min-width: 992px) {
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm {
+    @apply max-w-[960px] mx-auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container-xl {
+    @apply max-w-[1140px] mx-auto;
+  }
+}
+
+@media (min-width: 1400px) {
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container-xl,
+  .container-xxl {
+    @apply max-w-[1320px] mx-auto;
+  }
+}
+[class^="ri-"],
+[class*=" ri-"] {
+  @apply inline-flex;
+}
+
+@layer utilities {
+  .aspect-w-16 {
+    position: relative;
+    padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
+    --tw-aspect-w: 16;
+  }
+
+  .aspect-w-16 > * {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .aspect-h-9 {
+    --tw-aspect-h: 9;
+  }
+
+  .aspect-w-1 {
+    position: relative;
+    padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
+    --tw-aspect-w: 1;
+  }
+
+  .aspect-w-1 > * {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .aspect-h-1 {
+    --tw-aspect-h: 1;
+  }
+}
+
+.bg-teal {
+  @apply bg-[#12c2c2] #{!important}
+}
+#pie-basic,#donut-simple,#pie-monochrome,#pie-image,#donut-pattern {
+  .apexcharts-pie text {
+    @apply fill-defaulttextcolor dark:fill-white #{!important};
+  } 
+} 
+.choices__list--dropdown .choices__item--selectable::after,
+.choices__list[aria-expanded] .choices__item--selectable::after {
+  @apply hidden #{!important};
+}
+@media (min-width: 640px) {
+  .choices__list--dropdown .choices__item--selectable, 
+  .choices__list[aria-expanded] .choices__item--selectable {
+    @apply  pe-0 #{!important};
+  }
+}
+.gridjs-footer {
+  @apply px-0 #{!important};
+}
+a {
+  @apply cursor-pointer;
+}
+#hs-select-temporary {
+  @apply w-full ;
+}
+code[class*="language-"] {
+  @apply p-4 #{!important};
+}
+.apexcharts-title-text {
+  @apply dark:fill-defaulttextcolor/70
+}
+#nft-collections-slide {
+  @apply rtl:dir-ltr;
+}
+#buy-crypto2,
+#sell-crypto2 {
+  .choices {
+    @apply overflow-visible;
+  }  
+}
+.table-striped-columns > :not(caption) > tr > :nth-child(2n),
+.ti-striped-table tbody tr:nth-child(even) {
+  @apply bg-light #{!important};
+}
+#switcher-body {
+  [type=radio] {
+    @apply border-[#e2e8f0] dark:border-white/30 #{!important} ;
+  }
+}
+@media (max-width:576px) {  
+  .header-element.header-country  {
+    .ti-dropdown-menu {
+      @apply w-full start-0 end-auto #{!important} ;
+    }
+  }
+}
+#navbar-collapse-basic1,
+#navbar-collapse-basic2 {
+  @apply h-full #{!important}
+}
+[data-nav-layout="horizontal"] {
+  @media (min-width: 992px) { 
+    &[data-nav-style="menu-click"],
+    &[data-nav-style="menu-hover"],
+    &[data-nav-style="icon-click"],
+    &[data-nav-style="icon-hover"] {
+      .app-sidebar {
+        .slide.has-sub .slide-menu {
+            &.child1 {
+                &.force-left {
+                  @apply end-0 #{!important};
+                }
+                
+            }
+          &.child2,
+          &.child3 {
+            &.force-left {
+              @apply -start-full #{!important};
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.page-item:not(:first-child) .page-link {
+  @apply ms-[calc(var(--bs-width)*-1)]
+}   
+.ql-snow .ql-tooltip input[type=text] {
+  @apply dark:bg-bodybg2;
+}
+// .main-chat-area .hs-dropdown-menu.ti-dropdown-menu {
+//   inset: -10px auto auto 0px !important;
+// }
+#radialbar-multiple {
+  .apexcharts-text.apexcharts-datalabel-label {
+    @apply dark:fill-white;
+  }
+}
+
+.fe-arrow-left {
+  @apply rtl:before:content-["\e911"]
+}
+.fe-arrow-right {
+  @apply rtl:before:content-["\e90f"]
+}
+.input-group .form-control {
+  @apply border-s-0;
+}
+.underlined-floatiing-label {
+  textarea {
+    @apply dark:focus:border-x-0 dark:focus:border-t-0 #{!important};
+  }
+  input {
+    @apply dark:focus:border-x-0 dark:focus:border-t-0 #{!important};
+  }
+}
+.echart-charts {
+  canvas {
+    @apply w-full #{!important};
+  }
+  div:first-child {
+    @apply w-full #{!important};
+  }
+}
+@media (max-width: 575.98px) {
+  #crm-revenue-analytics .apexcharts-canvas .apexcharts-title-text {
+    @apply text-[0.71rem];
+  }
+}
+.dropzone .dz-preview .dz-details {
+  @apply z-[-9] #{!important};
+}
+.dropzone .dz-preview .dz-success-mark,
+.dropzone .dz-preview .dz-error-mark {
+  @apply z-[48] #{!important};
+}
+.main-sidebar::-webkit-scrollbar {
+  height: 0px;
+}
+[dir="rtl"]{
+#contact-phone{
+   @apply dir-rtl;
+}
+}
+
+@media (min-width: 576px){
+#folders-close-btn{
+    display: none ;
+}
+}
+
+.btn-check+.ti-btn.ti-btn-outline-primary:hover, .btn-check:active+.ti-btn-outline-primary, .btn-check:checked+.ti-btn-outline-primary, .ti-btn-outline-primary.active, .ti-btn-outline-primary.dropdown-toggle.show, .ti-btn-outline-primary:active {
+ @apply text-white bg-primary border-primary #{!important};
+}

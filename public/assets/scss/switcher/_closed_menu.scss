@@ -1,0 +1,28 @@
+/* Start Closed-Menu Styles */
+[data-vertical-style="closed"] {
+  @media screen and (min-width: 992px) {
+    &[data-toggled="close-menu-close"] {
+      .app-sidebar {
+        @apply hidden;
+      }
+      .content {
+        @apply ms-0 #{!important};
+      }
+      .app-header {
+        @apply ps-0 #{!important};
+      }
+    }
+    &[data-toggled="close-menu-open"] {
+      .app-sidebar {
+        @apply block;
+      }
+      .content {
+        @apply ms-64;
+      }
+      .app-header {
+        @apply ps-64;
+      }
+    }
+  }
+}
+/* End Closed-Menu Styles */

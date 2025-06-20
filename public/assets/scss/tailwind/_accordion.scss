@@ -1,0 +1,343 @@
+.accordion-button {
+    @apply bg-white dark:bg-bodybg text-defaulttextcolor py-3 px-4 text-[0.85rem] font-medium;
+    &:not(.collapsed) {
+        @apply text-defaulttextcolor  shadow-none;
+    }
+    &:focus {
+        @apply bg-defaultbackground dark:bg-light text-defaulttextcolor shadow-none;
+    }
+    
+}    
+.accordion-body {
+    @apply py-3 px-4 text-[0.8125rem] text-textmuted;
+}
+.accordion-item {
+    @apply text-defaulttextcolor bg-white dark:bg-bodybg border border-solid border-defaultborder dark:border-defaultborder/10 dark:text-defaulttextcolor/70;
+}
+.accordions-items-seperate {
+    .accordion-item:not(:first-of-type) {
+        @apply mt-2;
+    }
+    .accordion-item {
+        @apply border-t border-solid border-defaultborder dark:border-defaultborder/10 rounded-md overflow-hidden;
+    }
+}
+.accordion-item:last-of-type {
+    @apply rounded-b-[0.35rem];
+}
+.accordion-item:first-of-type {
+    @apply rounded-t-[0.35rem];
+}
+.accordion {
+    &.accordion-flush {
+        .accordion-button {
+            @apply pe-[2.5rem];
+            &:after {
+                @apply start-[98.5rem] #{!important};
+            }
+        }
+    }
+}
+/* Start:: light colored accordions */
+.accordion {
+    &.accordion-primary {
+        .accordion-button {
+            @apply bg-white dark:bg-bodybg text-defaulttextcolor py-3 px-4 text-[0.85rem] font-medium;
+            &:focus {
+            @apply bg-primary/10 text-primary;
+            }
+            &:after,&:not(.collapsed)::after {
+              @apply bg-none;
+            }
+            &:after { 
+                @apply bg-primary text-white;
+            }
+            &.collapsed {
+                @apply bg-white dark:bg-bodybg text-defaulttextcolor dark:text-defaulttextcolor/70;
+                &:after { 
+                    @apply bg-defaultbackground text-defaulttextcolor dark:text-defaulttextcolor/70;
+                }
+            }
+        }
+    }
+    &.accordion-secondary {
+        .accordion-button {
+            @apply bg-white dark:bg-bodybg text-defaulttextcolor py-3 px-4 text-[0.85rem] font-medium;
+            &:focus {
+            @apply bg-secondary/10 text-secondary;
+            }
+            &:after,&:not(.collapsed)::after {
+              @apply bg-none;
+            }
+            &:after { 
+                @apply bg-secondary text-white;
+            }
+            &.collapsed {
+                @apply bg-white dark:bg-bodybg text-defaulttextcolor;
+                &:after { 
+                    @apply bg-defaultbackground text-defaulttextcolor;
+                }
+            }
+        }
+    }
+    &.accordion-success {
+        .accordion-button {
+            @apply bg-success/10 text-success;
+            &:after { 
+                @apply bg-success text-white;
+            }
+            &.collapsed {
+                @apply bg-white dark:bg-bodybg text-defaulttextcolor;
+                &:after { 
+                    @apply bg-defaultbackground text-defaulttextcolor;
+                }
+            }
+        }
+    }
+    &.accordion-danger {
+        .accordion-button {
+            @apply bg-danger/10 text-danger;
+            &:after { 
+                @apply bg-danger text-white;
+            }
+            &.collapsed {
+                @apply bg-white text-defaulttextcolor;
+                &:after { 
+                    @apply bg-defaultbackground text-defaulttextcolor;
+                }
+            }
+        }
+    }
+    &.accordion-warning {
+        .accordion-button {
+            @apply bg-warning/10 text-warning;
+            &:after { 
+                @apply bg-warning text-white;
+            }
+            &.collapsed {
+                @apply bg-white text-defaulttextcolor;
+                &:after { 
+                    @apply bg-defaultbackground text-defaulttextcolor;
+                }
+            }
+        }
+    }
+    &.accordion-info {
+        .accordion-button {
+            @apply bg-info/10 text-info;
+            &:after { 
+                @apply bg-info text-white;
+            }
+            &.collapsed {
+                @apply bg-white text-defaulttextcolor;
+                &:after { 
+                    @apply bg-defaultbackground text-defaulttextcolor;
+                }
+            }
+        }
+    }
+}
+/* End:: light colored accordions */
+
+/* Start:: solid colored accordions */
+.accordion {
+    &.accordion-solid-primary {
+        .accordion-button {
+            @apply bg-white text-defaulttextcolor py-3 px-4 text-[0.85rem] font-medium;
+            &:focus {
+            @apply bg-primary text-white;
+            }
+            &:after { 
+                @apply bg-white text-primary;
+            }
+            &.collapsed {
+                @apply bg-white text-defaulttextcolor;
+                &:after { 
+                    @apply bg-defaultbackground text-defaulttextcolor;
+                }
+            }
+        }
+    }
+    &.accordion-solid-secondary{
+        .accordion-button {
+            @apply bg-white text-defaulttextcolor py-3 px-4 text-[0.85rem] font-medium;
+            &:focus {
+            @apply bg-secondary text-white;
+            }
+            &:after { 
+                @apply bg-white text-secondary;
+            }
+            &.collapsed {
+                @apply bg-white text-defaulttextcolor;
+                &:after { 
+                    @apply bg-defaultbackground text-defaulttextcolor;
+                }
+            }
+        }
+    }
+    
+    &.accordion-solid-success {
+        @apply bg-success text-white;
+        &:after { 
+            @apply bg-white text-success;
+        }
+        &.collapsed {
+            @apply bg-white text-defaulttextcolor;
+            &:after { 
+                @apply bg-defaultbackground text-defaulttextcolor;
+            }
+        }
+    }
+    
+    &.accordion-solid-danger {
+        @apply bg-danger text-white;
+        &:after { 
+            @apply bg-white text-danger;
+        }
+        &.collapsed {
+            @apply bg-white text-defaulttextcolor;
+            &:after { 
+                @apply bg-defaultbackground text-defaulttextcolor;
+            }
+        }
+    }
+    
+    &.accordion-solid-warning {
+        @apply bg-danger text-white;
+        &:after { 
+            @apply bg-white text-danger;
+        }
+        &.collapsed {
+            @apply bg-white text-defaulttextcolor;
+            &:after { 
+                @apply bg-defaultbackground text-defaulttextcolor;
+            }
+        }
+    }
+    
+    &.accordion-solid-info {
+        @apply bg-info text-white;
+        &:after { 
+            @apply bg-white text-info;
+        }
+        &.collapsed {
+            @apply bg-white text-defaulttextcolor;
+            &:after { 
+                @apply bg-defaultbackground text-defaulttextcolor;
+            }
+        }
+    }
+}   
+
+/* End:: solid colored accordions */
+
+/* Start:: border colors */
+.accordion {
+    &.accordion-border-primary {
+        .accordion-item {
+            @apply border border-solid border-primary;
+        }
+        .accordion-button {
+            @apply bg-white dark:bg-bodybg text-primary border-b-0;
+            &:after { 
+                @apply bg-white text-primary border border-solid border-primary;
+            }
+            &:not(.collapsed) {
+                @apply  border-solid border-primary;
+            }
+        }
+    }
+    &.accordion-border-success {
+        .accordion-item {
+            @apply border border-solid border-success;
+        }
+        .accordion-button {
+            @apply bg-white dark:bg-bodybg text-success border-b-0;
+            &:after { 
+                @apply bg-white dark:bg-bodybg text-success border border-solid border-success;
+            }
+            &:not(.collapsed) {
+                @apply  border-solid border-success;
+            }
+        }
+    }
+}
+/* End:: border colors */
+
+/* Start:: no icon */
+.accordion {
+    &.accordionicon-none {
+        .accordion-button:after {
+            @apply hidden;
+        }
+    }
+}
+/* Start:: no icon */
+
+/* Start:: left aligned icon */
+.accordion {
+    &.accordionicon-left {
+        .accordion-button {
+           
+            &:after {
+                @apply absolute start-[1.935rem];
+            }
+        }
+    }
+}
+/* End:: left aligned icon */
+
+/* Start:: custom icons */
+.accordion {
+    &.accordion-customicon1 {
+        .accordion-button {
+            &:after {
+                @apply content-["\EA13"] #{!important};
+            }
+            &:not(.collapsed)::after {
+                @apply content-["\F1AF"] #{!important};
+            }
+        }
+    }
+}
+/* End:: custom icons */
+
+/* Start:: customized accordion */
+.customized-accordion {
+    .accordion-item{
+        &.custom-accordion-primary {
+            .accordion-button {
+                @apply bg-primary/10 border-s-[0.25rem] border-solid border-primary/60;
+                &:after {
+                    @apply bg-primary/60 text-white;
+                }
+            }
+            .accordion-body {
+                @apply bg-primary/10 pt-0 border-s-[0.25rem] border-solid border-primary/60;
+            }
+        }
+        &.custom-accordion-secondary {
+            .accordion-button {
+                @apply bg-secondary/10 border-s-[0.25rem] border-solid border-secondary/60;
+                &:after {
+                    @apply bg-secondary/60 text-white;
+                }
+            }
+            .accordion-body {
+                @apply bg-secondary/10 pt-0 border-s-[0.25rem] border-solid border-secondary/60;
+            }
+        }
+        &.custom-accordion-danger {
+            .accordion-button {
+                @apply bg-danger/10 border-s-[0.25rem] border-solid border-danger/60;
+                &:after {
+                    @apply bg-danger/60 text-white;
+                }
+            }
+            .accordion-body {
+                @apply bg-danger/10 pt-0 border-s-[0.25rem] border-solid border-danger/60;
+            }
+        }
+    }
+}
+/* End:: customized accordion */

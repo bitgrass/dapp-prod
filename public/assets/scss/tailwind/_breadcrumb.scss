@@ -1,0 +1,55 @@
+/* Start:: Breadcrumb Styles */
+
+
+.breadcrumb {
+  @apply mb-2;
+  .breadcrumb-item {
+    a {
+      @apply text-primary #{!important};
+    }
+
+    &.active {
+      @apply text-defaulttextcolor font-semibold;
+    }
+  }
+}
+.breadcrumb-item+.breadcrumb-item {
+  @apply ps-2;
+}
+.breadcrumb-item+.breadcrumb-item{
+  @apply before:content-["/"] before:text-textmuted before:me-2;
+}
+.breadcrumb-example1 {
+  .breadcrumb-item+.breadcrumb-item{
+    @apply before:content-[''] before:text-textmuted before:me-0 #{!important};
+  }
+}
+.breadcrumb-example2 {
+  .breadcrumb-item+.breadcrumb-item{
+    @apply before:content-["~"] before:text-textmuted;
+  }
+}
+.breadcrumb-style1 {
+  .breadcrumb-item+.breadcrumb-item::before {
+    @apply text-textmuted content-["->"];
+  }
+}
+.breadcrumb-style2 {
+  .breadcrumb-item+.breadcrumb-item::before {
+    @apply text-textmuted content-[''];
+  }
+}
+.breadcrumb-style3{
+  .breadcrumb-item+.breadcrumb-item::before {
+    @apply text-textmuted content-[''];
+  }
+}
+.embedded-breadcrumb:before {
+  @apply opacity-[0.7] before:content-[''];
+}
+.dark {
+  .embedded-breadcrumb:before {
+    @apply invert-[1];
+  }
+}
+/* End:: Breadcrumb Styles */

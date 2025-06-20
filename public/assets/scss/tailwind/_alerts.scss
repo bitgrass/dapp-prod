@@ -1,0 +1,331 @@
+.alert {
+  @apply py-[0.625rem] px-[0.85rem]  border rounded-md text-[0.8125rem] items-center;
+  &.alert-dismissible {
+    @apply py-[0.625rem] px-[0.85rem];
+  }
+  .btn-close {
+    @apply bg-none p-[0.95rem] flex items-center justify-center;
+    i {
+      @apply text-[1.5rem] leading-[1.5];
+    }
+  }
+  &:last-child {
+    @apply mb-0;
+  }
+  .alert-link {
+    @apply font-semibold;
+  }
+}
+
+/* Basic Alerts */
+.alert-warning {
+  @apply bg-warning/10 text-warning border-warning/10;
+  .alert-link {
+    @apply text-warning;
+  }
+  .btn-close {
+    @apply text-warning;
+    &.custom-close {
+      @apply text-warning opacity-[1] rounded-[50px] shadow p-[0.85rem];
+    }
+  }
+}
+.alert-primary {
+  @apply bg-primary/10 text-primary border-primary/10;
+  .alert-link {
+    @apply text-primary;
+  }
+  .btn-close {
+    @apply text-primary;
+    &.custom-close {
+      @apply text-primary opacity-[1] rounded-[50px] shadow p-[0.85rem];
+    }
+  }
+}
+.alert-secondary {
+  @apply bg-secondary/10 text-secondary border-secondary/10;
+  .alert-link {
+    @apply text-secondary;
+  }
+  .btn-close {
+    @apply text-secondary;
+    &.custom-close {
+      @apply text-secondary opacity-[1] rounded-[50px] shadow p-[0.85rem];
+    }
+  }
+}
+.alert-success {
+  @apply bg-success/10 text-success border-success/10;
+  .alert-link {
+    @apply text-success;
+  }
+  .btn-close {
+    @apply text-success;
+    &.custom-close {
+      @apply text-success opacity-[1] rounded-[50px] shadow p-[0.85rem];
+    }
+  }
+}
+.alert-info {
+  @apply bg-info/10 text-info border-info/10;
+  .alert-link {
+    @apply text-info;
+  }
+  .btn-close {
+    @apply text-info;
+    &.custom-close {
+      @apply text-info opacity-[1] rounded-[50px] shadow p-[0.85rem];
+    }
+  }
+}
+.alert-danger {
+  @apply bg-danger/10 text-danger border-danger/10;
+  .alert-link {
+    @apply text-danger;
+  }
+  .btn-close {
+    @apply text-danger;
+    &.custom-close {
+      @apply text-danger opacity-[1] rounded-[50px] shadow p-[0.85rem];
+    }
+  }
+}
+.alert-light {
+  @apply bg-light text-defaultsize border-light;
+  .alert-link {
+    @apply text-defaultsize;
+  }
+  .btn-close {
+    @apply text-defaultsize;
+    &.custom-close {
+      @apply text-defaulttextcolor opacity-[1] rounded-[50px] shadow p-[0.85rem];
+    }
+  }
+}
+.alert-dark {
+  @apply bg-black/10 text-black dark:text-defaulttextcolor/70 border-black/10;
+  .alert-link {
+    @apply text-black dark:text-defaulttextcolor/70;
+  }
+  .btn-close {
+    @apply text-black dark:text-defaulttextcolor/70;
+    &.custom-close {
+      @apply text-black dark:text-defaulttextcolor/70 opacity-[1] rounded-[50px] shadow p-[0.85rem];
+    }
+  }
+}
+/* Basic Alerts */
+
+/* Solid Colored Alerts */
+
+.alert-solid-primary {
+  @apply bg-primary text-white border-primary;
+  .btn-close {
+    @apply text-white;
+  }
+}
+.alert-solid-secondary {
+  @apply bg-secondary text-white border-secondary;
+  .btn-close {
+    @apply text-white;
+  }
+}
+.alert-solid-warning {
+  @apply bg-warning text-white border-warning;
+  .btn-close {
+    @apply text-white;
+  }
+}
+.alert-solid-info {
+  @apply bg-info text-white border-info;
+  .btn-close {
+    @apply text-white;
+  }
+}
+.alert-solid-success {
+  @apply bg-success text-white border-success;
+  .btn-close {
+    @apply text-white;
+  }
+}
+.alert-solid-danger {
+  @apply bg-danger text-white border-danger;
+  .btn-close {
+    @apply text-white;
+  }
+}
+.alert-solid-light {
+  @apply bg-light text-defaulttextcolor border-light;
+  .btn-close {
+    @apply text-defaulttextcolor;
+  }
+}
+.alert-solid-dark {
+  @apply bg-black text-white border-black;
+  .btn-close {
+    @apply text-white;
+  }
+}
+/* Solid Colored Alerts */
+
+/* Outline Alerts */
+.alert-outline-primary {
+  @apply text-primary border-primary;
+  .btn-close {
+    @apply text-primary;
+  }
+}
+.alert-outline-secondary {
+  @apply text-secondary border-secondary;
+  .btn-close {
+    @apply text-secondary;
+  }
+}
+.alert-outline-info {
+  @apply text-info border-info;
+  .btn-close {
+    @apply text-info;
+  }
+}
+.alert-outline-warning {
+  @apply text-warning border-warning;
+  .btn-close {
+    @apply text-warning;
+  }
+}
+.alert-outline-success {
+  @apply text-success border-success;
+  .btn-close {
+    @apply text-success;
+  }
+}
+.alert-outline-danger {
+  @apply text-danger border-danger;
+  .btn-close {
+    @apply text-danger;
+  }
+}
+.alert-outline-light {
+  @apply text-defaulttextcolor border-light;
+  .btn-close {
+    @apply text-light;
+  }
+}
+.alert-outline-dark {
+  @apply text-black dark:text-defaulttextcolor/70 border-black;
+  .btn-close {
+    @apply text-light;
+  }
+}
+/* Outline Alerts */
+
+/* Customized Alerts */
+.alert-primary.custom-alert-icon {
+  
+  @apply border-s-[0.313rem]   border-solid text-[#8c9097] bg-white dark:bg-bodybg border dark:border-defaultborder/10 border-defaultborder text-[0.813rem];
+  .btn-close {
+    @apply text-[#8c9097];
+  }
+  @apply border-s-primary #{!important};
+}
+.alert-secondary.custom-alert-icon {
+  @apply border-s-[0.313rem] border-solid text-[#8c9097] bg-white  dark:bg-bodybg dark:border-defaultborder/10 border border-defaultborder text-[0.813rem];
+  .btn-close {
+    @apply text-[#8c9097];
+  }
+  @apply border-s-secondary #{!important};
+}
+.alert-warning.custom-alert-icon {
+  @apply border-s-[0.313rem] border-solid bg-white dark:bg-bodybg text-[#8c9097] border dark:border-defaultborder/10 border-defaultborder text-[0.813rem];
+  .btn-close {
+    @apply text-[#8c9097];
+  }
+  @apply border-s-warning #{!important};
+}
+.alert-danger.custom-alert-icon {
+  @apply border-s-[0.313rem] border-s-danger border-solid bg-white dark:bg-bodybg text-[#8c9097] border dark:border-defaultborder/10 border-defaultborder text-[0.813rem];
+  .btn-close {
+    @apply text-[#8c9097];
+  }
+}
+.alert-success.custom-alert-icon {
+  @apply border-s-[0.313rem]  border-solid bg-white dark:bg-bodybg text-[#8c9097] border dark:border-defaultborder/10 border-defaultborder text-[0.813rem];
+  .btn-close {
+    @apply text-[#8c9097];
+  }
+  @apply border-s-success #{!important};
+}
+.alert-info.custom-alert-icon {
+  @apply border-s-[0.313rem] border-solid bg-white dark:bg-bodybg text-[#8c9097] border dark:border-defaultborder/10 border-defaultborder text-[0.813rem];
+  .btn-close {
+    @apply text-[#8c9097];
+  }
+  @apply border-s-info #{!important};
+}
+.alert-light.custom-alert-icon {
+  @apply border-s-[0.313rem]  border-solid text-[#8c9097] border dark:border-defaultborder/10 border-defaultborder text-[0.813rem];
+  .btn-close {
+    @apply text-[#8c9097];
+  }
+  @apply border-s-light #{!important};
+}
+.alert-dark.custom-alert-icon {
+  @apply border-s-[0.313rem] border-solid text-[#8c9097] border dark:border-defaultborder/10 border-defaultborder text-[0.813rem];
+  .btn-close {
+    @apply text-[#8c9097];
+  }
+  @apply border-s-black #{!important};
+}
+/* Customized Alerts */
+
+/* Customized Alerts1 */
+.custom-alert1 {
+  @apply me-0 bg-white dark:bg-bodybg border-0 p-[1.25rem] text-defaulttextcolor;
+  p {
+    @apply mb-[2.5rem] text-[#8c9097] text-[0.8rem];
+  }
+  .custom-alert-icon {
+    @apply w-[3.125rem] h-[3.125rem] mb-[0.85rem];
+  }
+  .btn-close {
+    @apply p-0 mb-4;
+  }
+  &.alert-primary {
+    @apply border-t-[0.313rem] border-solid border-primary;
+  }
+  &.alert-secondary {
+    @apply border-t-[0.313rem] border-solid border-secondary;
+  }
+  &.alert-warning {
+    @apply border-t-[0.313rem] border-solid border-warning;
+  }
+  &.alert-danger {
+    @apply border-t-[0.313rem] border-solid border-danger;
+  }
+}
+/* Customized Alerts1 */
+
+/* Image alerts */
+.alert-img {
+  @apply flex items-center;
+  .avatar {
+    @apply border border-solid border-black/10;
+  }
+}
+/* Image alerts */
+
+// .alert-primary {
+//   @apply bg-primary/10  border-primary/10;
+// }
+// .alert {
+//   @apply py-[0.625rem] px-[0.85rem] text-[0.8125rem];
+// }
+// .alert-light {
+//   @apply bg-light border-light;
+//   .alert-link {
+//     @apply text-defaulttextcolor;
+//   }
+//   .btn-close {
+//     @apply text-defaulttextcolor;
+//   }
+// }

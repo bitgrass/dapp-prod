@@ -1,0 +1,155 @@
+/*------------------------------------------------------------------
+[Master Stylesheet]
+Project                        :   Ynex - Next-Js(App router) Typesscript Tailwind Css Admin & Dashboard Template
+
+Created Date                   :   01/06/2024
+
+Author & Copyright Ownership   :   Spruko Technologies Private Limited 
+
+Author URL                     :   https://themeforest.net/user/spruko
+
+Support	                       :   https://support.spruko.com/
+
+License Details                :   https://spruko.com/licenses-details
+
+-------------------------------------------------------------------*/
+
+/*--- Start Table of Content ---
+Font-family
+Icons
+Variables
+Authentication
+Dashboard_styles
+Error
+Header
+Landing
+Job_landing
+Horizontal
+Icon_click
+Icon_hover
+Menu_click
+Menu_hover
+Vertical
+Chat
+Pages_styles
+Task
+Calendar
+Datatable
+Plugins
+Bg-img-styles
+Boxed
+Classic-page-styles
+Closed_menu
+Detached_menu
+Double_menu
+Header-scrollable
+Header-styles
+Icon-overlay
+Icontext
+Loader
+Menu-scrollable
+Menu-styles
+Accordion
+Alerts
+Avatars
+Breadcrumb
+Buttons
+Cards
+Carousels
+Components
+Custom
+Dropdown
+Forms
+Modal
+Offcanvas
+Pagination
+Progress
+Tables
+Tailwind
+Tooltip
+Toast
+--- End Table of Content ---*/
+
+/* Start FontFamily Styles */
+/* inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Montserrat */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&display=swap');
+
+/* End Tailwind Styles Styles */
+
+@import "./icons";
+@import "./variables";
+@import "./tailwind/tailwind";
+
+/* CUSTOM STYLES */
+@import "./custom/authentication";
+@import "./custom/dashboard_styles";
+@import "./custom/error";
+@import "./custom/header";
+@import "./custom/landing";
+@import "./custom/job_landing.scss";
+/* CUSTOM STYLES */
+
+/* PAGES STYLES */
+@import "./pages/chat";
+@import "./pages/pages_styles";
+@import "./pages/task";
+/* PAGES STYLES */
+
+/* PLUGINS STYLES */
+@import "./plugins/calendar";
+@import "./plugins/datatable";
+@import "./plugins/plugins.scss";
+/* PLUGINS STYLES */
+
+/* SWITCHER STYLES */
+@import "./switcher/bg-img-styles";
+@import "./switcher/boxed";
+@import "./switcher/classic-page-style";
+@import "./switcher/closed_menu";
+@import "./switcher/detached_menu";
+@import "./switcher/double_menu";
+@import "./switcher/header-scrollable";
+@import "./switcher/header-styles";
+@import "./switcher/horizontal";
+@import "./switcher/icon_click";
+@import "./switcher/icon_hover";
+@import "./switcher/icon-overlay";
+@import "./switcher/icontext";
+@import "./switcher/loader";
+@import "./switcher/menu_click";
+@import "./switcher/menu_hover";
+@import "./switcher/menu-scrollable";
+@import "./switcher/menu-styles";
+@import "./switcher/vertical";
+/* SWITCHER STYLES */
+
+/* TAILWIND STYLES */
+@import "./tailwind/accordion";
+@import "./tailwind/alerts";
+@import "./tailwind/avatars.scss";
+@import "./tailwind/breadcrumb";
+@import "./tailwind/buttons";
+@import "./tailwind/cards";
+@import "./tailwind/carousels.scss";
+@import "./tailwind/components";
+@import "./tailwind/custom";
+@import "./tailwind/dropdown";
+@import "./tailwind/forms";
+@import "./tailwind/modal";
+@import "./tailwind/offcanvas";
+@import "./tailwind/pagination";
+@import "./tailwind/progress";
+@import "./tailwind/tables";
+@import "./tailwind/tooltip";
+@import "./tailwind/toast.scss";
+/* TAILWIND STYLES */
+
+@import "./global/custom-styles";
+@import "./global/date-picker";
+@import "./global/react-datepicker";
+@import "./global/select2";
+
+

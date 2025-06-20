@@ -1,0 +1,36 @@
+.toast-container {
+  @apply z-[1090]  max-w-full pointer-events-none;
+}
+.toast {
+  @apply bg-white border border-solid border-defaultborder shadow-sm rounded-md;
+  .toast-header {
+    @apply bg-light py-[0.375rem] px-3 flex items-center;
+    img {
+      @apply w-[1.25rem] h-[1.25rem];
+    }
+  }
+  .toast-header {
+    @apply border-b border-solid border-defaultborder;
+    .btn-close {
+      @apply me-[0.125rem] p-3;
+    }
+  }
+  .toast-body {
+    @apply text-[0.8rem] p-3;
+  }
+  .btn-close {
+    @apply text-[0.563rem];
+  }
+  &.colored-toast {
+    @apply border-0 backdrop-blur-[20px] #{!important};
+    .btn-close {
+      @apply invert-[1];
+    }
+    .toast-header {
+      @apply border-b border-solid border-black/10;
+    }
+  }
+}
+.bd-example-toasts {
+  @apply min-h-[15rem];
+}

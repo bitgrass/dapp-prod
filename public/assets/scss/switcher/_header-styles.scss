@@ -1,0 +1,542 @@
+/* Start Header Styles */
+[data-header-styles="dark"] {
+  .app-header {
+    --header-prime-color: 255 255 255;
+    @apply bg-[#111c43] border-white/10;
+
+    .main-header-container .header-link-icon {
+      @apply hover:bg-white/10 text-white/60 fill-black/60 #{!important};
+    }
+
+    .animated-arrow span {
+      @apply bg-white/60;
+    }
+
+    .animated-arrow span:before,
+    .animated-arrow span:after {
+      @apply bg-white/60;
+    }
+
+    .sidebar-toggle {
+      @apply bg-transparent hover:bg-black/10 text-black/60 hover:text-black/60 focus:ring-white/10 focus:ring-offset-white/10 #{!important};
+
+      svg {
+        @apply text-black/60;
+      }
+    }
+
+    .ti-dropdown-toggle {
+      @apply bg-transparent hover:bg-black/10 border-white/10 text-black/60 hover:text-black/60 focus:ring-offset-white/10 #{!important};
+
+      svg {
+        @apply text-black/60 #{!important};
+      }
+    }
+
+    .dropdown-profile {
+      @apply focus:ring-gray-400;
+
+      img {
+        @apply ring-white;
+      }
+
+      p {
+        @apply text-white/60 #{!important};
+      }
+
+      span {
+        @apply text-white/60 #{!important};
+      }
+    }
+
+    #dropdown-flag {
+      @apply focus:ring-white/10;
+    }
+
+    .header-search,
+    .switcher-icon {
+      button {
+        @apply bg-transparent hover:bg-black/20 text-black/60 hover:text-white focus:ring-white/10 focus:ring-offset-white/10;
+
+        svg {
+          @apply text-black/60;
+        }
+      }
+    }
+
+    .header-theme-mode,
+    .header-fullscreen {
+      a {
+        @apply bg-transparent hover:bg-black/20 text-black/60 hover:text-white focus:ring-white/10 focus:ring-offset-white/10;
+
+        svg {
+          @apply text-black/60;
+        }
+      }
+    }
+    @media (min-width: 992px) {
+      .horizontal-logo {
+        .header-logo {
+          .desktop-logo,
+          .desktop-dark {
+            @apply hidden #{!important};
+          }
+
+          .desktop-white {
+            @apply block #{!important};
+          }
+        }
+      }
+    }
+  }
+}
+
+[data-header-styles="color"] {
+  .app-header {
+    --header-prime-color: 255 255 255 0.1;
+    @apply bg-primary border-white/20 #{!important};
+
+    .main-header-container .header-link-icon {
+      @apply hover:bg-white/20 text-white/60 fill-black/60 #{!important};
+    }
+
+    .animated-arrow span {
+      @apply bg-white/60;
+    }
+
+    .animated-arrow span:before,
+    .animated-arrow span:after {
+      @apply bg-white/60;
+    }
+
+    .sidebar-toggle {
+      @apply bg-transparent hover:bg-white/20 text-white/60 hover:text-white/10 focus:ring-transparent focus:ring-offset-transparent #{!important};
+
+      svg {
+        @apply fill-white/60;
+      }
+    }
+
+    .ti-dropdown-toggle {
+      @apply bg-transparent hover:bg-white/20 border-white/20 text-white/60 hover:text-white/20 focus:ring-transparent focus:ring-offset-transparent;
+
+      svg {
+        @apply fill-white/60 #{!important};
+      }
+    }
+
+    .dropdown-profile {
+      @apply focus:ring-gray-400;
+
+      img {
+        @apply ring-white;
+      }
+
+      p {
+        @apply text-white/60 #{!important};
+      }
+
+      span {
+        @apply text-white/60 #{!important};
+      }
+    }
+
+    #dropdown-flag {
+      @apply focus:ring-white/20;
+    }
+
+    .header-search,
+    .switcher-icon {
+      button {
+        @apply bg-transparent hover:bg-white/20 text-white/60 hover:text-white/10 focus:ring-white/20 focus:ring-offset-white/20 #{!important};
+      }
+
+      svg {
+        @apply fill-white/60 #{!important};
+      }
+    }
+
+    .header-theme-mode,
+    .header-fullscreen {
+      a {
+        @apply bg-transparent hover:bg-white/20 text-white/60 hover:text-white/10 focus:ring-white/20 focus:ring-offset-white/20;
+      }
+
+      svg {
+        @apply fill-white/60 #{!important};
+      }
+    }
+
+    @media (min-width: 992px) {
+      .horizontal-logo {
+        .header-logo {
+          .desktop-logo,
+          .desktop-dark {
+            @apply hidden #{!important};
+          }
+
+          .desktop-white {
+            @apply block #{!important};
+          }
+        }
+      }
+    }
+    @media (max-width: 991.98px) {
+      .horizontal-logo {
+        .header-logo {
+          .toggle-logo,
+          .desktop-white {
+            @apply hidden;
+          }
+          .toggle-white {
+            @apply block;
+          }
+        }
+      }
+    }
+  }
+}
+
+[data-header-styles="gradient"] {
+  .app-header {
+    --header-prime-color: 255 255 255;
+    @apply bg-gradient-to-r from-primary to-secondary border-white/20 before:absolute before:h-full before:w-full before:inset-0 before:-z-[1] #{!important};
+
+    .main-header-container .header-link-icon {
+      @apply hover:bg-white/20 text-white/60 fill-black/60 #{!important};
+    }
+
+    .animated-arrow span {
+      @apply bg-white/60;
+    }
+
+    .animated-arrow span:before,
+    .animated-arrow span:after {
+      @apply bg-white/60;
+    }
+
+    .sidebar-toggle {
+      @apply bg-transparent hover:bg-black/20 text-white/60 hover:text-white/20 focus:ring-transparent focus:ring-offset-transparent;
+
+      svg {
+        @apply fill-white/60;
+      }
+    }
+
+    .ti-dropdown-toggle {
+      @apply bg-transparent hover:bg-black/20 border-white/20 text-white/60 hover:text-white/20 focus:ring-transparent focus:ring-offset-transparent;
+
+      svg {
+        @apply fill-white/60;
+      }
+    }
+
+    .dropdown-profile {
+      @apply focus:ring-gray-400;
+
+      img {
+        @apply ring-white;
+      }
+
+      p {
+        @apply text-white/60 #{!important};
+      }
+
+      span {
+        @apply text-white/60 #{!important};
+      }
+    }
+
+    #dropdown-flag {
+      @apply focus:ring-white/20;
+    }
+
+    .header-search,
+    .switcher-icon {
+      button {
+        @apply bg-transparent hover:bg-white/20 text-white/60 hover:text-white/60 focus:ring-black/20 focus:ring-offset-black/20;
+      }
+
+      svg {
+        @apply fill-white/60;
+      }
+    }
+
+    .header-theme-mode,
+    .header-fullscreen {
+      a {
+        @apply bg-transparent hover:bg-white/20 text-white/60 hover:text-white/60 focus:ring-black/20 focus:ring-offset-black/20;
+      }
+
+      svg {
+        @apply fill-white/60;
+      }
+    }
+
+    @media (min-width: 992px) {
+      .horizontal-logo {
+        .header-logo {
+          .desktop-logo,
+          .desktop-dark {
+            @apply hidden #{!important};
+          }
+
+          .desktop-white {
+            @apply block #{!important};
+          }
+        }
+      }
+    }
+    @media (max-width: 991.98px) {
+      .horizontal-logo {
+        .header-logo {
+          .toggle-logo,
+          .desktop-white {
+            @apply hidden;
+          }
+          .toggle-white {
+            @apply block;
+          }
+        }
+      }
+    }
+  }
+}
+
+[data-header-styles="light"] {
+  .app-header {
+    @apply bg-white border-[#f3f3f3] #{!important};
+    .main-header-container .header-link-icon {
+      @apply hover:bg-white/20 text-[#536485] fill-black/60 #{!important};
+    }
+
+    .animated-arrow span {
+      @apply bg-[#536485];
+    }
+
+    .animated-arrow span:before,
+    .animated-arrow span:after {
+      @apply bg-[#536485] #{!important};
+    }
+
+    .sidebar-toggle {
+      @apply bg-transparent text-[#536485] hover:bg-gray-50 focus:ring-0 focus:ring-gray-400 focus:ring-offset-0 focus:ring-offset-white #{!important};
+    }
+
+    .ti-dropdown-toggle {
+      @apply bg-transparent text-[#536485] hover:bg-gray-50 border-gray-200 focus:ring-offset-white focus:ring-primary #{!important};
+    }
+
+    .dropdown-profile {
+      @apply focus:ring-gray-400;
+
+      img {
+        @apply ring-white;
+      }
+
+      p {
+        @apply text-[#536485] #{!important};
+      }
+
+      span {
+        @apply text-[#536485] #{!important};
+      }
+    }
+
+    #dropdown-flag {
+      @apply focus:ring-gray-400;
+    }
+
+    .header-search,
+    .switcher-icon {
+      button {
+        @apply bg-transparent text-[#536485] hover:bg-gray-50 focus:ring-gray-400 focus:ring-offset-0 focus:ring-offset-white #{!important};
+      }
+    }
+
+    .header-theme-mode,
+    .header-fullscreen {
+      a {
+        @apply bg-transparent text-[#536485] hover:bg-gray-50 focus:ring-gray-400 focus:ring-offset-0 focus:ring-offset-white #{!important};
+      }
+    }
+    @media screen and (min-width: 992px) {
+      .horizontal-logo {
+        .header-logo {
+          .desktop-white,
+          .desktop-dark {
+            @apply hidden #{!important};
+          }
+
+          .desktop-logo {
+            @apply block #{!important};
+          }
+        }
+      }
+    }
+  }
+}
+
+[data-header-styles="transparent"] {
+  .app-header {
+    @apply bg-bodybg border-b border-black/[0.07] #{!important};
+
+    .sidebar-toggle {
+      @apply bg-transparent text-[#536485] focus:ring-0 focus:ring-gray-400 focus:ring-offset-0 focus:ring-offset-white;
+    }
+
+    .ti-dropdown-toggle {
+      @apply bg-transparent text-[#536485] border-gray-200 focus:ring-offset-white focus:ring-primary;
+    }
+
+    .dropdown-profile {
+      @apply focus:ring-gray-400;
+
+      img {
+        @apply ring-white;
+      }
+    }
+
+    #dropdown-flag {
+      @apply focus:ring-gray-400;
+    }
+
+    .header-search,
+    .switcher-icon {
+      button {
+        @apply bg-transparent text-[#536485] focus:ring-gray-400 focus:ring-offset-0 focus:ring-offset-white;
+      }
+    }
+
+    .header-theme-mode,
+    .header-fullscreen {
+      a {
+        @apply bg-transparent text-[#536485] focus:ring-gray-400 focus:ring-offset-0 focus:ring-offset-white;
+      }
+    }
+
+    @media (min-width: 992px) {
+      .horizontal-logo {
+        .header-logo {
+          .desktop-dark,
+          .desktop-white {
+            @apply hidden;
+          }
+
+          .desktop-logo {
+            @apply block;
+          }
+        }
+      }
+    }
+    @media (max-width: 991.98px) {
+      .horizontal-logo {
+        .header-logo {
+          .toggle-dark,
+          .desktop-white {
+            @apply hidden;
+          }
+          .toggle-logo {
+            @apply block;
+          }
+        }
+      }
+    }
+  }
+
+  &.dark {
+    .app-header {
+      --header-prime-color: 255 255 255 0.6;
+      @apply bg-bodybg2 border-b border-b-white/10 #{!important};
+
+      .sidebar-toggle {
+        @apply hover:bg-black/20 text-white/60 hover:text-white focus:ring-white/10 focus:ring-offset-white/10 #{!important};
+
+        svg {
+          @apply fill-white;
+        }
+      }
+
+      .ti-dropdown-toggle {
+        @apply hover:bg-black/20 border-white/10 text-white/60 hover:text-white focus:ring-offset-white/10 #{!important};
+
+        svg {
+          @apply fill-white;
+        }
+      }
+
+      .dropdown-profile {
+        @apply focus:ring-gray-400;
+
+        img {
+          @apply ring-white;
+        }
+
+        p {
+          @apply text-white/60 #{!important};
+        }
+
+        span {
+          @apply text-white/60 #{!important};
+        }
+      }
+
+      #dropdown-flag {
+        @apply focus:ring-white/10;
+      }
+
+      .header-search,
+      .switcher-icon {
+        button {
+          @apply hover:bg-black/20 text-white/60 hover:text-white focus:ring-white/10 focus:ring-offset-white/10 #{!important};
+
+          svg {
+            @apply fill-white;
+          }
+        }
+      }
+
+      .header-theme-mode,
+      .header-fullscreen {
+        a {
+          @apply hover:bg-black/20 text-white/60 hover:text-white focus:ring-white/10 focus:ring-offset-white/10 #{!important};
+
+          svg {
+            @apply fill-white;
+          }
+        }
+      }
+
+      @media (min-width: 992px) {
+        .horizontal-logo {
+          .header-logo {
+            .desktop-logo,
+            .desktop-white {
+              @apply hidden;
+            }
+
+            .desktop-dark {
+              @apply block;
+            }
+          }
+        }
+      }
+      @media (min-width: 992px) {
+        .horizontal-logo {
+          .header-logo {
+            .toggle-logo,
+            .toggle-dark {
+              @apply hidden;
+            }
+
+            .toggle-white {
+              @apply block;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* End Header Styles */

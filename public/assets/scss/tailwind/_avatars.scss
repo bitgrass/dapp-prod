@@ -1,0 +1,135 @@
+/* Start Avatar Styles */
+.avatar {
+    @apply relative h-[2.625rem] w-[2.625rem] inline-flex items-center justify-center rounded-md font-medium mb-1;
+
+    a.badge:hover {
+        @apply text-white;
+    }
+
+    img {
+        @apply w-full h-full rounded-md;
+    }
+
+    .avatar-rounded{
+        @apply rounded-full #{!important};
+
+        img {
+            @apply rounded-full #{!important};
+        }
+    }
+
+    &.avatar-radius-0 {
+        @apply rounded-none;
+
+        img {
+            @apply rounded-none;
+        }
+    }
+
+    .avatar-badge {
+        @apply absolute -top-[4%] -end-[0.375rem] w-[1.4rem] h-[1.4rem] text-[0.625rem] border-2 border-solid border-white rounded-full flex items-center justify-center #{!important};
+    }
+    &.online,
+    &.offline {
+        @apply relative before:absolute before:w-[0.75rem] before:h-[0.75rem] before:rounded-full before:end-0 before:bottom-0 before:border-[2px] before:border-solid before:border-white before:dark:border-black;
+    }
+
+    &.online:before {
+        @apply bg-success;
+    }
+
+    &.offline:before {
+        @apply bg-gray-500;
+    }
+
+    &.avatar-xs {
+        @apply w-[1.25rem] h-[1.25rem] leading-[1.25rem] text-[0.65rem];
+
+        .avatar-badge {
+            @apply p-[0.25rem] w-[1rem] h-[1rem] leading-[1rem] text-[0.5rem] -top-[25%] -end-[0.5rem] #{!important};
+        }
+        &.online,&.offline {
+            @apply before:w-[0.5rem] before:h-[0.5rem];
+        }
+    }
+
+    &.avatar-sm {
+        @apply w-[1.75rem] h-[1.75rem] leading-[1.75rem] text-[0.65rem];
+
+        .avatar-badge {
+            @apply p-[0.3rem] w-[1.1rem] h-[1.1rem] leading-[1.1rem] text-[0.5rem] -top-[38%] -end-[0.5rem] #{!important};
+        }
+
+        &.online,
+        &.offline {
+            @apply before:w-[0.5rem] before:h-[0.5rem];
+        }
+    }
+
+    &.avatar-md {
+        @apply w-[2.5rem] h-[2.5rem] leading-[2.5rem] text-[0.8rem];
+
+        .avatar-badge {
+            @apply p-[0.4rem] w-[1.2rem] h-[1.2rem] leading-[1.2rem] text-[0.65rem] -top-[6%] -end-[13%] #{!important};
+        }
+
+        &.online,
+        &.offline {
+            @apply before:w-[0.75rem] before:h-[0.75rem];
+        }
+
+        svg {
+            @apply w-[1.5rem] h-[1.5rem];
+        }
+    }
+
+    &.avatar-lg {
+        @apply w-[3rem] h-[3rem] leading-[3rem] text-[1rem];
+
+        .avatar-badge {
+            @apply -top-[15%] -end-[0.25%];
+        }
+
+        &.online,
+        &.offline {
+            @apply before:w-[0.8rem] before:h-[0.8rem];
+        }
+
+        svg {
+            @apply w-[1.8rem] h-[1.8rem];
+        }
+    }
+
+    &.avatar-xl {
+        @apply w-[4rem] h-[4rem] leading-[4rem] text-[1.25rem];
+
+        .avatar-badge {
+            @apply -top-[8%] -end-[0.2%];
+        }
+
+        &.online,
+        &.offline {
+            @apply before:w-[0.95rem] before:h-[0.95rem];
+        }
+    }
+
+    &.avatar-xxl {
+        @apply w-[5rem] h-[5rem] leading-[5rem] text-[1.5rem];
+
+        .avatar-badge {
+            @apply -top-[4%] -end-[0%];
+        }
+
+        &.online,
+        &.offline {
+            @apply before:w-[1.05rem] before:h-[1.05rem] bottom-1;
+        }
+    }
+}
+.avatar-rounded{
+    @apply rounded-full #{!important};
+
+    img {
+        @apply rounded-full #{!important};
+    }
+}

@@ -1,0 +1,35 @@
+
+    
+    /* Start Modal Styles */
+    .ti-modal {
+        // @apply w-full h-full fixed top-0 start-0 z-[60] overflow-x-hidden overflow-y-auto;
+        // .ti-modal-header {
+        //     @apply flex justify-between items-center py-3 px-4 border-b dark:border-white/10;
+        // }
+        // .ti-modal-box {
+        //     @apply hs-overlay-open:opacity-100 hs-overlay-open:duration-500 opacity-0 transition-all sm:max-w-md md:max-w-lg sm:w-full m-3 sm:mx-auto;
+        // }
+        @apply size-full fixed top-0 start-0 z-[80] hs-overlay-open:opacity-100 hs-overlay-open:duration-500 opacity-0 overflow-x-hidden transition-all overflow-y-auto pointer-events-none;
+        .ti-modal-header {
+            @apply flex justify-between items-center py-3 px-4 border-b dark:border-white/10;
+        }
+        .ti-modal-box {
+            @apply sm:max-w-lg sm:w-full m-3 sm:mx-auto;
+        }
+        .ti-modal-content {
+            @apply flex flex-col pointer-events-auto bg-white border shadow-sm rounded-sm dark:dark:bg-bodybg dark:border-white/10 dark:shadow-black/[0.05];
+        }
+        .ti-modal-title {
+            @apply font-bold text-gray-800 dark:text-white;
+        }
+        .ti-modal-close-btn {
+            @apply inline-flex flex-shrink-0 justify-center items-center h-8 w-8 rounded-md text-gray-500 dark:text-white dark:hover:text-white/70 hover:text-gray-500 focus:outline-none focus:ring-0 focus:ring-gray-400 focus:ring-offset-0 focus:ring-offset-white transition-all text-sm dark:focus:ring-white/10 dark:focus:ring-offset-white/10;
+        }
+        .ti-modal-body {
+            @apply p-4;
+        }
+        .ti-modal-footer {
+            @apply flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-white/10;
+        }
+    }
+    /* End Modal Styles */

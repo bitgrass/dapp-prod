@@ -1,0 +1,464 @@
+/* Start Table Styles */
+// .table {
+//   @apply dark:text-defaulttextcolor/70 #{!important};
+// }
+.table {
+  @apply text-defaulttextcolor rounded-md mb-0 text-start;
+  tr {
+    @apply dark:border-defaultborder/10;
+  }
+
+  tbody {
+    tr {
+      th {
+        @apply font-medium;
+      }
+    }
+  }
+
+  th,
+  td {
+    @apply p-[0.75rem] align-middle leading-[1.462] text-[0.813rem] font-medium text-start;
+  }
+
+  thead tr th {
+    @apply font-semibold text-[0.85rem];
+  }
+
+  &.table-sm > :not(caption) > * > * {
+    @apply p-[0.3rem];
+  }
+
+  &.table-dark {
+    @apply text-white/70 border-white/10 dark:border-black/[0.025];
+  }
+
+  &.table-primary {
+    @apply text-primary/70 border-primary/10;
+  }
+  &.table-bordered {
+    &.table-bordered-primary {
+      tbody,
+      td,
+      tfoot,
+      th,
+      thead,
+      tr {
+        @apply border-primary/30 #{!important};
+      }
+    }
+
+    &.table-bordered-info {
+      tbody,
+      td,
+      tfoot,
+      th,
+      thead,
+      tr {
+        @apply border-info/30;
+      }
+    }
+
+    &.table-bordered-secondary {
+      tbody,
+      td,
+      tfoot,
+      th,
+      thead,
+      tr {
+        @apply border-secondary/30;
+      }
+    }
+
+    &.table-bordered-warning {
+      tbody,
+      td,
+      tfoot,
+      th,
+      thead,
+      tr {
+        @apply border-warning/30;
+      }
+    }
+
+    &.table-bordered-success {
+      tbody,
+      td,
+      tfoot,
+      th,
+      thead,
+      tr {
+        @apply border-success/30;
+      }
+    }
+
+    &.table-bordered-danger {
+      tbody,
+      td,
+      tfoot,
+      th,
+      thead,
+      tr {
+        @apply border-danger/30;
+      }
+    }
+  }
+
+  &.table-striped > tbody > tr:nth-of-type(odd) > * {
+    @apply text-defaulttextcolor;
+  }
+
+  &.table-striped-columns > :not(caption) > tr > :nth-child(2n) {
+    @apply text-defaulttextcolor;
+  }
+
+  tbody.table-group-divider {
+    @apply border-t border-solid rounded-md;
+  }
+
+  &.table-hover > tbody > tr:hover > * {
+    @apply text-defaulttextcolor;
+  }
+
+  .table-active {
+    @apply text-defaulttextcolor;
+  }
+}
+
+.ti-custom-table-head {
+  @apply divide-y divide-gray-200 dark:divide-white/10;
+}
+.table-responsive,
+.table {
+  @apply overflow-y-visible #{!important};
+}
+.table-responsive {
+  @apply block w-full overflow-x-auto;
+}
+.table-responsive {
+  @apply overflow-x-auto;
+}
+.ti-custom-table {
+  @apply min-w-full;
+
+  th {
+    @apply px-6 py-2 text-start leading-[1.462] font-semibold text-xs uppercase bg-gray-50 dark:bg-black/20 dark:text-white;
+  }
+
+  tbody {
+    @apply divide-y divide-gray-200 dark:divide-white/10;
+  }
+
+  td {
+    @apply px-6 py-4 whitespace-nowrap text-sm dark:text-gray-200 font-medium;
+  }
+}
+
+.ti-striped-table {
+  tbody {
+    tr {
+      @apply odd:bg-white even:bg-gray-100 dark:odd:dark:bg-bodybg dark:even:bg-black/20;
+    }
+  }
+}
+
+.ti-custom-table-hover {
+  tbody {
+    tr {
+      @apply hover:bg-gray-100 dark:hover:bg-light;
+    }
+  }
+}
+
+.table-bordered {
+  @apply border dark:border-defaultborder/10;
+
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-gray-200 dark:divide-white/10;
+  }
+}
+
+.table-bordered-primary {
+  @apply border border-primary/30 dark:border-primary/30;
+
+  .ti-custom-table-head {
+    @apply divide-y divide-primary/30 dark:divide-primary/30;
+  }
+  tbody {
+    @apply divide-y divide-primary/30 dark:divide-primary/30;
+  }
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-primary/30 dark:divide-primary/30;
+  }
+}
+.table-bordered-secondary {
+  @apply border border-secondary/30 dark:border-secondary/30;
+
+  .ti-custom-table-head {
+    @apply divide-y divide-secondary/30 dark:divide-secondary/30;
+  }
+  tbody {
+    @apply divide-y divide-secondary/30 dark:divide-secondary/30;
+  }
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-secondary/30 dark:divide-secondary/30;
+  }
+}
+.table-bordered-warning {
+  @apply border border-warning/30 dark:border-warning/30;
+
+  .ti-custom-table-head {
+    @apply divide-y divide-warning/30 dark:divide-warning/30;
+  }
+  tbody {
+    @apply divide-y divide-warning/30 dark:divide-warning/30;
+  }
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-warning/30 dark:divide-warning/30;
+  }
+}
+.table-bordered-danger {
+  @apply border border-danger/30 dark:border-danger/30;
+
+  .ti-custom-table-head {
+    @apply divide-y divide-danger/30 dark:divide-danger/30;
+  }
+  tbody {
+    @apply divide-y divide-danger/30 dark:divide-danger/30;
+  }
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-danger/30 dark:divide-danger/30;
+  }
+}
+.table-bordered-info {
+  @apply border border-info/30 dark:border-info/30;
+
+  .ti-custom-table-head {
+    @apply divide-y divide-info/30 dark:divide-info/30;
+  }
+  tbody {
+    @apply divide-y divide-info/30 dark:divide-info/30;
+  }
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-info/30 dark:divide-info/30;
+  }
+}
+.table-bordered-success {
+  @apply border border-success/30 dark:border-success/30;
+
+  .ti-custom-table-head {
+    @apply divide-y divide-success/30 dark:divide-success/30;
+  }
+  tbody {
+    @apply divide-y divide-success/30 dark:divide-success/30;
+  }
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-success/30 dark:divide-success/30;
+  }
+}
+
+.table-primary {
+  @apply bg-primary/10;
+  th {
+    @apply text-black dark:text-white;
+  }
+
+  tbody {
+    @apply divide-y divide-primary/10 dark:divide-primary/10;
+  }
+
+  td {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-primary/10 dark:divide-primary/10;
+  }
+
+  .ti-custom-table-head {
+    @apply divide-y divide-primary/10 dark:divide-primary/10;
+  }
+}
+.table-dark {
+  @apply bg-black/10 dark:bg-bodybg2;
+  th {
+    @apply text-black dark:text-white;
+  }
+
+  tbody {
+    @apply divide-y divide-black/10 dark:divide-black/[0.025];
+  }
+
+  td {
+    @apply text-black dark:text-white;
+  }
+
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-black/10 dark:divide-black/[0.025];
+  }
+
+  .ti-custom-table-head {
+    @apply divide-y divide-black/10 dark:divide-black/[0.025];
+  }
+}
+
+.table-secondary {
+  @apply bg-secondary/10;
+  th {
+    @apply text-black dark:text-white;
+  }
+
+  tbody {
+    @apply divide-y divide-secondary/10 dark:divide-secondary/10;
+  }
+
+  td {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-secondary/10 dark:divide-secondary/10;
+  }
+
+  .ti-custom-table-head {
+    @apply divide-y divide-secondary/10 dark:divide-secondary/10;
+  }
+}
+
+.table-warning {
+  @apply bg-warning/10;
+  th {
+    @apply text-black dark:text-white;
+  }
+
+  tbody {
+    @apply divide-y divide-warning/10 dark:divide-warning/10;
+  }
+
+  td {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-warning/10 dark:divide-warning/10;
+  }
+
+  .ti-custom-table-head {
+    @apply divide-y divide-warning/10 dark:divide-warning/10;
+  }
+}
+
+.table-info {
+  @apply bg-info/10;
+  th {
+    @apply text-black dark:text-white;
+  }
+
+  tbody {
+    @apply divide-y divide-info/10 dark:divide-info/10;
+  }
+
+  td {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-info/10 dark:divide-info/10;
+  }
+
+  .ti-custom-table-head {
+    @apply divide-y divide-info/10 dark:divide-info/10;
+  }
+}
+
+.table-danger {
+  @apply bg-danger/10;
+  th {
+    @apply text-black dark:text-white;
+  }
+
+  tbody {
+    @apply divide-y divide-danger/10 dark:divide-danger/10;
+  }
+
+  td {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-danger/10 dark:divide-danger/10;
+  }
+
+  .ti-custom-table-head {
+    @apply divide-y divide-danger/10 dark:divide-danger/10;
+  }
+}
+
+.table-success {
+  @apply bg-success/10;
+  th {
+    @apply text-black dark:text-white;
+  }
+
+  tbody {
+    @apply divide-y divide-success/10 dark:divide-success/10;
+  }
+
+  td {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  tr {
+    @apply divide-x rtl:divide-x-reverse divide-success/10 dark:divide-success/10;
+  }
+
+  .ti-custom-table-head {
+    @apply divide-y divide-success/10 dark:divide-success/10;
+  }
+}
+.ti-head-primary {
+  th {
+    @apply bg-primary/20 dark:bg-primary/20;
+  }
+}
+.ti-head-secondary {
+  th {
+    @apply bg-secondary/20 dark:bg-secondary/20;
+  }
+}
+.ti-head-warning {
+  th {
+    @apply bg-warning/20 dark:bg-warning/20;
+  }
+}
+.ti-head-success {
+  th {
+    @apply bg-success/20 dark:bg-success/20;
+  }
+}
+.ti-head-info {
+  th {
+    @apply bg-info/20 dark:bg-info/20;
+  }
+}
+.ti-head-danger {
+  th {
+    @apply bg-danger/20 dark:bg-danger/20;
+  }
+}
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  @apply bg-black/[0.0125] text-defaulttextcolor;
+}
+.table-striped-columns > :not(caption) > tr > :nth-child(2n) {
+  @apply bg-black/[0.0125] text-defaulttextcolor dark:bg-black/20;
+}
+.table.table-success.table-striped > tbody > tr:nth-of-type(odd) > * {
+  @apply bg-success/20;
+}
+caption {
+  @apply text-textmuted pt-2 pb-2 text-start;
+}
+.table-active {
+  @apply bg-light;
+}
+/* End Table Styles */

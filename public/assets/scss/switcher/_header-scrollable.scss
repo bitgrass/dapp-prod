@@ -1,0 +1,25 @@
+/* Start Header-Scrollable Styles */
+[data-header-position="scrollable"] {
+  .app-header {
+    @apply absolute;
+  }
+  &:not([data-menu-position="scrollable"]) {
+    @media screen and (min-width:992px) {
+      .app-sidebar {
+        // @apply relative top-0 #{!important};
+        &.sticky-pin {
+          @apply fixed top-0 #{!important};
+        }
+      }
+    }
+    &[data-toggled="open"] {
+      .app-sidebar {
+        &.sticky-pin {
+          @apply mt-0;
+        }
+      }
+    }
+  }
+}
+
+/* End Header-Scrollable Styles */

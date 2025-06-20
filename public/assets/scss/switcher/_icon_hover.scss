@@ -1,0 +1,236 @@
+[data-nav-layout="horizontal"][data-nav-style="icon-hover"],
+[data-nav-style="icon-hover"][data-toggled="icon-hover-closed"] {
+    @extend .icon-hover;
+}
+.icon-hover {
+    @media (min-width: 992px) {
+        .content{
+            @apply ms-[5rem];
+        }
+        .app-sidebar {
+            @apply w-20;
+            
+
+            .main-sidebar {
+                @apply overflow-visible h-[90%];
+            }
+
+            .main-sidebar-header {
+                @apply w-20;
+
+                .header-logo {
+                    .toggle-logo {
+                        @apply block;
+                        
+                    }
+
+                    .desktop-dark,
+                    .desktop-logo,
+                    .toggle-dark,.toggle-white,.desktop-white {
+                        @apply hidden;
+                        
+                    }
+                }
+            }
+
+            .category-name,
+            .side-menu__label,
+            .side-menu__angle {
+                @apply hidden;
+            
+            }
+
+            .side-menu__icon {
+                @apply me-0;
+                
+            }
+
+            .slide__category {
+                @apply py-[1.2rem] px-[1.65rem] relative;
+                &:before {
+                    @apply content-[""] absolute start-[2.4rem] end-0 top-5 bottom-0 w-[0.35rem] rounded-[3.125rem] h-[0.35rem] border border-[#536485] opacity-[1];
+                }
+            }
+
+            .simplebar-content-wrapper {
+                position: initial;
+            }
+
+            .simplebar-mask {
+            
+                position: inherit;
+            }
+
+            .simplebar-placeholder {
+                @apply h-auto #{!important};
+                
+            }
+        }
+        .app-header {
+            @apply ps-20;
+            
+        }
+        .content  {
+            @apply ms-20;
+            
+        }
+        .slide.side-menu__label1 {
+            @apply block py-2 px-4 border-b border-b-defaultborder #{!important};
+            
+        }
+        .slide.has-sub .slide-menu {
+            @apply absolute start-20  rounded-e-md dark:bg-bodybg top-auto transition-none shadow-[0.125rem_0.063rem_0.5rem_rgba(0,0,0,0.1)] dark:shadow-[0.125rem_0.063rem_0.5rem_rgba(255,255,255,0.1)] #{!important};
+           
+            &.child2,
+            &.child3 {
+                @apply start-[11.8rem] #{!important};
+            
+            }
+        }
+        .slide-menu {
+            &.child1,
+            &.child2,
+            &.child3 {
+                @apply min-w-[12rem];
+                
+                .slide {
+                    .side-menu__item {
+                        @apply text-start pe-0 #{!important};
+
+                        &:before {
+                            @apply top-[0.938rem] start-3;
+                        }
+                    }
+                }
+                .side-menu__angle {
+                    @apply block end-4 top-[0.65rem];
+                  
+                }
+            }
+        }
+        .slide.has-sub:hover {
+            .slide-menu.child1 {
+                @apply block #{!important};
+                
+                .slide.has-sub:hover {
+                    .slide-menu.child2 {
+                        @apply block #{!important};
+                        
+                        .slide.has-sub:hover {
+                            .slide-menu.child3 {
+                                @apply block #{!important};
+                               
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+[data-nav-style="icon-hover"][data-nav-layout="horizontal"] {
+  @media (min-width:992px) {
+    .slide.has-sub .slide-menu {
+      @apply absolute start-20 transition-none shadow-[0.125rem_0.063rem_0.5rem_rgba(0,0,0,0.1)] dark:shadow-[0.125rem_0.063rem_0.5rem_rgba(255,255,255,0.1)] #{!important};
+    }
+    .slide.has-sub .slide-menu {
+      &.child1 {
+        @apply top-full #{!important};
+      }
+      &.child2,
+      &.child3 {
+        @apply start-48 #{!important};
+      }
+    }
+    .mega-menu {
+      @apply columns-1;
+    }
+  }
+}
+[data-nav-layout="vertical"][data-nav-style="icon-hover"] {
+    @media (min-width: 992px) {
+        &[data-toggled="icon-hover-closed"] {
+            .app-sidebar .main-menu{
+                >.slide {
+                    @apply py-0 px-[1.2rem];
+                    
+                }
+            }
+            .app-sidebar {
+                .slide .slide-menu {
+                    &.child1,&.child2,&.child3 {
+                        @apply rounded-e-md rounded-s-none;
+                    }
+                } 
+            }
+            &.dark {
+              .app-sidebar {
+                .main-sidebar-header {
+                  .header-logo {
+                    .toggle-white {
+                      @apply block;
+                    }
+                    .desktop-dark,
+                    .desktop-logo,
+                    .toggle-logo,
+                    .desktop-white,
+                    .toggle-dark {
+                      @apply hidden;
+                    }
+                  }
+                }
+              }
+              &[data-menu-styles="light"]{
+                .app-sidebar {
+                  .main-sidebar-header {
+                    .header-logo {
+                      .toggle-white {
+                        @apply hidden;
+                      }
+                    }
+                  }
+                }
+              }
+              &[data-menu-styles="transparent"] {
+                .app-sidebar {
+                  .main-sidebar-header {
+                    .header-logo {
+                      .toggle-white {
+                        @apply block #{!important};
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            .app-sidebar {
+                @apply absolute #{!important};
+               
+                .slide-menu {
+                    &.child1,
+                    &.child2,
+                    &.child3 {
+                        @apply p-[0.1875rem];
+                        
+                        li.slide {
+                            @apply ps-0;
+                            
+                            a {
+                                @apply rounded-none;
+                                
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (min-width: 992px) {
+    [data-nav-style="icon-hover"][data-toggled="icon-hover-closed"]:not([data-nav-layout="horizontal"]) {
+      .content {
+        @apply min-h-[90rem];
+      }
+    }
+  }

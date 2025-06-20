@@ -1,0 +1,264 @@
+[data-nav-layout="horizontal"] {
+  @media (min-width: 992px) {
+    .simplebar-track.simplebar-horizontal {
+      @apply hidden;
+    }
+    .app-sidebar {
+      @apply h-[3rem];
+    }
+    .sidemenu-layout-styles {
+      @apply hidden #{!important};
+    }
+    .main-menu {
+      @apply flex #{!important};
+      &-container {
+        @apply inline-flex;
+      }
+      @apply transition-all ease-linear duration-[0.5s] flex-nowrap;
+    }
+    .side-menu__label .badge {
+      @apply hidden #{!important};
+    }
+    .mega-menu {
+      @apply columns-3;
+    }
+    .app-header {
+      @apply ps-0 z-[50] shadow-none #{!important};
+    }
+    .content {
+      @apply mx-auto mt-[6.7rem] start-0 min-h-[calc(100vh-10.5rem)] w-full #{!important};
+      > .container-fluid {
+        @apply w-[94%] ms-auto me-auto;
+      }
+      .main-content {
+        @apply w-[94%] mx-auto;
+      }
+    }
+    .app-sidebar {
+      .main-sidebar,
+      .simplebar-mask {
+        @apply overflow-visible;
+      }
+      .main-menu > .slide {
+        @apply my-0 mx-[0.1875rem];
+      }
+      .main-sidebar {
+        @apply shadow-none;
+      }
+    }
+    .app-sidebar .simplebar-content-wrapper {
+      @apply overflow-visible h-auto #{!important};
+    }
+    .main-sidebar .simplebar-vertical {
+      @apply invisible overflow-hidden #{!important};
+    }
+    .main-sidebar,
+    .main-header-container {
+      @apply w-[94%] my-0 mx-auto;
+    }
+    .horizontal-logo {
+      @apply py-[0.85rem] px-0 block;
+      .header-logo {
+        img {
+          @apply h-8 leading-8;
+        }
+        .desktop-logo {
+          @apply block;
+        }
+        .desktop-dark,
+        .toggle-logo,
+        .toggle-dark,
+        .desktop-white,.toggle-white {
+          @apply hidden;
+        }
+      }
+    }
+    [data-header-styles="dark"] {
+      .horizontal-logo {
+        @apply py-[0.85rem] px-0 block;
+        .header-logo {
+          img {
+            @apply h-8 leading-8;
+          }
+          .desktop-dark {
+            @apply block #{!important};
+          }
+          .desktop-logo,
+          .toggle-logo,
+          .toggle-dark,
+          .desktop-white,.toggle-white {
+            @apply hidden #{!important};
+          }
+        }
+      }
+    }
+
+    .main-header-container .sidemenu-toggle {
+      @apply hidden;
+    }
+    .app-sidebar {
+      @apply w-full h-12 top-[3.75rem] #{!important};
+
+      .slide-menu.child1,
+      .slide-menu.child2,
+      .slide-menu.child3 {
+        li {
+          @apply ps-2;
+        }
+        .side-menu__item:before {
+          @apply top-[0.938rem] start-3 #{!important};
+        }
+      }
+      .app-sidebar .slide-menu.child1 .side-menu__item,
+      .app-sidebar .slide-menu.child2 .side-menu__item {
+        @apply py-[0.45rem] px-[1.6rem] #{!important};
+      }
+      .simplebar-content {
+        @apply p-0 overflow-hidden #{!important};
+      }
+      .simplebar-content-wrapper {
+        @apply overflow-visible h-auto #{!important};
+      }
+      .main-sidebar {
+        @apply h-12 p-0 #{!important};
+      }
+      .slide.has-sub .slide-menu {
+        &.child1 {
+          @apply start-6 p-0 rounded-b-sm shadow-[.063rem_.188rem_.5rem_rgba(0,0,0,0.1)]  dark:shadow-[.063rem_.188rem_.5rem_rgba(255,255,255,0.1)] #{!important} ;
+        }
+        &.child2,
+        &.child3 {
+          @apply end-[100%] px-0 rounded-sm #{!important};
+        }
+        &.active {
+          @apply start-auto end-auto #{!important};
+        }
+      }
+      .slide-menu.child1 {
+        @apply absolute #{!important};
+      }
+      .side-menu__item {
+        @apply w-full flex rounded-none p-[0.92rem];
+      }
+      .side-menu__angle {
+        @apply end-[0.45rem] #{!important};
+      }
+      .side-menu__angle {
+        @apply block;
+      }
+      .side-menu__icon {
+        @apply me-1 mb-0;
+      }
+      .slide.has-sub .slide-menu.child1 {
+        @apply bg-white dark:bg-bodybg top-[100%] min-w-[12rem];
+      }
+      .slide {
+        @apply p-0;
+      }
+      .slide-menu {
+        &.child1 {
+          .slide.has-sub,
+          .slide {
+            @apply w-full flex py-0 px-[0.1875rem];
+          }
+        }
+        &.child2,
+        &.child3 {
+          @apply rounded-sm;
+        }
+      }
+      .slide,
+      .slide.has-sub {
+        @apply static;
+      }
+      .main-menu {
+        @apply mb-0;
+      }
+    }
+    .main-sidebar-header {
+      @apply hidden #{!important};
+    }
+    .main-sidebar {
+      @apply mt-0 pb-12;
+    }
+    .slide__category {
+      @apply hidden;
+    }
+    /* horizontal arrows */
+    .main-menu-container .slide-left {
+      @apply start-[1.438rem];
+    }
+    .main-menu-container .slide-left,
+    .main-menu-container .slide-right {
+      @apply absolute top-[0.563rem] p-[0.375rem] flex items-center justify-center z-[1] cursor-pointer border border-solid border-defaultborder rounded-[3.125rem] text-white dark:text-bodybg;
+    }
+
+    .main-menu-container .slide-left,
+    .main-menu-container .slide-right {
+      @apply absolute top-[0.313rem] p-[0.375rem] flex items-center justify-center z-[1] cursor-pointer border border-solid border-defaultborder rounded-[3.125rem] text-white dark:text-bodybg bg-white dark:bg-bodybg;
+      svg {
+        @apply fill-black;
+      }
+    }
+
+    .main-menu-container {
+      .slide-right {
+        @apply end-[-3%];
+      }
+      .slide-left {
+        @apply start-[-3%];
+      }
+    }
+    &[page-style="classic"] {
+      .app-sidebar {
+        @apply border-b border-b-defaultborder;
+      }
+    }
+    &[dir="rtl"] {
+      .main-menu-container {
+        .slide-right,
+        .slide-left {
+          @apply rotate-180;
+        }
+      }
+    }
+    &.dark {
+      .header-logo {
+        .desktop-dark {
+          @apply block;
+        }
+        .toggle-logo,
+        .desktop-logo,
+        .toggle-logo,
+        .desktop-white,.toggle-white {
+          @apply hidden #{!important};
+        }
+      }
+      .app-sidebar {
+        @apply border-white/10 #{!important};
+        .slide.has-sub .slide-menu {
+          &.child1,
+          &.child2,
+          &.child3 {
+            @apply bg-bodybg border-white/10 #{!important};
+          }
+        }
+        .slide.side-menu__label1 {
+          @apply border-white/10 text-white #{!important};
+        }
+        .main-menu-container {
+          .slide-left,
+          .slide-right {
+            @apply bg-black/20 text-white border-white/10;
+            svg {
+              @apply fill-white;
+            }
+          }
+        }
+      }
+    }
+    .footer {
+      @apply ps-0; 
+    }
+  }
+}

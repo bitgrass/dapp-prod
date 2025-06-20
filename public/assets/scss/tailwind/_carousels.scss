@@ -1,0 +1,9 @@
+.mySwiper1{
+.swiper-button-next:after,
+.swiper-button-prev:after{
+    @apply text-[1.5rem] font-[300] text-white #{!important};
+}
+.swiper-pagination-bullet {
+    @apply bg-white text-white w-[30px] h-[3px] rounded-none;
+}
+}

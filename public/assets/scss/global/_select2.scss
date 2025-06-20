@@ -1,0 +1,234 @@
+/* ###### 3.13 globalReactselect ###### */
+
+.Select2__indicator-separator {
+  @apply hidden;
+}
+.Select2__option:hover {
+  @apply text-[#fff];
+}
+
+.Select2__menu {
+  @apply m-0 #{!important};
+}
+
+.Select2__control {
+  @apply shadow-none #{!important};
+}
+
+//
+.background__indicator-separator{
+  @apply hidden;
+}
+
+.default{
+  .Select2__multi-value__label {
+      @apply py-[0.025rem] px-[0.625rem] bg-primary text-white #{!important};
+  }
+  .Select2__multi-value__remove{
+   @apply hidden;
+  }
+}
+.passing-options{
+    .react-select__multi-value__remove{
+     @apply hidden;
+    }
+}
+
+
+.Select2__menu {
+  div,
+  li,
+  .Select2__single-value {
+    &.active,
+    .Select2__option--is-selected {
+      @apply bg-primary #{!important};
+    }
+  }
+}
+
+.rmsc.multi-select .dropdown-container,
+.rdl-actions .rdl-move,
+.Select2__control {
+  @apply border-defaultborder bg-white;
+}
+.multi-select .dropdown-content {
+  @apply bg-white border border-defaultborder;
+  
+  div {
+      @apply bg-white;
+
+    label {
+      &:hover,
+      &.selected {
+          @apply bg-white;
+      }
+    }
+  }
+}
+.Select2__menu {
+  @apply bg-white border border-defaultborder;
+}
+
+.Select2__option--is-selected,
+.Select2__option--is-focused {
+  @apply bg-white text-defaulttextcolor #{!important};
+}
+.Select2__option:hover {  
+  @apply bg-primary #{!important};
+}
+.Select2__control {
+  @apply bg-white border-defaultborder dark:bg-bodybg;
+}
+.Select2__option, .Select2__single-value {
+  img {
+      @apply w-[30px] h-[30px]  rounded-full  #{!important};
+  }
+}
+
+.input-group {
+  .buysell {
+    .Select2__input-container {
+      @apply text-defaulttextcolor;
+    }
+    .Select2__control{
+      @apply rounded-ss-none rounded-es-none min-h-[39px] border-defaultborder #{!important};
+    }
+  }
+  
+}
+
+.Select2__control, .Select2__menu {
+  @apply border-defaultborder #{!important};
+}
+.Select2__option:hover {
+  @apply text-[#fff] bg-primary #{!important};
+}
+.Select2__input-container, .Select2__single-value {
+  @apply text-defaulttextcolor #{!important};
+}
+.input-group {
+  .Select2__control {
+      @apply rounded-ss-none rounded-es-none #{!important};
+  }
+}
+.Select2__menu {
+  div,
+  li,
+  .Select2__single-value {
+    &.active,
+    .Select2__option--is-selected {
+      @apply text-[#fff] bg-primary #{!important};
+    }
+  }
+}
+.Select2__menu { 
+  @apply z-[3] #{!important}
+}
+
+.Select2__multi-value {
+  @apply bg-primary text-[#fff] #{!important};
+}
+.Select2__multi-value__label {
+  @apply text-[#fff] #{!important};
+}
+.react-select__control {
+  @apply border-defaultborder #{!important};
+}
+.react-select__multi-value {
+  @apply bg-primary #{!important};
+}
+.react-select__multi-value__label {
+  @apply text-[#fff] #{!important};
+}
+.react-select__multi-value__remove {
+  svg {
+      @apply fill-white #{!important};
+  }
+}
+.Select2__placeholder {
+  @apply text-defaulttextcolor #{!important};
+}  
+.rmsc {
+  --rmsc-main: transparent;
+  --rmsc-border: #e9edf6 !important;
+  --rmsc-bg: #fff !important;
+  --rmsc-main: #000;
+  --rmsc-selected: #845adf1a !important;
+  --rmsc-hover: #845adf1a !important;
+  --rmsc-h: 42px !important;
+}
+
+.rmsc .dropdown-container {
+  @apply bg-white border border-defaultborder #{!important};
+}
+
+.rmsc .dropdown-content {
+  @apply border-defaultborder #{!important};
+}
+.Select2__dropdown-indicator{
+  @apply after:absolute after:h-0 after:w-0 after:border-solid after:border-b-transparent 
+  after:border-l-transparent after:border-t-textmuted after:border-r-transparent after:border-[5px] after:right-[11.5px] after:top-[50%] 
+  after:-mt-[2.5px] after:pointer-events-none #{!important};
+  svg{
+      @apply hidden;
+  }
+ 
+}
+.Select2__indicator{
+svg{
+  @apply hidden #{!important};
+}
+}
+.Select2__single-value{
+  div{
+  @apply flex items-center #{!important};
+  }
+}
+.Select2__menu{
+  div{
+      div{
+      @apply flex items-center #{!important};
+      }
+  }
+}
+/* ###### 3.13 globalReactselect ###### */
+
+[dir="rtl"]{
+.Select2__dropdown-indicator{
+  @apply after:left-[11.5px] after:right-auto #{!important};
+}
+}
+.css-13cymwt-control {
+@apply bg-white dark:bg-bodybg border-defaultborder dark:border-defaultborder/10 #{!important};
+&:focus{
+  @apply bg-white dark:bg-bodybg border-defaultborder dark:border-defaultborder/10 #{!important};
+}
+}
+.Select2__menu{
+@apply bg-white dark:bg-bodybg border-defaultborder dark:border-defaultborder/10 #{!important};
+}
+.css-t3ipsp-control{
+@apply bg-white dark:bg-bodybg border-defaultborder dark:border-defaultborder/10 #{!important};
+}
+.Select2__control {
+  @apply rounded-sm #{!important};
+}
+.companies-search-input{
+  .Select2__control{
+    @apply sm:rounded-none min-h-[40px] #{!important};
+  }
+}
+.crypto-buy-sell{
+  .Select2__control{
+    @apply min-h-[40px] text-ellipsis overflow-hidden whitespace-nowrap w-[100px] #{!important};
+  }
+}
+.Select2__option--is-focused {
+  @apply dark:bg-bodybg #{!important};
+}
+// .Select2__menu {
+//   @apply top-[34px] #{!important};
+// }
+.crypto-data .Select2__control {
+  @apply w-20 min-h-[44px] #{!important};
+}

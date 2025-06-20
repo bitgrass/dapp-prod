@@ -1,0 +1,133 @@
+/* Start Calendar  Styles */
+#external-events .fc-event {
+  @apply rounded-sm my-1 py-2 px-3;
+}
+.fc-theme-standard td,
+.fc-theme-standard th {
+  @apply border-gray-200 dark:border-white/10 #{!important};
+}
+
+.fc .fc-button:focus {
+  @apply shadow-md #{!important};
+}
+
+.fc .fc-button-primary:focus,
+.fc .fc-button-primary:not(:disabled).fc-button-active:focus,
+.fc .fc-button-primary:not(:disabled):active:focus {
+  @apply shadow-md #{!important};
+}
+
+.fc-h-event {
+  @apply text-white bg-primary border-primary;
+}
+
+.fc .fc-button-primary {
+  @apply text-white bg-primary border-primary #{!important};
+}
+
+.fc .fc-button-primary:hover {
+  @apply text-white bg-primary/80 border-primary/80 #{!important};
+}
+
+.fc .fc-button-primary:disabled {
+  @apply text-white bg-primary/80 border-primary/80 #{!important};
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  @apply text-white bg-primary/80 border-primary/80 #{!important};
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  @apply border-gray-200 dark:border-white/10 #{!important};
+}
+
+.fc .fc-scrollgrid-section-sticky > * {
+  @apply bg-gray-200 dark:bg-black/20 #{!important};
+}
+
+.fc-theme-standard .fc-list {
+  @apply border-gray-200 dark:border-white/10 #{!important};
+}
+
+.fc .fc-non-business {
+  @apply bg-gray-50 dark:bg-black/20 #{!important};
+}
+
+.fc .fc-scrollgrid {
+  @apply rounded-sm overflow-hidden;
+}
+
+.fc .fc-bg-event,
+.fc .fc-highlight,
+.fc .fc-non-business,
+.fc .fc-view-harness-active > .fc-view {
+  @apply rounded-sm overflow-hidden;
+}
+
+.fc .fc-cell-shaded,
+.fc .fc-day-disabled {
+  @apply bg-gray-50 dark:bg-black/20 #{!important};
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+  @apply bg-primary/20 #{!important};
+}
+
+.fc .fc-timegrid-col.fc-day-today {
+  @apply bg-primary/20 #{!important};
+}
+
+.fc-theme-standard .fc-list-day-cushion {
+  @apply bg-gray-50 dark:bg-black/20 #{!important};
+}
+
+.fc .fc-list-event:hover td {
+  @apply bg-primary/20 #{!important};
+}
+.fc-timegrid-event-harness-inset .fc-timegrid-event,
+.fc-timegrid-event.fc-event-mirror,
+.fc-timegrid-more-link {
+  @apply shadow-md shadow-gray-200 dark:shadow-gray-800 #{!important};
+}
+
+.fullcalendar-events-activity li {
+  @apply mb-3 text-sm py-1 ps-8 relative before:absolute before:w-3 before:h-3 before:border before:border-primary before:rounded-sm before:bg-transparent before:start-1 before:top-[0.563rem]
+        after:absolute after:h-full after:bg-transparent after:border-s-2 after:border-dashed after:border-primary/10 after:start-[0.563rem] after:top-5;
+}
+.fullcalendar-events-activity li:last-child {
+  @apply mb-0;
+}
+.fullcalendar-events-activity li:last-child::after {
+  @apply border-0;
+}
+
+#full-calendar-activity {
+  @apply max-h-44;
+}
+.fc-col-header-cell .fc-scrollgrid-sync-inner {
+  @apply p-2 flex justify-center;
+}
+.fc-direction-ltr .fc-daygrid-event.fc-event-start,
+.fc-direction-rtl .fc-daygrid-event.fc-event-end {
+  @apply px-2;
+}
+.fc .fc-day-other .fc-daygrid-day-top {
+  @apply opacity-100 text-gray-500 dark:text-white/70 #{!important};
+}
+.fc-theme-standard .fc-popover {
+  @apply border-gray-200 dark:border-white/10 bg-white dark:bg-bodybg;
+}
+.fc-header-toolbar {
+  @apply md:flex block md:space-y-0 space-y-2 #{!important};
+}
+.fc .fc-list-sticky .fc-list-day > * {
+  @apply bg-gray-100 dark:bg-black/20;
+}
+.fc-event-dragging {
+  @apply px-2 py-2;
+}
+.fc .fc-daygrid-day-bottom{
+  @apply text-[0.44em] pt-0 #{!important};
+}
+/* End Calendar  Styles */

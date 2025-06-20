@@ -1,0 +1,14 @@
+#particles-js {
+    @apply absolute w-full h-full bg-white;
+}
+.error-page {
+    @apply absolute w-full min-h-screen flex bg-center bg-cover bg-no-repeat items-center justify-center;
+}
+.error-text {
+    @apply text-[8.25rem] font-medium leading-none;
+}
+@media (max-width: 575.98px) {
+    .error-text {
+        @apply text-[3rem];
+    }
+}

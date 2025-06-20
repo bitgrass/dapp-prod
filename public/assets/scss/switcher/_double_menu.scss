@@ -1,0 +1,548 @@
+/* Start Double-Menu Styles */
+[data-vertical-style="doublemenu"] {
+  @media screen and (min-width: 992px) {
+    .app-sidebar {
+      .slide {
+        &.has-sub {
+          @apply grid;
+        }
+      }
+
+      .main-sidebar {
+        @apply overflow-visible h-[90%];
+      }
+
+      .main-sidebar-header {
+        @apply w-[4.95rem] backdrop-blur-3xl;
+      }
+
+      .main-sidebar {
+        @apply w-[4.95rem];
+      }
+
+      .side-menu__icon {
+        @apply mx-auto;
+      }
+
+      .slide {
+        @apply p-0;
+      }
+
+      .slide-menu {
+        &.child1 {
+          @apply w-[12rem];
+        }
+
+        &.child2,
+        &.child3 {
+          @apply w-full;
+        }
+
+        &.child1,
+        &.child2,
+        &.child3 {
+          @apply mt-0 #{!important};
+
+          .slide {
+            .side-menu__item {
+              @apply text-start flex;
+
+              &:before {
+                @apply top-[0.938rem];
+              }
+            }
+          }
+
+          .side-menu__angle {
+            @apply block top-[0.65rem];
+          }
+        }
+      }
+
+      .slide__category,
+      .side-menu__angle {
+        @apply hidden;
+      }
+
+      .side-menu__label {
+        @apply hidden;
+      }
+
+      .slide.has-sub .slide-menu.child1 {
+        @apply absolute transition-none h-full top-0 overflow-y-auto overflow-x-hidden #{!important};
+
+        .slide {
+          @apply px-0;
+        }
+      }
+
+      .simplebar-content-wrapper {
+        position: initial;
+      }
+
+      .simplebar-mask {
+        position: inherit;
+      }
+    }
+
+    .main-menu {
+      @apply px-0;
+    }
+
+    #sidebar-scroll {
+      @apply overflow-y-visible mt-0;
+
+      .main-menu-container {
+        @apply mt-[4.45rem];
+      }
+
+      @apply h-full #{!important};
+    }
+
+    .app-sidebar {
+      @apply w-20 #{!important};
+
+      .main-sidebar {
+        @apply w-20 #{!important};
+      }
+
+      .slide.has-sub .slide-menu {
+        @apply py-0;
+      }
+
+      .main-sidebar-header {
+        .header-logo {
+
+          .desktop-logo,
+          .desktop-dark,
+          .desktop-white {
+            @apply hidden #{!important};
+          }
+
+          .toggle-logo {
+            @apply block;
+          }
+
+          .toggle-dark,
+          .toggle-white {
+            @apply hidden;
+          }
+        }
+      }
+    }
+
+    .side-menu__label1 {
+      @apply block text-base font-semibold text-white border-b border-b-white/10 py-6 px-4 #{!important};
+    }
+
+    &.dark {
+      .slide-menu.child1 {
+        @apply border-white/10 #{!important};
+      }
+
+      .side-menu__label1 {
+        @apply border-white/10 text-white #{!important};
+      }
+
+      .app-sidebar {
+        .slide.has-sub .slide-menu {
+          @apply bg-bodybg rounded-none #{!important};
+        }
+
+        .main-sidebar-header {
+          .header-logo {
+
+            .toggle-logo,
+            .toggle-white {
+              @apply hidden;
+            }
+
+            .toggle-dark {
+              @apply block;
+            }
+          }
+        }
+      }
+    }
+
+    .double-menu-active {
+      @apply block #{!important};
+    }
+
+    .app-sidebar {
+      .slide-menu {
+        &.child1 {
+          @apply border-s border-s-white/10 #{!important};
+
+          .slide {
+            @apply start-0;
+
+            .side-menu__item {
+              @apply ps-8 pe-4;
+
+              &:before {
+                @apply start-3;
+              }
+            }
+          }
+
+          .side-menu__angle {
+            @apply end-4;
+          }
+        }
+      }
+
+      .slide.has-sub .slide-menu {
+        @apply start-[5rem] rounded-none #{!important};
+
+        &.child2,
+        &.child3 {
+          // @apply -ms-[5rem] px-0 #{!important};
+          @apply px-0 #{!important};
+        }
+      }
+    }
+
+    .content {
+      @apply ms-20;
+    }
+
+    .app-header {
+      @apply ps-20;
+    }
+
+    &[data-toggled="double-menu-open"] {
+      .content {
+        @apply ms-[17rem];
+      }
+
+      .app-header {
+        @apply ps-[17rem];
+      }
+    }
+
+    &[data-toggled="double-menu-close"] {
+      .content {
+        @apply ms-20;
+      }
+
+      .header {
+        @apply ps-20;
+      }
+
+      .slide.has-sub .slide-menu.child1 {
+        @apply hidden #{!important};
+      }
+
+      .double-menu-active {
+        @apply block #{!important};
+      }
+    }
+  }
+}
+
+/* End Double-Menu Styles */
+@media (min-width: 992px) {
+
+  [data-vertical-style="doublemenu"] {
+    .content {
+      @apply ms-[17rem];
+    }
+
+    .app-header {
+      @apply ps-[17rem];
+    }
+  }
+  [data-vertical-style="doublemenu"]:not([data-toggled="double-menu-open"]) {
+    .content {
+      @apply ms-20;
+    }
+
+    .app-header {
+      @apply ps-20;
+    }
+  }
+}
+
+[data-vertical-style="doublemenu"] {
+  @media (min-width: 992px) {
+    .app-sidebar {
+      @apply w-20 border-e-0;
+
+      .main-sidebar {
+        @apply overflow-visible h-full shadow-none mt-0;
+      }
+
+      .main-sidebar-header {
+        @apply w-20 border-e-0;
+
+        .header-logo {
+          .toggle-logo {
+            @apply block #{!important};
+
+          }
+
+          .desktop-dark,
+          .desktop-logo,
+          .toggle-white,
+          .toggle-dark {
+            @apply hidden #{!important};
+          }
+        }
+      }
+
+      .main-menu-container {
+        @apply mt-[3.75rem];
+      }
+
+      .main-menu>.slide {
+        @apply py-0 px-[1.2rem];
+      }
+
+      .category-name,
+      .side-menu__label,
+      .side-menu__angle {
+        @apply hidden;
+      }
+
+      .side-menu__icon {
+        @apply me-0;
+
+      }
+
+      .slide__category {
+        @apply hidden;
+
+      }
+
+      .simplebar-content-wrapper {
+        position: initial;
+      }
+
+      .simplebar-mask {
+        position: inherit;
+
+      }
+
+      .simplebar-placeholder {
+        @apply h-auto #{!important};
+      }
+    }
+
+    .app-header {
+      @apply ps-[17rem];
+    }
+
+    .content {
+      @apply ms-[17rem];
+    }
+
+    .slide.has-sub .slide-menu {
+      @apply bg-white dark:bg-bodybg absolute start-2 shadow-none transition-none h-full end-0 rounded-md border-e border-e-white/10 #{!important};
+
+      &.child2,
+      &.child3 {
+        @apply start-0 relative h-auto top-0 #{!important};
+
+        .slide {
+          &:nth-child(2) {
+            @apply pt-[0rem];
+          }
+        }
+      }
+    }
+
+    .slide-menu {
+
+      &.child1,
+      &.child2,
+      &.child3 {
+        .slide {
+          @apply ps-0;
+
+          .side-menu__item {
+            @apply text-start;
+
+            &:before {
+              @apply top-[0.938rem] start-[0.75rem];
+            }
+          }
+        }
+
+        .side-menu__angle {
+          @apply block end-4 top-[0.65rem];
+
+        }
+      }
+
+      &.child2,
+      &.child3 {
+        @apply min-w-[10rem];
+      }
+
+      &.child1 {
+        @apply min-w-[12rem];
+
+        .slide {
+          &:nth-child(2) {
+            @apply pt-3;
+          }
+        }
+      }
+    }
+
+    .side-menu__label1 {
+      @apply block text-[0.938rem] font-medium text-white py-5 px-3 w-48 h-[3.625rem] border-b border-b-white/10 #{!important};
+    }
+
+    .slide-menu {
+      @apply hidden;
+
+      &.double-menu-active {
+        @apply visible block h-full absolute top-0 rounded-none border-t-0 overflow-y-hidden #{!important};
+
+      }
+    }
+
+    &[class="light"] {
+
+      &[data-menu-styles="dark"],
+      &[data-menu-styles="color"],
+      &[data-menu-styles="gradient"] {
+        .app-sidebar .main-sidebar-header {
+          .header-logo {
+
+            .desktop-logo,
+            .desktop-dark,
+            .toggle-logo,
+            .toggle-dark {
+              @apply hidden #{!important};
+            }
+
+            .toggle-white {
+              @apply block #{!important};
+            }
+          }
+        }
+      }
+
+      &[data-menu-styles="transparent"] {
+        .app-sidebar .main-sidebar-header {
+          .header-logo {
+
+            .desktop-logo,
+            .desktop-dark,
+            .toggle-logo,
+            .toggle-white {
+              @apply hidden #{!important};
+            }
+
+            .toggle-logo {
+              @apply block #{!important};
+            }
+          }
+        }
+      }
+    }
+
+    &.dark {
+      .app-sidebar .main-sidebar-header {
+        .header-logo {
+
+          .desktop-logo,
+          .desktop-dark,
+          .toggle-logo,
+          .toggle-white {
+            @apply hidden #{!important};
+
+          }
+
+          .toggle-dark {
+            @apply block #{!important};
+
+          }
+        }
+      }
+
+      &[data-menu-styles="light"] {
+        .app-sidebar .main-sidebar-header {
+          .header-logo {
+
+            .desktop-logo,
+            .desktop-dark,
+            .toggle-dark,
+            .toggle-white {
+              @apply hidden #{!important};
+
+            }
+
+            .toggle-logo {
+              @apply block #{!important};
+
+            }
+          }
+        }
+      }
+
+      &[data-menu-styles="dark"],
+      &[data-menu-styles="color"],
+      &[data-menu-styles="gradient"],
+      &[data-menu-styles="transparent"] {
+        .app-sidebar .main-sidebar-header {
+          .header-logo {
+
+            .desktop-logo,
+            .desktop-dark,
+            .toggle-dark,
+            .toggle-logo {
+              @apply hidden #{!important};
+
+            }
+
+            .toggle-white {
+              @apply block #{!important};
+
+            }
+          }
+        }
+      }
+
+      &[data-page-style="classic"] {
+        .slide.has-sub .slide-menu {
+          @apply border-e border-e-white/10;
+        }
+      }
+    }
+
+    &[data-toggled="double-menu-close"] {
+      .app-header {
+        @apply ps-20;
+
+      }
+
+      .content {
+        @apply ms-20;
+
+      }
+
+      .app-sidebar {
+        .slide.has-sub .slide-menu {
+          @apply hidden #{!important};
+
+        }
+
+        .main-sidebar {
+          @apply shadow-defaultshadow;
+        }
+      }
+    }
+
+    &[data-toggled="double-menu-open"] {
+      .app-sidebar .main-sidebar {
+        .slide.side-menu__label1 {
+          @apply border-e border-e-white/10;
+        }
+      }
+    }
+  }
+}

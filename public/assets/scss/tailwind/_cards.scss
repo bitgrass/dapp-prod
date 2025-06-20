@@ -1,0 +1,6 @@
+.box.box-bg-primary {
+    @apply bg-primary text-white #{!important};
+}
+.box.box-bg-success {
+    @apply bg-secondary text-white #{!important};
+}   

@@ -1,0 +1,414 @@
+/* Start Buttons Styles */
+.ti-btn {
+  @apply py-2 px-3 inline-flex justify-center items-center gap-2 mb-1 rounded-sm border border-transparent font-medium focus:ring-0 focus:outline-none focus:ring-offset-0 transition-all text-sm  ms-0;
+
+  &.ti-btn-outline {
+    @apply border;
+  }
+
+  &.ti-btn-disabled {
+    @apply cursor-not-allowed opacity-[0.65];
+  }
+  &.ti-btn-sm {
+    @apply w-[1.75rem] h-[1.75rem] text-[0.8rem];
+  }
+  &.ti-btn-lg {
+    @apply py-[0.65rem] px-4 text-[0.95rem] rounded-md;
+  }
+}
+.ti-btn {
+  &.ti-btn-w-xs {
+    @apply min-w-[5.625rem];
+  }
+  &.ti-btn-w-sm {
+    @apply min-w-[6.975rem];
+  }
+  &.ti-btn-w-md {
+    @apply min-w-[8.125rem];
+  }
+  &.ti-btn-w-lg {
+    @apply min-w-[9.375rem];
+  }
+}
+
+.ti-btn-group {
+  @apply inline-flex justify-center items-center gap-2 -ms-px first:rounded-s-sm first:ms-0 last:rounded-e-sm font-medium align-middle focus:z-10  transition-all text-sm;
+}
+.ti-btn-primary-full {
+  @apply bg-primary text-white;
+}
+.ti-btn-secondary-full {
+  @apply bg-secondary text-white;
+}
+.ti-btn-success-full {
+  @apply bg-success text-white;
+}
+.ti-btn-danger-full {
+  @apply bg-danger text-white;
+}
+.ti-btn-warning-full {
+  @apply bg-warning text-white;
+}
+.ti-btn-info-full {
+  @apply bg-info text-white;
+}
+.ti-btn-purple-full {
+  @apply bg-purplemain text-white;
+}
+.ti-btn-orange-full {
+  @apply bg-orangemain text-white;
+}
+.ti-btn-teal-full {
+  @apply bg-[#12c2c2] text-white;
+}
+.ti-btn-link {
+  @apply text-[#0d6efd] underline #{!important};
+}
+
+.ti-btn-primary {
+  @apply bg-primary/10 text-primary hover:bg-primary focus:bg-primary hover:text-white focus:text-white;
+  &.active {
+    @apply text-white;
+  }
+}
+.ti-btn-group:first-child {
+  @apply ms-0 rounded-s-sm ;
+}
+
+.ti-btn-group:last-child {
+  @apply rounded-e-sm;
+}
+
+.ti-btn-secondary {
+  @apply bg-secondary/10 text-secondary hover:bg-secondary hover:text-white;
+}
+
+.ti-btn-warning {
+  @apply bg-warning/10 text-warning hover:bg-warning hover:text-white;
+}
+
+.ti-btn-success {
+  @apply bg-success/10 text-success hover:bg-success hover:text-white;
+}
+
+.ti-btn-light {
+  @apply bg-light text-defaulttextcolor dark:text-defaulttextcolor/80 hover:bg-light hover:text-defaulttextcolor focus:bg-light/80;
+}
+
+.ti-btn-dark {
+  @apply bg-gray-900 text-gray-100 dark:text-black hover:bg-gray-900 hover:text-white dark:bg-white #{!important};
+}
+
+.ti-btn-info {
+  @apply bg-info/10 text-info hover:text-white hover:bg-info;
+}
+
+.ti-btn-danger {
+  @apply bg-danger/10 text-danger hover:text-white hover:bg-danger focus:ring-danger dark:focus:ring-offset-white/10;
+}
+.ti-btn-purple {
+  @apply bg-purplemain/10 text-purplemain hover:text-white hover:bg-purplemain focus:ring-purplemain dark:focus:ring-offset-white/10;
+}
+.ti-btn-teal {
+  @apply bg-[#12c2c2]/10 text-[#12c2c2] hover:text-white hover:bg-[#12c2c2] focus:ring-[#12c2c2] dark:focus:ring-offset-white/10;
+}
+.ti-btn-orange {
+  @apply bg-orangemain/10 text-orangemain hover:text-white hover:bg-orangemain focus:ring-orangemain dark:focus:ring-offset-white/10;
+}
+
+.ti-btn-outline-primary {
+  @apply border-primary text-primary hover:text-white hover:bg-primary hover:border-primary focus:ring-primary dark:focus:ring-offset-white/10 #{!important};
+}
+
+.ti-btn-outline-secondary {
+  @apply border-secondary text-secondary hover:text-white hover:bg-secondary hover:border-secondary focus:ring-secondary dark:focus:ring-offset-white/10 #{!important};
+}
+
+.ti-btn-outline-danger {
+  @apply border-danger text-danger hover:text-white hover:bg-danger hover:border-danger focus:ring-danger dark:focus:ring-offset-white/10 #{!important};
+}
+
+.ti-btn-outline-warning {
+  @apply border-warning text-warning hover:text-white hover:bg-warning hover:border-warning focus:ring-warning dark:focus:ring-offset-white/10 #{!important};
+}
+
+.ti-btn-outline-info {
+  @apply border-info text-info hover:text-white hover:bg-info hover:border-info focus:ring-info dark:focus:ring-offset-white/10 #{!important};
+}
+
+.ti-btn-outline-success {
+  @apply border-success text-success hover:text-white hover:bg-success hover:border-success focus:ring-success dark:focus:ring-offset-white/10 #{!important};
+}
+
+.ti-btn-outline-light {
+  @apply border-light text-black dark:text-defaulttextcolor/70 dark:hover:bg-bodybg2 hover:text-defaulttextcolor hover:bg-gray-200 hover:border-defaultborder dark:hover:border-transparent focus:ring-gray-100 dark:focus:ring-offset-white/10 #{!important};
+}
+
+.ti-btn-outline-dark {
+  @apply border-gray-900 text-gray-900 hover:text-white hover:bg-gray-900 hover:border-gray-900 dark:border-white/10 dark:text-white/70 focus:ring-white/10 dark:focus:ring-offset-white/10 #{!important};
+}
+.ti-btn-outline-teal {
+  @apply border-[#12c2c2] text-[#12c2c2] hover:text-white hover:bg-[#12c2c2] hover:border-[#12c2c2] dark:border-white/10 dark:text-white/70 focus:ring-white/10 dark:focus:ring-offset-white/10 #{!important};
+}
+
+.ti-btn-ghost-primary {
+  @apply text-primary hover:bg-primary/10;
+}
+.ti-btn-ghost-secondary {
+  @apply text-secondary hover:bg-secondary/10;
+}
+.ti-btn-ghost-warning {
+  @apply text-warning hover:bg-warning/10;
+}
+.ti-btn-ghost-info {
+  @apply text-info hover:bg-info/10;
+}
+.ti-btn-ghost-danger {
+  @apply text-danger hover:bg-danger/10;
+}
+.ti-btn-ghost-success {
+  @apply text-success hover:bg-success/10;
+}
+.ti-btn-ghost-light {
+  @apply text-defaulttextcolor hover:bg-light/10;
+}
+.ti-btn-ghost-dark {
+  @apply text-black hover:bg-black/10;
+}
+.ti-btn-ghost-orange {
+  @apply text-orangemain hover:bg-orangemain/10;
+}
+.ti-btn-ghost-purple {
+  @apply text-purplemain hover:bg-purplemain/10;
+}
+.ti-btn-ghost-teal {
+  @apply text-[#12c2c2]  hover:bg-[#12c2c2]/10;
+}
+
+.btn-loader {
+  @apply pointer-events-none;
+}
+
+.ti-btn-primary-gradient {
+  @apply bg-gradient-to-r from-primary to-[#0086ed] text-white border-0 hover:border-0;
+}
+.ti-btn-secondary-gradient {
+  @apply bg-gradient-to-r from-secondary to-[#0086ed] text-white border-0 hover:border-0;
+}
+.ti-btn-success-gradient {
+  @apply bg-gradient-to-r from-success to-[#0086ed] text-white border-0 hover:border-0;
+}
+.ti-btn-danger-gradient {
+  @apply bg-gradient-to-r from-danger to-[#0086ed] text-white border-0 hover:border-0;
+}
+.ti-btn-warning-gradient {
+  @apply bg-gradient-to-r from-warning to-[#0086ed] text-white border-0 hover:border-0;
+}
+.ti-btn-info-gradient {
+  @apply bg-gradient-to-r from-info to-[#0086ed] text-white border-0 hover:border-0;
+}
+.ti-btn-orange-gradient {
+  @apply bg-gradient-to-r from-orangemain to-[#0086ed] text-white border-0 hover:border-0;
+}
+.ti-btn-purple-gradient {
+  @apply bg-gradient-to-r from-purplemain to-[#0086ed] text-white border-0 hover:border-0;
+}
+.ti-btn-teal-gradient {
+  @apply bg-gradient-to-r from-[#12c2c2] to-[#0086ed] text-white border-0 hover:border-0;
+}
+.btn-border-down {
+  &.btn-primary-light {
+    @apply border-b-[0.1875rem] border-solid border-primary;
+  }
+}
+/* End Buttons Styles */
+/* Start:: Social Buttons */
+.ti-btn-facebook {
+  @apply bg-facebook text-white border border-solid border-facebook;
+  &:hover,
+  &:focus,
+  &:active {
+    @apply bg-facebook text-white border border-solid border-facebook #{!important};
+  }
+}
+.ti-btn-google {
+  @apply bg-google text-white border border-solid border-google;
+  &:hover,
+  &:focus,
+  &:active {
+    @apply bg-google text-white border border-solid border-google #{!important};
+  }
+}
+.ti-btn-twitter {
+  @apply bg-twitter text-white border border-solid border-twitter;
+  &:hover,
+  &:focus,
+  &:active {
+    @apply bg-twitter text-white border border-solid border-twitter #{!important};
+  }
+}
+.ti-btn-github {
+  @apply bg-github text-white border border-solid border-github;
+  &:hover,
+  &:focus,
+  &:active {
+    @apply bg-github text-white border border-solid border-github #{!important};
+  }
+}
+.ti-btn-youtube {
+  @apply bg-youtube text-white border border-solid border-youtube;
+  &:hover,
+  &:focus,
+  &:active {
+    @apply bg-youtube text-white border border-solid border-youtube #{!important};
+  }
+}
+.ti-btn-instagram {
+  @apply bg-[#f09433] text-white border border-solid border-transparent;
+  background: -moz-linear-gradient(
+    45deg,
+    #f09433 0%,
+    #e6683c 25%,
+    #dc2743 50%,
+    #cc2366 75%,
+    #bc1888 100%
+  );
+  background: -webkit-linear-gradient(
+    45deg,
+    #f09433 0%,
+    #e6683c 25%,
+    #dc2743 50%,
+    #cc2366 75%,
+    #bc1888 100%
+  );
+  background: linear-gradient(
+    45deg,
+    #f09433 0%,
+    #e6683c 25%,
+    #dc2743 50%,
+    #cc2366 75%,
+    #bc1888 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f09433', endColorstr='#bc1888',GradientType=1 );
+  &:hover,
+  &:focus,
+  &:active {
+    @apply text-white border border-solid border-transparent;
+  }
+}
+/* End:: Social Buttons */
+
+.ti-btn-group > .ti-btn-group:not(:first-child) > .ti-btn,
+.ti-btn-group > .ti-btn:nth-child(n + 3),
+.ti-btn-group > :not(.ti-btn-check) + .ti-btn {
+  @apply rounded-s-none;
+}
+.ti-btn-group-vertical {
+  @apply flex-col items-start justify-center relative inline-block align-middle;
+}
+.ti-btn-group-vertical > .ti-btn-group:not(:last-child) > .ti-btn,
+.ti-btn-group-vertical > .ti-btn:not(:last-child):not(.ti-dropdown-toggle) {
+  @apply rounded-b-none border-b-0;
+}
+
+.ti-btn-group-vertical > .ti-btn-group:not(:first-child) > .ti-btn,
+.ti-btn-group-vertical > .ti-btn ~ .ti-btn {
+  @apply rounded-t-none;
+}
+.ti-btn-group-vertical {
+  .ti-btn-info-full {
+    @apply hover:bg-info/90;
+  }
+  .ti-btn-primary-full {
+    @apply hover:bg-primary/90;
+  }
+}
+.ti-btn-check {
+  @apply absolute pointer-events-none sr-only;
+}
+.ti-btn-group {
+  .ti-btn {
+    @apply py-[0.45rem] px-3;
+  }
+}
+.ti-btn-group-lg {
+  .ti-btn {
+    @apply py-[0.65rem] px-4;
+  }
+}
+.ti-btn-group-sm {
+  .ti-btn {
+    @apply py-1 px-2;
+  }
+}
+
+.ti-btn-group-vertical {
+  @apply flex-col items-start justify-center relative inline-flex align-middle;
+}
+
+/* Start:: Label Buttons */
+.label-ti-btn {
+  @apply relative ps-[2.6rem];
+}
+.label-ti-btn-icon {
+  @apply absolute w-[2.25rem] text-[1rem] flex items-center justify-center -start-0 -top-0 -bottom-0 bg-white/20;
+}
+.label-ti-btn.label-end {
+  @apply ps-4 pe-[2.6rem];
+  .label-ti-btn-icon {
+    @apply -end-0 start-auto;
+  }
+}
+.custom-button {
+  @apply relative ps-[2.75rem];
+  .custom-ti-btn-icons {
+    @apply shadow-[0_0_1px_0.25rem_rgba(0,0,0,0.1)] absolute -start-[0.125rem] top-0 bg-white flex items-center justify-center overflow-hidden p-[0.375rem] rounded-[3.125rem]
+        text-[1rem] w-[2.25rem] h-[2.25rem];
+    i {
+      @apply absolute;
+    }
+  }
+}
+.ti-btn-border-down.ti-btn-teal {
+  @apply border-b-[0.1875rem] border-t-0 border-x-0 border-solid border-[#12c2c2] #{!important};
+}
+.ti-btn-border-start.ti-btn-secondary {
+  @apply border-s-[0.1875rem] border-t-0 border-b-0 border-e-0 border-solid border-secondary #{!important};
+}
+.ti-btn-border-end.ti-btn-purple {
+  @apply border-e-[0.1875rem] border-t-0 border-s-0 border-b-0 border-solid border-purplemain #{!important};
+}
+.ti-btn-border-top.ti-btn-warning {
+  @apply border-t-[0.1875rem] border-b-0 border-x-0 border-solid border-warning #{!important};
+}
+.ti-btn-hover {
+  @apply relative;
+  &.ti-btn-hover-animate {
+    @apply transition-all duration-[0.2s] ease-linear delay-[0s] before:content-["\F417"] before:text-[0.8125rem] before:absolute 
+        before:flex before:items-center before:justify-center before:end-0 before:top-0 before:opacity-0 before:h-full before:w-[2rem] before:transition-all
+        before:duration-[0.2s] before:ease-linear before:delay-[0s] before:font-bootstrap;
+    &:hover {
+      @apply pe-8 before:opacity-[1] before:indent-0;
+    }
+  }
+}
+.ti-btn-darken-hover {
+  @apply relative;
+  &:hover {
+    @apply before:absolute before:w-full before:h-full before:bg-black/[0.25] before:top-0 before:start-0;
+  }
+}
+.ti-btn-loader i {
+  @apply animate-spin #{!important};
+}
+.ti-btn-group-vertical > .ti-btn,
+.ti-btn-group > .ti-btn {
+  @apply relative flex-grow;
+}
+.btn-check {
+  @apply absolute pointer-events-none sr-only;
+}
+.ti-btn-list a {
+  @apply ml-0 mr-1.5 mt-0 mb-1.5 #{!important};
+}
+/* End:: Label Buttons */

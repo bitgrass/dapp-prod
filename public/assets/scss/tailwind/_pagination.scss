@@ -1,0 +1,121 @@
+
+    /* Start Pagination Styles */
+    .ti-pagination {
+        @apply flex items-center px-3 py-[0.375rem];
+
+        li {
+            .page-link {
+                @apply border text-defaulttextcolor text-[1rem] border-defaultborder dark:bg-transparent dark:border-defaultborder/10  dark:text-defaulttextcolor/70 dark:hover:border-defaultborder/10;
+                &.active {
+                    @apply bg-primary text-white dark:text-defaulttextcolor/70 dark:bg-primary #{!important};
+                }
+                &.disabled {
+                    @apply  pointer-events-none text-gray-500 dark:bg-bodybg;
+                }
+                &:focus {
+                    @apply shadow-none bg-light;
+                }
+                &:hover {
+                    @apply text-primary bg-light border-defaultborder;
+                }
+            }
+
+            // &:not(:first-child) .page-link {
+            //     @apply ms-[calc(1px_*_-1)];
+            // }
+
+            &:first-child .page-link {
+                @apply rounded-s-md;
+            }
+
+            &:last-child .page-link {
+                @apply rounded-e-md;
+            }
+        }
+
+        &.pagination-sm {
+            li {
+                .page-link {
+                    @apply py-2 px-2 text-xs;
+                }
+
+                &:first-child .page-link {
+                    @apply rounded-s-md;
+                }
+
+                &:last-child .page-link {
+                    @apply rounded-e-md;
+                }
+            }
+        }
+
+        &.pagination-lg {
+            li {
+                .page-link {
+                    @apply py-3 sm:px-6 px-3 text-lg;
+                }
+
+                &:first-child .page-link {
+                    @apply rounded-s-md;
+                }
+
+                &:last-child .page-link {
+                    @apply rounded-e-md;
+                }
+            }
+        }
+    }
+    .pagination-style-1 {
+        .ti-pagination {
+            li {
+                @apply space-x-2 rtl:space-x-reverse;
+                .page-link {
+                    @apply border-0 rounded-md leading-none sm:px-3 px-3 py-[0.375rem] dark:bg-bodybg;
+                }
+            }
+        }
+    }
+    .pagination-style-2 {
+        .ti-pagination {
+            li {
+                @apply space-x-2 rtl:space-x-reverse border-0;
+                &.active {
+                .page-link {
+                    @apply border-0 bg-white  rounded-md leading-none sm:px-3 py-[0.375rem] dark:bg-bodybg
+                         text-primary relative font-bold  before:absolute before:h-[0.1rem] before:w-full before:inset-x-0 before:bottom-[-7px] before:bg-primary #{!important};
+                    }
+                }
+            }
+        }
+    }
+    .pagination-style-3 {
+        .ti-pagination {
+            li {
+                @apply space-x-2 rtl:space-x-reverse;
+                .page-link {
+                    @apply border-0 rounded-full leading-none px-3 py-[0.375rem]  #{!important};
+                }
+            }
+        }
+    }
+    .pagination-style-4{
+        .ti-pagination {
+            li {
+                @apply space-x-2 rtl:space-x-reverse text-[0.375rem] #{!important};
+                .page-link {
+                    @apply border-0 rounded-md leading-none px-3 py-[0.375rem] ;
+                    &.active {
+                    @apply  bg-secondary text-white #{!important};
+                    .page-link{
+                        @apply hover:bg-secondary hover:text-white #{!important};
+                    }
+                   
+                    }
+                }
+                
+            }
+
+        }
+       
+    }
+    /* End Pagination Styles */

@@ -1,0 +1,400 @@
+/* Start Box Styles */
+body {
+  @apply dark:bg-bodybg2 #{!important};
+}
+.box {
+  @apply flex flex-col shadow-sm rounded-md text-defaulttextcolor dark:text-defaulttextcolor/70 bg-white  text-[0.813rem]  mb-6 relative dark:bg-bodybg;
+}
+
+.box-header {
+  @apply font-medium border-b border-b-defaultborder md:flex items-center gap-[0.25rem] rounded-t-sm px-[1.25rem] py-4 dark:border-white/10 flex-wrap;
+}
+.box-title {
+  @apply relative font-[700] text-defaulttextcolor text-[.9375rem] me-auto dark:text-defaulttextcolor/70 before:absolute;
+}
+
+.box {
+  .box-header {
+    .box-title {
+      @apply before:absolute before:h-4 before:w-[0.2rem] before:top-[0.15rem] before:-start-[0.65rem] before:bg-gradient-to-b before:from-primary/50 before:to-secondary/50 before:rounded-md;
+    }
+  }
+}
+
+.box-body {
+  @apply p-5 text-defaulttextcolor dark:text-defaulttextcolor/70 flex-auto;
+}
+
+.box-footer {
+  @apply border-t rounded-b-sm py-4 px-[1.25rem] text-defaultsize text-defaulttextcolor md:py-4 md:px-5 dark:border-white/10;
+}
+.display-1 {
+  @apply text-[5rem];
+}
+.display-2 {
+  @apply text-[4.5rem];
+}
+.display-3 {
+  @apply text-[4rem];
+}
+.display-4 {
+  @apply text-[3.5rem];
+}
+.display-5 {
+  @apply text-[3rem];
+}
+.display-6 {
+  @apply text-[2.5rem];
+}
+.overlay-box {
+  @apply relative overflow-hidden text-white/90 before:absolute before:bg-black/20 before:inset-0;
+  .box-header {
+    @apply border-white/10;
+  }
+
+  .box-footer {
+    @apply border-white/10;
+  }
+}
+
+.over-content-bottom {
+  @apply top-auto;
+}
+
+.box-anchor {
+  @apply content-[] absolute inset-0 z-[1] pointer-events-none;
+}
+
+.box.box-fullscreen {
+  @apply fixed inset-0 z-[9999] m-0 rounded-none;
+}
+
+.box-img-overlay {
+  @apply absolute inset-0 rounded-sm overflow-auto;
+}
+.card-img-top {
+  @apply rounded-t-md #{!important};
+}
+/* End Box Styles */
+.lead {
+  @apply text-[1.25rem] font-[300];
+}
+/* Start Alert Styles */
+.alert {
+  @apply text-sm rounded-sm px-4 py-3 mb-5 last:mb-0;
+}
+.text-badge .badge {
+  @apply absolute -end-4 -top-4;
+}
+/* End Alert Styles */
+
+.review-quote {
+  @apply absolute end-[0.8rem] text-[1.875rem] leading-[0] text-primary/70 bg-transparent p-[0.625rem];
+}
+/* Start Badge Styles */
+.badge {
+  @apply inline-flex items-center text-[0.75em] py-1 px-[0.45rem] font-semibold;
+
+  &:last-child {
+    @apply mb-0;
+  }
+}
+
+/* End Badge Styles */
+
+/* Start List-Group Styles */
+.ti-list-group {
+  @apply items-center font-normal text-[0.8125rem] border border-solid border-defaultborder rounded-md  text-start dark:border-defaultborder/10;
+  .ti-list-group-item {
+    @apply py-3 px-[1.25rem] border-b border-solid border-defaultborder dark:border-defaultborder/10 last:border-b-0;
+    &.active {
+      @apply text-white bg-primary border-primary rounded-t-md #{!important};
+    }
+    &.disabled,
+    &:disabled {
+      @apply text-textmuted bg-light opacity-[0.5] #{!important};
+    }
+    &.ti-list-group-item-action {
+      @apply w-full;
+      &:hover,&:focus {
+        @apply bg-light;
+      }
+    }
+    &.ti-icon-link {
+      @apply focus:z-10 focus:outline-none py-[0.375rem] px-3 focus:ring-0;
+    }
+  }
+}
+.ti-list-group-flush {
+  @apply border-0;
+}
+/* End List-Group Styles */
+
+/* Start Progress Styles */
+.ti-main-progress {
+  @apply flex w-full h-1.5 rounded-full overflow-hidden;
+
+  .ti-main-progress-bar {
+    @apply flex flex-col justify-center overflow-hidden;
+  }
+}
+
+/* End Progress Styles */
+
+/* Start Spinner Styles */
+.ti-spinner {
+  @apply animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent rounded-full;
+}
+
+/* End Spinner Styles */
+
+/* Start Toast Styles */
+.ti-toast {
+  @apply max-w-xs border rounded-sm shadow-lg dark:border-white/10;
+}
+
+/* End Toast Styles */
+
+.ti-border {
+  @apply border-[#e5e7eb];
+}
+/* Start:: Nav-tabs */
+.nav-link {
+  &:focus,
+  &:hover {
+    @apply text-primary;
+  }
+}
+.nav-tabs {
+  @apply border-defaultborder;
+  .nav-item.show .nav-link,
+  .nav-link.active {
+    @apply text-defaulttextcolor bg-light border-defaultborder;
+  }
+}
+.nav-tabs .nav-link:focus,
+.nav-tabs .nav-link:hover {
+  @apply border-defaultborder;
+}
+
+.nav-tabs-header {
+  @apply border-0;
+
+  .nav-item {
+    @apply me-2;
+
+    &:last-child {
+      @apply me-0;
+    }
+
+    .nav-link {
+      @apply border border-solid rounded-md border-transparent text-[0.8rem] p-2 font-medium;
+
+      &.active {
+        @apply bg-primary/10 text-primary border border-solid border-transparent;
+      }
+
+      &:hover,
+      &:focus {
+        @apply border border-solid border-transparent text-primary;
+      }
+    }
+  }
+}
+.nav-justified .nav-item,
+.nav-justified > .nav-link {
+  @apply basis-0 flex-grow text-center;
+}
+.nav-fill .nav-item .nav-link,
+.nav-justified .nav-item .nav-link {
+  @apply w-full;
+}
+.nav.nav-style-1 {
+  @apply border-0;
+}
+
+.nav.nav-style-3 {
+  .nav-link {
+    @apply rounded-none #{!important};
+  }
+  .nav-link {
+    @apply border-b-[3px] border-solid border-transparent;
+  }
+  .nav-link.active {
+    @apply bg-transparent border-b-[3px] border-solid border-primary text-primary rounded-none #{!important};
+  }
+}
+/* End:: Nav-tabs */
+/* Start:: Tab-style-6 */
+.tab-style-6 {
+  @apply border-0 bg-primary/10 rounded-md text-primary p-2;
+  .nav-item {
+    @apply border-0 me-2;
+    &:last-child {
+      @apply me-0;
+    }
+    .nav-link {
+      @apply text-primary py-2 px-4 text-defaultsize border-0 font-medium;
+      &.active {
+        @apply border-0 bg-primary text-white shadow-sm;
+      }
+      &:hover,
+      &:focus {
+        @apply border-0;
+      }
+    }
+  }
+}
+.navbar {
+  @apply rounded-md;
+  .navbar-nav {
+    .nav-link {
+      @apply leading-none py-[0.4rem] px-4 font-medium;
+    }
+  }
+  .navbar-toggler {
+    @apply p-[0.4rem] text-[1rem] leading-none text-black border border-solid border-defaultborder rounded-md;
+    .navbar-toggler-icon {
+      @apply w-[1rem] h-[1rem] relative bg-none before:content-['\F479'] before:absolute before:text-[1rem] before:text-defaulttextcolor before:start-0;
+    }
+  }
+  .navbar-toggler:focus {
+    @apply shadow-none;
+  }
+}
+// .nav-pills .nav-link.active,
+// .nav-pills .show > .nav-link {
+//   @apply text-white bg-primary py-2 px-4 rounded-md #{!important};
+// }
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  @apply text-white bg-primary;
+}
+.navitem {
+  @apply me-4;
+}
+/* End:: Tab-style-6 */
+
+/* start::background */
+.bg-primary-gradient {
+  @apply bg-gradient-to-r from-primary to-[#0086ed] text-white #{!important};
+}
+.bg-secondary-gradient {
+  @apply bg-gradient-to-r from-secondary to-[#0086ed] text-white #{!important};
+}
+.bg-warning-gradient {
+  @apply bg-gradient-to-r from-warning to-[#0086ed] text-white #{!important};
+}
+.bg-info-gradient {
+  @apply bg-gradient-to-r from-info to-[#0086ed] text-white #{!important};
+}
+.bg-success-gradient {
+  @apply bg-gradient-to-r from-success to-[#0086ed] text-white #{!important};
+}
+.bg-danger-gradient {
+  @apply bg-gradient-to-r from-danger to-[#0086ed] text-white #{!important};
+}
+.bg-orange-gradient {
+  @apply bg-gradient-to-r from-orangemain to-[#0086ed] text-white #{!important};
+}
+.bg-purple-gradient {
+  @apply bg-gradient-to-r from-purplemain to-[#0086ed] text-white #{!important};
+}
+.bg-teal-gradient {
+  @apply bg-gradient-to-r from-tealmain to-[#0086ed] text-white #{!important};
+}
+.bg-light-gradient {
+  @apply bg-gradient-to-r from-light to-[#0086ed] text-white #{!important};
+}
+.bg-dark-gradient {
+  @apply bg-gradient-to-r from-black to-[#0086ed] text-white #{!important};
+}
+/* End:: backgrounds */
+
+code {
+  @apply text-[0.9rem] text-redmain break-words #{!important};
+}
+
+.color-container {
+  @apply w-[3rem] h-[3rem] rounded-full flex items-center justify-center leading-[3rem];
+}
+
+.bd-example-row [class^="col"],
+.bd-example-cssgrid .grid > * {
+  @apply pt-3 pb-3 bg-light/75 border border-solid border-defaultborder;
+}
+.bd-example-cssgrid .grid > * {
+  @apply rounded-sm;
+}
+.bd-example-row-flex-cols .grid {
+  @apply min-h-[10rem] bg-light/50;
+  .col {
+    @apply p-3;
+  }
+}
+.flex-container div {
+  @apply bg-transparent border-0;
+  > div {
+    @apply bg-light border border-solid border-white dark:border-bodybg;
+  }
+}
+.ratio {
+  @apply relative w-full before:block;
+}
+.bd-example-ratios .ratio {
+  @apply inline-block w-[10rem] text-textmuted bg-primary/10 border-defaultborder rounded-md;
+}
+.bd-example-position-utils .position-absolute {
+  @apply w-8 h-8 bg-primary/10 rounded-[0.375rem] absolute;
+}
+.bd-example-position-utils .position-relative {
+  @apply h-[12.5rem] bg-light relative;
+}
+.border-container {
+  @apply inline-block w-[5rem] h-[5rem] m-1 bg-light/30;
+}
+
+.upcoming-events-list li {
+  @apply mb-[1.5rem] ps-[1.5rem] relative before:absolute before:h-full before:w-[0.25rem] before:start-0 before:rounded-md;
+}
+
+.upcoming-events-list li:nth-child(1) {
+  @apply before:bg-primary/30;
+}
+
+.upcoming-events-list li:nth-child(2) {
+  @apply before:bg-secondary/30;
+}
+
+.upcoming-events-list li:nth-child(3) {
+  @apply before:bg-success/30;
+}
+
+.upcoming-events-list li:nth-child(4) {
+  @apply before:bg-danger/30;
+}
+
+.upcoming-events-list li:nth-child(5) {
+  @apply before:bg-info/30;
+}
+
+.upcoming-events-list li:nth-child(5) {
+  @apply before:bg-warning/30;
+}
+
+.upcoming-events-list li:last-child {
+  @apply mb-0;
+}
+
+#external-events .fc-event {
+  @apply cursor-move mb-[0.4rem] py-[0.375rem] px-3 text-[0.75rem] rounded-[0.35rem];
+}
+
+.glightbox {
+  @apply overflow-hidden;
+}
+
+/* start:: project-list */
+.project-list-title {
+  @apply max-w-[13.375rem];
+}

@@ -1,0 +1,100 @@
+.react-datepicker__day--selected, 
+.react-datepicker__day--in-selecting-range, 
+.react-datepicker__day--in-range, 
+.react-datepicker__month-text--selected, 
+.react-datepicker__month-text--in-selecting-range, 
+.react-datepicker__month-text--in-range, 
+.react-datepicker__quarter-text--selected, 
+.react-datepicker__quarter-text--in-selecting-range, 
+.react-datepicker__quarter-text--in-range, 
+.react-datepicker__year-text--selected, 
+.react-datepicker__year-text--in-selecting-range, 
+.react-datepicker__year-text--in-range {
+    @apply bg-primary text-white;
+}
+#addtask {
+  .react-datepicker__input-container { 
+    @apply w-[120px] #{!important};
+  }
+}
+  .react-datepicker__input-container {
+    input {
+        @apply py-[0.375rem] px-3 relative flex-1 w-full min-w-0 h-[36px] rounded-tr-[0.35rem] rounded-br-[0.35rem]  border border-defaultborder dark:border-defaultborder/10 text-defaulttextcolor #{!important};
+      &:focus-within {
+        @apply border-0 outline-0 #{!important};
+      }
+      
+    }
+  }
+  
+  [dir="rtl"] {
+    .react-datepicker__input-container {
+      input {
+          @apply  rounded-tl-[0.35rem] rounded-bl-[0.35rem]  rounded-tr-[0] rounded-br-[0] #{!important};
+        }
+    }
+  }
+  .react-datepicker-popper[data-placement^=top] .react-datepicker__triangle::before, .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::before, 
+  .react-datepicker-popper[data-placement^=top] .react-datepicker__triangle::after, .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::after {
+    @apply -left-[29px] #{!important};
+}
+  .react-datepicker-wrapper {
+    @apply block  #{!important};
+  }
+
+  .react-datepicker__header {
+    @apply border-defaultborder dark:border-defaultborder/10 #{!important};
+    .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header {
+        @apply text-defaulttextcolor #{!important};
+    }
+  }
+  .react-datepicker {
+    @apply bg-white dark:bg-bodybg border-defaultborder dark:border-defaultborder/10 text-defaulttextcolor #{!important};
+  }
+  .react-datepicker__time-container .react-datepicker__time {
+    @apply bg-white dark:bg-bodybg #{!important};
+  }
+  .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::before, .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::after {
+    @apply border-b-defaultborder dark:border-t-defaultborder/10 #{!important};
+}
+.react-datepicker-popper[data-placement^=top] .react-datepicker__triangle:after, .react-datepicker-popper[data-placement^=top] .react-datepicker__triangle:before {
+  @apply border-t-defaultborder dark:border-t-defaultborder/10 #{!important};
+}
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+    @apply bg-primary #{!important};
+}
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected:hover {
+    @apply bg-primary #{!important};
+}
+.react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
+    @apply text-defaulttextcolor #{!important};
+}
+.react-datepicker__day--keyboard-selected, .react-datepicker__month-text--keyboard-selected, .react-datepicker__quarter-text--keyboard-selected, .react-datepicker__year-text--keyboard-selected,
+.react-datepicker__day:hover, .react-datepicker__month-text:hover, .react-datepicker__quarter-text:hover, .react-datepicker__year-text:hover {
+    @apply bg-primary text-white #{!important};
+}
+.sun-editor-editable {
+    @apply bg-white dark:bg-bodybg;
+}
+.react-datepicker__day--selected {
+    @apply bg-primary text-white #{!important};
+}
+.react-datepicker__day.react-datepicker__day--selected {
+    @apply text-white #{!important};
+}
+.react-datepicker__header {
+ @apply bg-white dark:bg-bodybg #{!important};
+}
+
+.react-datepicker__input-container {
+  svg{
+    @apply hidden;
+  }
+}
+
+.rmsc .dropdown-heading {
+  padding-block: 10px;
+}
+.rmsc .dropdown-container:focus-within {
+  @apply shadow-none;
+}

@@ -1,0 +1,1230 @@
+// Dashboard-1 //
+.main-index footer {
+  @apply ps-0 #{!important};
+}
+.box.crm-highlight-card {
+  @apply relative overflow-hidden shadow-none after:absolute after:h-full after:w-full after:bg-[url('../public/assets/images/media/media-65.png')] after:bg-cover after:bg-center after:bg-no-repeat after:z-[0] after:opacity-20;
+
+  .box-body {
+    @apply z-10;
+  }
+
+  @apply bg-primary #{!important};
+}
+
+.crm-lead-legend {
+  @apply relative before:absolute before:w-[0.375rem] before:h-[0.375rem] before:rounded-md before:top-[0.375rem] before:-start-[0.625rem];
+
+  &.mobile:before {
+    @apply bg-primary;
+  }
+
+  &.desktop:before {
+    @apply bg-secondary;
+  }
+
+  &.laptop:before {
+    @apply bg-warning;
+  }
+
+  &.tablet:before {
+    @apply bg-success;
+  }
+}
+
+.crm-leadsinprogress {
+  @apply mb-0;
+
+  li {
+    @apply mb-[1.3rem];
+
+    &:last-child {
+      @apply mb-0;
+    }
+  }
+}
+
+.leads-source-chart {
+  canvas {
+    @apply relative;
+  }
+
+  .lead-source-value {
+    @apply absolute text-center;
+  }
+}
+
+#leads-source {
+  @apply h-[15.3rem] w-auto #{!important};
+}
+
+.crm-deals-status li {
+  @apply relative mb-4 ms-4 before:absolute before:w-2 before:h-2 before:top-[0.375rem] before:-start-4 before:rounded-[50%];
+  &:last-child {
+    @apply mb-0;
+  }
+
+  &.primary {
+    &:before {
+      @apply bg-primary;
+    }
+  }
+
+  &.info {
+    &:before {
+      @apply bg-info;
+    }
+  }
+
+  &.warning {
+    &:before {
+      @apply bg-warning;
+    }
+  }
+
+  &.success {
+    &:before {
+      @apply bg-success;
+    }
+  }
+}
+
+.crm-timeline-content {
+  @apply w-[15.5rem];
+}
+
+.crm-recent-activity {
+  li {
+    @apply pb-[1.3rem];
+
+    &:last-child {
+      @apply pb-0;
+    }
+  }
+
+  .crm-timeline-content {
+    @apply w-[15.5rem];
+  }
+}
+
+.crm-recent-activity-content {
+  @apply relative before:absolute before:w-[1px] before:bg-transparent before:top-[1.4375rem] before:start-[0.5625rem];
+
+  &:nth-child(1) {
+    @apply before:border-e before:border-dashed before:border-primary/20 before:h-[60%];
+  }
+
+  &:nth-child(2) {
+    @apply before:border-e before:border-dashed before:border-secondary/20 before:h-[68%];
+  }
+
+  &:nth-child(3) {
+    @apply before:border-e before:border-dashed before:border-success/20 before:h-[42%];
+  }
+
+  &:nth-child(4) {
+    @apply before:border-e before:border-dashed before:border-pinkmain/20 before:h-[60%];
+  }
+
+  &:nth-child(5) {
+    @apply before:border-e before:border-dashed before:border-warning/20 before:h-[47%];
+  }
+
+  &:nth-child(6) {
+    @apply before:border-e before:border-dashed before:border-info/20 before:h-[60%];
+  }
+
+  &:nth-child(7) {
+    @apply before:border-e before:border-dashed before:border-[#232323]/20 dark:before:border-white/20 before:h-[50%];
+  }
+
+  &:last-child {
+    @apply before:hidden;
+  }
+}
+
+#crm-main circle {
+  @apply fill-transparent;
+}
+
+#crm-main .apexcharts-datalabels-group text {
+  @apply fill-white/90;
+}
+
+#crm-main #apexcharts-radialbarTrack-0 {
+  @apply stroke-black/20;
+}
+#crm-revenue-analytics .apexcharts-title-text {
+  @apply translate-y-[0.625rem];
+}
+.apexcharts-bar-series.apexcharts-plot-series
+  .apexcharts-series
+  .apexcharts-bar-area {
+  @apply stroke-defaultborder #{!important};
+}
+.apexcharts-legend-text {
+  @apply text-defaulttextcolor ps-[0.9375rem] -ms-[0.625rem] #{!important};
+}
+.apexcharts-text {
+  &.apexcharts-yaxis-label,
+  &.apexcharts-xaxis-label {
+    tspan {
+      @apply fill-[#8c9097];
+    }
+  }
+}
+// Dashboard-1 //
+
+// Dashboard-2 //
+.ecommerce-icon {
+  svg {
+    @apply w-[1.75rem] h-[1.75rem] p-[0.35rem] rounded-md;
+
+    &.primary {
+      @apply bg-primary;
+    }
+
+    &.secondary {
+      @apply bg-secondary;
+    }
+
+    &.success {
+      @apply bg-success;
+    }
+
+    &.warning {
+      @apply bg-warning;
+    }
+  }
+}
+.svg-white {
+  @apply fill-white;
+}
+.ecommerce-sale-image {
+  @apply relative before:absolute before:w-full before:h-full before:bg-black/60;
+  img {
+    @apply h-[17.3rem];
+  }
+}
+.card-img-overlay {
+  @apply absolute inset-0 flex flex-col;
+}
+.card-img,
+.card-img-bottom,
+.card-img-top {
+  @apply w-full;
+}
+.ecommerce-bankoffer-details {
+  @apply text-[0.75rem] w-[70%] rounded-md bg-white/[0.25] opacity-[0.8] p-[0.625rem] backdrop-blur-[1.875rem];
+}
+
+.ecommerce-sale-days {
+  @apply absolute bottom-[1.25rem] text-[0.75rem] rounded-md bg-white/[0.25] opacity-[0.8] py-[0.25rem] px-[0.625rem] backdrop-blur-[1.875rem];
+}
+
+.ecommerce-sales-calendar {
+  @apply absolute end-[1.875rem] bg-white/[0.25] rounded-[0.3rem] py-[0.5rem] px-[0.625rem]  backdrop-blur-[1.875rem];
+}
+
+.earning {
+  @apply relative;
+
+  &:before {
+    @apply absolute top-[0.438rem] -start-[0.818rem] bottom-[0.313rem] w-[0.5rem] h-[0.5rem] rounded-[3.125rem];
+  }
+
+  &.first-half {
+    @apply before:bg-primary/30;
+  }
+
+  &.top-gross {
+    @apply before:bg-primary;
+  }
+
+  &.second-half {
+    @apply before:bg-[#e4e7ed];
+  }
+}
+.nav.tab-style-1 {
+  @apply border-b-0 p-[0.65rem] bg-light rounded-md mb-4;
+  .nav-item {
+    @apply me-2;
+    &:last-child {
+      @apply me-0;
+    }
+  }
+  .nav-link {
+    @apply rounded-md py-[0.35rem] px-4;
+    &.active {
+      @apply bg-primary text-white shadow-md transition-colors ease-in duration-[0.15sec];
+    }
+  }
+}
+.tab-content .tab-pane {
+  @apply p-4 border border-solid border-defaultborder rounded-md text-defaulttextcolor;
+}
+.list-group-item {
+  @apply text-defaulttextcolor dark:text-defaulttextcolor/70 border-b-0 border-t border-e border-s border-inherit border-solid py-[0.65rem] px-[1.25rem] dark:border-defaultborder/10;
+  &:last-child {
+    @apply border-b;
+  }
+}
+// .crypto-buy-sell-input {
+//   @apply sm:w-full #{!important};
+// }
+@media (min-width: 576px) {
+  .crypto-buy-sell-input {
+    @apply w-[60%] #{!important};
+  }
+}
+
+/* Start:: Crypto Wallet */
+.dark {
+  .qr-image {
+    @apply invert;
+  }
+}
+/* End:: Crypto Wallet */
+
+/* Start:: Crypto Currency Exchange */
+#btc-currency-chart,
+#eth-currency-chart,
+#ltc-currency-chart,
+#dash-currency-chart,
+#xrs-currency-chart,
+#glm-currency-chart,
+#monero-currency-chart,
+#eos-currency-chart {
+  @apply absolute bottom-0;
+}
+.currency-exchange-box {
+  @apply relative bg-primary shadow-none z-[10]
+  before:absolute before:h-full before:w-full before:bg-[url('../public/assets/images/media/media-1.jpg')] before:bg-cover before:bg-center before:bg-no-repeat before:z-[0] before:opacity-10 #{!important};
+
+  .currency-exchange-area {
+    @apply bg-black/10 backdrop-blur-[30px] #{!important};
+  }
+}
+/* End:: Crypto Currency Exchange */
+
+#buy-crypto2,
+#sell-crypto2,
+#buy-crypto,
+#sell-crypto {
+  .choices__inner {
+    @apply min-w-[5rem] #{!important};
+  }
+
+  .choices__list--dropdown .choices__item--selectable::after,
+  .choices__list[aria-expanded] .choices__item--selectable::after {
+    @apply hidden #{!important};
+  }
+
+  .choices__list--dropdown .choices__item--selectable,
+  .choices__list[aria-expanded] .choices__item--selectable {
+    @apply pe-0 #{!important};
+  }
+}
+
+#btc-chart,
+#eth-chart,
+#dash-chart {
+  .apexcharts-grid {
+    @apply hidden;
+  }
+}
+// Dashboard-2 //
+
+// Dashboard-3 //
+.basic-subscription,
+.pro-subscription {
+  @apply relative before:absolute before:w-2 before:h-2 before:-start-[0.938rem] before:rounded-[0.3rem] before:top-[0.6rem] #{!important};
+}
+
+.basic-subscription:before {
+  @apply bg-primary;
+}
+
+.pro-subscription:before {
+  @apply bg-secondary;
+}
+// Dashboard-3//
+// Dashboard-4//
+.featured-nft {
+  @apply w-full h-[13rem] rounded-md;
+
+  img {
+    @apply bg-cover bg-center bg-no-repeat w-full h-full rounded-md;
+  }
+}
+.svg-primary {
+  @apply fill-primary;
+}
+.nft-auction-time {
+  @apply absolute top-[3.5rem] end-4 py-1 px-2 bg-[#ffffff26] rounded-[0.3rem] backdrop-blur-[1.875rem];
+}
+
+.nft-like-section {
+  @apply absolute top-4;
+}
+
+.nft-like-badge {
+  @apply bg-[#ffffff26] backdrop-blur-[1.875rem];
+}
+.nft-collector-progress {
+  @apply w-[3.125rem];
+}
+.nft-details-auction-time {
+  @apply absolute w-[400px] h-[1.875rem] bg-success flex items-center justify-center text-white top-[3.125rem] font-medium -end-[8.4375rem] rotate-45 z-[10];
+}
+.create-nft-item {
+  .single-fileupload {
+    @apply mx-0 #{!important};
+  }
+  .filepond--root[data-style-panel-layout~="circle"] {
+    @apply rounded-md w-full;
+  }
+  .filepond--drop-label.filepond--drop-label label {
+    @apply p-8;
+  }
+  .filepond--drop-label {
+    @apply text-textmuted #{!important};
+  }
+  .filepond--panel-root {
+    @apply border-[0.125rem] border-dashed border-inputborder #{!important};
+  }
+  .filepond--root[data-style-panel-layout~="circle"]
+    .filepond--image-preview-wrapper {
+    @apply rounded-[0.3rem];
+  }
+}
+.create-nft-item {
+  .filepond--root[data-style-panel-layout~="circle"] {
+    @apply sm:h-[15.75rem] h-[14.5rem] w-[14.5rem] sm:w-[15.75rem] #{!important};
+  }
+  .filepond--drop-label label {
+    @apply text-[0.75rem];
+  }
+  .filepond--root[data-style-panel-layout~="circle"]
+    .filepond--image-preview-wrapper,
+  .filepond--file {
+    @apply h-[15.75rem] w-[15.75rem] #{!important};
+  }
+}
+
+/* Start:: NFT Wallet */
+.nft-wallet {
+  @apply relative text-center shadow-none border border-defaultborder rounded-md hover:bg-light;
+  &.active {
+    @apply border-primary;
+  }
+}
+.nft-list {
+  li {
+    &:hover {
+      @apply bg-light text-primary;
+    }
+  }
+}
+/* End:: NFT Wallet */
+
+/* Start:: NFT Live Auction */
+.nft-tag.nft-tag-primary {
+  &:hover,
+  &.active {
+    @apply text-primary;
+    .nft-tag-icon {
+      @apply bg-primary/10;
+    }
+  }
+  .nft-tag-icon {
+    @apply text-primary;
+  }
+}
+.nft-tag.nft-tag-secondary {
+  &:hover,
+  &.active {
+    @apply text-secondary;
+    .nft-tag-icon {
+      @apply bg-secondary/10;
+    }
+  }
+  .nft-tag-icon {
+    @apply text-secondary;
+  }
+}
+.nft-tag.nft-tag-warning {
+  &:hover,
+  &.active {
+    @apply text-warning;
+    .nft-tag-icon {
+      @apply bg-warning/10;
+    }
+  }
+  .nft-tag-icon {
+    @apply text-warning;
+  }
+}
+.nft-tag.nft-tag-info {
+  &:hover,
+  &.active {
+    @apply text-info;
+    .nft-tag-icon {
+      @apply bg-info/10;
+    }
+  }
+  .nft-tag-icon {
+    @apply text-info;
+  }
+}
+.nft-tag.nft-tag-success {
+  &:hover,
+  &.active {
+    @apply text-success;
+    .nft-tag-icon {
+      @apply text-success/10;
+    }
+  }
+  .nft-tag-icon {
+    @apply text-success #{!important};
+  }
+}
+.nft-tag.nft-tag-danger {
+  &:hover,
+  &.active {
+    @apply text-danger;
+    .nft-tag-icon {
+      @apply bg-danger/10;
+    }
+  }
+  .nft-tag-icon {
+    @apply text-danger;
+  }
+}
+.nft-tag.nft-tag-dark {
+  &:hover,
+  &.active {
+    @apply text-black;
+    .nft-tag-icon {
+      @apply bg-black/10;
+    }
+  }
+  .nft-tag-icon {
+    @apply text-black dark:text-white;
+  }
+}
+.nft-tag .nft-tag-text {
+  @apply font-semibold inline-block py-0 pe-[1.25rem] ps-2;
+}
+.nft-tag .nft-tag-icon {
+  @apply inline-block py-3 px-4 rounded-full bg-light;
+}
+.nft-tag {
+  @apply relative inline-flex items-center border border-solid border-white dark:border-defaultborder/10 rounded-[50rem] bg-white dark:bg-bodybg text-defaulttextcolor;
+}
+.nft-timer-container {
+  @apply absolute  top-[7%] inline-flex items-center py-[0.2rem] px-[0.7rem] rounded-t-none rounded-r-[50rem] rounded-b-[50rem] rounded-l-none text-white font-medium bg-black/10;
+}
+.nft-btn {
+  @apply absolute end-[5%] bottom-[5%] h-8 w-8 p-[5px] rounded-full bg-black/10 text-white text-[1rem] inline-flex items-center justify-center transition-all ease-linear duration-[0.3sec]
+  z-[1];
+  &:hover {
+    @apply bg-white text-primary;
+  }
+}
+.nft-img {
+  @apply rounded-md max-h-[10rem] w-full;
+}
+/* End:: NFT Live Auction */
+
+/* Start:: CRM Deals */
+.lead-discovered,
+.lead-qualified,
+.contact-initiated,
+.need-identified,
+.negotiation,
+.deal-finalized {
+  @apply relative ms-[1rem] before:absolute before:w-[0.5rem] before:h-[0.5rem] before:rounded-full before:-start-[0.875rem] before:top-[0.4375rem];
+}
+.lead-discovered:before {
+  @apply bg-primary;
+}
+.lead-qualified:before {
+  @apply bg-warning;
+}
+.contact-initiated:before {
+  @apply bg-success;
+}
+.need-identified:before {
+  @apply bg-info;
+}
+.negotiation:before {
+  @apply bg-danger;
+}
+.deal-finalized:before {
+  @apply bg-secondary;
+}
+
+#leads-discovered .box.custom-box {
+  @apply border-s-[0.4rem] border-solid border-primary/40 #{!important};
+  .company-name {
+    @apply text-primary;
+  }
+  .avatar {
+    @apply bg-primary;
+  }
+}
+#leads-qualified .box.custom-box {
+  @apply border-s-[0.4rem] border-solid border-warning/40 #{!important};
+  .company-name {
+    @apply text-warning;
+  }
+  .avatar {
+    @apply bg-warning;
+  }
+}
+#contact-initiated .box.custom-box {
+  @apply border-s-[0.4rem] border-solid border-success/40 #{!important};
+  .company-name {
+    @apply text-success;
+  }
+  .avatar {
+    @apply bg-success;
+  }
+}
+#needs-identified .box.custom-box {
+  @apply border-s-[0.4rem] border-solid border-info/40 #{!important};
+  .company-name {
+    @apply text-info;
+  }
+  .avatar {
+    @apply bg-info;
+  }
+}
+#negotiation .box.custom-box {
+  @apply border-s-[0.4rem] border-solid border-danger/40 #{!important};
+  .company-name {
+    @apply text-danger;
+  }
+  .avatar {
+    @apply bg-danger;
+  }
+}
+#deal-finalized .box.custom-box {
+  @apply border-s-[0.4rem] border-solid border-secondary/40 #{!important};
+  .company-name {
+    @apply text-secondary;
+  }
+  .avatar {
+    @apply bg-secondary;
+  }
+}
+#leads-discovered,
+#leads-qualified,
+#contact-initiated,
+#needs-identified,
+#negotiation,
+#deal-finalized {
+  .box.custom-box {
+    @apply mb-2;
+    &:last-child {
+      @apply mb-[1.5rem];
+    }
+    .box-body {
+      @apply p-4;
+      .deal-description {
+        @apply ms-[2.25rem];
+      }
+    }
+  }
+}
+/* End:: CRM Deals */
+
+.card-img-top {
+  @apply rounded-ss-[0.375] rounded-se-[0.375] #{!important};
+}
+.bg-primary-gradient {
+  @apply text-white bg-gradient-to-r from-primary to-bluemain;
+}
+.swiper {
+  @apply mx-auto relative list-none p-0 z-[1];
+}
+
+.swiper-vertical > .swiper-wrapper {
+  @apply flex-col;
+}
+
+.swiper-wrapper {
+  @apply relative w-full h-full z-[1] flex transition-transform box-content;
+}
+
+.swiper-pointer-events {
+  @apply touch-pan-y;
+}
+
+.swiper-pointer-events.swiper-vertical {
+  @apply touch-pan-x;
+}
+
+.swiper-slide {
+  @apply flex-shrink-0 w-full h-full relative transition-transform;
+}
+.swiper-slide img {
+  @apply block w-full h-full object-cover;
+}
+.nft-featuredcollect-image {
+  @apply h-[8.813rem] rounded-md relative before:absolute before:w-full before:h-full before:bg-black/10 #{!important};
+}
+// Dashboard-4//
+// Dashboard-5//
+.main-card-icon {
+  @apply bottom-[0.75rem] end-4 absolute p-3 rounded-md;
+}
+.tansaction-icon {
+  @apply p-[0.375rem] rounded-sm end-3;
+
+  svg {
+    @apply w-[1.25rem] h-[1.25rem];
+  }
+}
+
+.recent-transactions-card {
+  .list-group-item {
+    @apply py-3 px-[1.25rem];
+  }
+}
+.tansaction-icon {
+  @apply me-3 rounded-sm p-[0.375rem];
+}
+.tansaction-icon svg {
+  @apply h-[1.25rem] w-[1.25rem];
+}
+.timeline-main {
+  @apply ps-[1.77rem];
+}
+.latest-timeline ul.timeline-main {
+  @apply relative before:border-s-[0.125rem] before:border-dotted before:border-defaultborder before:dark:border-defaultborder/10 before:absolute before:start-1 before:w-[1px] before:h-[84%] before:z-0 before:top-3;
+}
+
+.latest-timeline .timeline-main li.activity {
+  @apply p-0 relative mb-2;
+}
+.featured_icon1 {
+  @apply w-[0.438rem] h-[0.438rem] leading-[3.75rem] -ms-[1.625rem] text-black text-[0.625rem] bg-primary relative rounded-[1.125rem] top-3;
+}
+
+.featured_icon1.featured-danger {
+  @apply bg-danger;
+}
+
+.featured_icon1.featured-success {
+  @apply bg-success;
+}
+.nav.panel-tabs-task a.active {
+  @apply rounded-md text-info bg-info/10 #{!important};
+}
+
+.nav.panel-tabs-task a {
+  @apply py-[0.4rem] px-2 text-[0.711rem] transition-all ease-linear duration-[0.3sec] #{!important};
+}
+.avatar-list-stacked {
+  @apply p-0;
+  .avatar {
+    @apply -me-[0.45rem] border rounded-full border-solid border-black/[0.05] align-middle transition-all ease-linear duration-[200ms] #{!important};
+    &:last-child {
+      @apply me-0 #{!important};
+    }
+    &:hover {
+      @apply z-[1] -translate-y-[0.188rem];
+    }
+  }
+}
+[dir="rtl"] {
+  .avatar-list-stacked {
+    .ri-arrow-right-s-line {
+      @apply rotate-180;
+    }
+  }
+}
+#visitors-countries {
+  @apply h-[23.4rem];
+
+  #jvm-markers-labels-group {
+    @apply hidden overflow-auto;
+
+  }
+}
+
+#visitors-countries circle:nth-child(1) {
+  @apply fill-primary stroke-primary/30 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(2) {
+  @apply fill-secondary stroke-secondary/20 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(3) {
+  @apply fill-danger stroke-danger/20 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(4) {
+  @apply fill-info stroke-info/20 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(5) {
+  @apply fill-primary stroke-primary/30 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(6) {
+  @apply fill-warning stroke-warning/20 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(7) {
+  @apply fill-success stroke-success/20 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(8) {
+  @apply fill-pinkmain stroke-pinkmain/20 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(9) {
+  @apply fill-[#232323] stroke-[#232323]/20 stroke-[30];
+}
+
+#visitors-countries circle:nth-child(10) {
+  @apply fill-indigomain stroke-indigomain/20 stroke-[30];
+}
+#vector-map,
+#marker-map,
+#marker-image-map,
+#lines-map,
+#visitors-countries,
+#users-map {
+  #jvm-regions-group path {
+    @apply fill-light #{!important};
+  }
+}
+@media (max-width: 1399.99px) {
+  .sales-visitors-countries {
+    @apply border-e border-dashed border-defaultborder dark:border-defaultborder/10;
+  }
+}
+
+@media (min-width: 1400px) {
+  .sales-visitors-countries {
+    @apply border-e border-dashed border-defaultborder dark:border-defaultborder/10;
+  }
+}
+.panel-tabs-billing li a.active {
+  @apply bg-success/10 font-medium text-success;
+}
+
+.panel-tabs-billing li a {
+  @apply py-1 px-2 rounded-md text-[0.75rem];
+}
+.billing-invoice-details {
+  @apply w-[11rem];
+}
+
+// Dashboard-5//
+// Dashboard-6//
+#analytics-bouncerate {
+  @apply absolute bottom-0;
+}
+.custom-card.upgrade-card {
+  @apply h-[11.625rem] relative overflow-hidden bg-primary bg-no-repeat
+  before:absolute before:bg-[url('../public/assets/images/media/media-85.png')] before:bg-cover before:bg-no-repeat before:start-0 before:top-0 before:end-0 before:bottom-0 before:opacity-[0.15] #{!important};
+
+  .avatar {
+    @apply absolute -top-[0.6875rem] end-[1.5rem];
+  }
+
+  .upgrade-card-content {
+    @apply absolute bottom-4;
+  }
+}
+
+#analytics-users {
+  .apexcharts-grid {
+    @apply hidden;
+  }
+}
+.analytics-visitors-countries li {
+  @apply mb-[1.385rem];
+
+  &:last-child {
+    @apply mb-0;
+  }
+
+  .progress {
+    @apply w-[6.25rem];
+  }
+}
+#country-sessions {
+  .apexcharts-graphical {
+    clipPath {
+      rect {
+        @apply scale-[0.98]
+      }
+    }
+  }
+}
+// Dashboard-6//
+// Dashboard-7//
+.team-members-card {
+  li {
+    @apply mb-[1.5rem];
+
+    &:last-child {
+      @apply mb-0;
+    }
+  }
+
+  #user1,
+  #user2,
+  #user3,
+  #user4,
+  #user5 {
+    .apexcharts-grid {
+      @apply hidden;
+    }
+  }
+}
+.daily-task-card,
+.projects-maintask-card {
+  @apply mb-0;
+
+  li {
+    @apply mb-[1.25rem];
+
+    &:last-child,
+    .card {
+      @apply mb-0;
+    }
+  }
+}
+.project-transactions-card {
+  @apply mb-0;
+
+  li {
+    @apply mb-[1.45rem];
+
+    &:last-child {
+      @apply mb-0;
+    }
+  }
+}
+
+.projects-tracking-card {
+  @apply bg-white relative;
+
+  .card-body {
+    @apply z-[1];
+  }
+
+  img {
+    @apply w-[15.5rem] h-[9.5rem];
+  }
+}
+
+.shape-1,
+.shape-2,
+.shape-3,
+.shape-4,
+.shape-5,
+.shape-6,
+.shape-7,
+.shape-8,
+.shape-9,
+.shape-10,
+.shape-11,
+.shape-12,
+.shape-13,
+.shape-14,
+.shape-15,
+.shape-16 {
+  @apply absolute animate-projects #{!important};   
+
+  i {
+    @apply opacity-[0.2];
+  }
+}
+
+.shape-1 {
+  @apply start-[20%]  top-[20%];
+}
+.shape-2 {
+  @apply start-[5%] top-[42%];
+}
+
+.shape-3 {
+  @apply end-[15%] bottom-[55%];
+}
+
+.shape-4 {
+  @apply start-[55%]  top-[25%];
+}
+
+.shape-5 {
+  @apply start-[50%]  bottom-[25%];
+}
+
+.shape-6 {
+  @apply end-[10%] bottom-[10%];
+}
+
+.shape-7 {
+  @apply start-[20%]  bottom-[17%];
+}
+
+.shape-8 {
+  @apply end-[20%] bottom-[17%];
+}
+
+.shape-9 {
+  @apply end-[25%] top-[10%];
+}
+
+.shape-10 {
+  @apply end-[5%] top-[15%];
+}
+
+.shape-11 {
+  @apply start-[15%]  bottom-[35%];
+}
+
+.shape-12 {
+  @apply start-[25%]  top-[40%];
+}
+
+.shape-13 {
+  @apply start-[10%]  bottom-[10%];
+}
+
+.shape-14 {
+  @apply -end-[10%]  -bottom-[10%];
+}
+
+.shape-15 {
+  @apply -start-[20%] -bottom-[17%];
+}
+
+.shape-16 {
+  @apply -end-[20%]  -bottom-[17%];
+}
+
+// Dashboard-7//
+// Dashboard-8//
+.hrm-main-card {
+  @apply border-t-[3px] border-solid #{!important};
+
+  &.primary {
+    @apply border-primary/30 #{!important};
+  }
+
+  &.secondary {
+    @apply border-secondary/30 #{!important};
+  }
+
+  &.warning {
+    @apply border-warning/30 #{!important};
+  }
+
+  &.danger {
+    @apply border-danger/30 #{!important};
+  }
+}
+.hrm-jobs-legend {
+  @apply relative before:absolute before:w-[0.375rem] before:h-[0.375rem] before:rounded-md before:top-[0.375rem] before:-start-[0.625rem];
+
+  &.published:before {
+    @apply bg-primary;
+  }
+
+  &.private:before {
+    @apply bg-success/70;
+  }
+
+  &.closed:before {
+    @apply bg-success/10; 
+  }
+
+  &.onhold:before {
+    @apply bg-camel10/; 
+  }
+}
+.timeline-widget {
+  @apply relative before:absolute before:w-[0.125rem] before:h-full before:bg-defaultborder before:dark:bg-defaultborder/10 before:top-0 before:start-[3rem];
+
+  .timeline-widget-list {
+    @apply mb-6 relative before:absolute before:w-3 before:h-3 before:start-[2.688rem] before:top-1 before:rounded-[3.125rem] before:border-[0.125rem] before:border-solid before:border-defaultborder before:dark:border-defaultborder/10 before:bg-white before:dark:bg-bodybg;
+
+    &:last-child {
+      @apply mb-0;
+    }
+
+    .timeline-widget-content {
+      @apply max-w-[20rem];
+    }
+  }
+}
+// Dashboard-8//
+// Dashboard-9//
+.my-stocks-ul {
+  li {
+    @apply py-[0.87rem] px-4 border-b border-dashed border-defaultborder dark:border-defaultborder/10;
+
+    &:last-child {
+      @apply border-b-0;
+    }
+  }
+}
+// Dashboard-9//
+// Dashboard-10//
+.category-link {
+  @apply p-[1.25rem] rounded-md border border-solid border-defaultborder dark:border-defaultborder/10 flex flex-col items-center justify-center text-textmuted transition-all ease-linear duration-[0.3s];
+
+  &.primary .category-svg {
+    @apply fill-primary;
+  }
+
+  &.secondary .category-svg {
+    @apply fill-secondary;
+  }
+
+  &.warning .category-svg {
+    @apply fill-warning;
+  }
+
+  &.success .category-svg {
+    @apply fill-success;
+  }
+}
+
+.category-link .category-svg {
+  @apply h-[1.875rem] w-[1.875rem] mb-4 transition-all ease-linear duration-[0.3sec];
+}
+
+.category-link.primary:not(.active):hover,
+.category-link.primary.active {
+  @apply text-primary bg-primary/10 border-primary/20;
+}
+.category-link.secondary:not(.active):hover,
+.category-link.secondary.active {
+  @apply text-secondary bg-secondary/10 border-secondary/20;
+}
+
+.category-link.warning:not(.active):hover,
+.category-link.warning.active {
+  @apply text-warning bg-warning/10 border-warning/20;
+}
+
+.category-link.success:not(.active):hover,
+.category-link.success.active {
+  @apply text-success bg-success/10 border-success/20;
+}
+.bg-outline-primary {
+  @apply border border-solid border-primary text-primary;
+}
+.bg-outline-secondary {
+  @apply border border-solid border-secondary text-secondary;
+}
+.bg-outline-warning {
+  @apply border border-solid border-warning text-warning;
+}
+.bg-outline-info {
+  @apply border border-solid border-info text-info;
+}
+.bg-outline-success {
+  @apply border border-solid border-success text-success;
+}
+.bg-outline-danger {
+  @apply border border-solid border-danger text-danger;
+}
+.bg-outline-dark {
+  @apply border border-solid border-black text-black;
+}
+.bg-outline-light {
+  @apply border border-solid border-light text-light;
+}
+.course-status-progress {
+  @apply w-[3.125rem] #{!important};
+}
+
+.courses-instructors {
+  li {
+    @apply mb-[0.85rem];
+    &:last-child {
+      @apply mb-0;
+    }
+  }
+}
+// Dashboard-10//
+// Dashboard-11//
+#waterTrack ,#sleepTrack{
+  .apexcharts-grid {
+    @apply hidden;
+  }
+}
+.personal-upcoming-events {
+  li {
+    @apply mb-4;
+
+    &:last-child {
+      @apply mb-0;
+    }
+  }
+}
+.personal-messages-list {
+  li {
+    @apply mb-[1.2rem];
+    &:last-child {
+      @apply mb-0;
+    }
+
+    .message {
+      @apply max-w-[15rem];
+    }
+  }
+}
+.text-truncate {
+  @apply overflow-hidden text-ellipsis whitespace-nowrap;
+}
+.circle-progress {
+  @apply relative z-[1];
+}
+
+.circle-progress::after {
+  @apply absolute h-full w-full rounded-full top-0 end-0 -z-[1] bg-gradient-to-t from-primary/50 to-white/50;
+}
+
+.personal-goals-list {
+  li {
+    @apply mb-4;
+    &:last-child {
+      @apply mb-0;
+    }
+  }
+}
+
+.personal-favourite-contacts {
+  li {
+    @apply mb-5;
+
+    &:last-child {
+      @apply mb-0;
+    }
+  }
+}
+// Dashboard-11//
+.dark {
+  button.gridjs-sort,
+  button.gridjs-sort-desc,
+  button.gridjs-sort-asc {
+    @apply invert;
+  }
+}
+
+.circle-progress {
+  @apply relative z-[1] after:absolute after:h-full after:w-full after:rounded-full after:top-0 after:end-0 after:bg-[gradient-1,gradient-2] after:z-[-1];
+}

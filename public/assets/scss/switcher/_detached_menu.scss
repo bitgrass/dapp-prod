@@ -1,0 +1,198 @@
+/* Start Detached-Menu Styles */
+[data-vertical-style="detached"] {
+  @media screen and (min-width: 992px) {
+    .app-header {
+      @apply z-[50] px-0 shadow-none #{!important};
+    }
+
+    .main-header {
+      @apply my-0 basis-auto p-0 #{!important};
+    }
+
+    .main-header-container {
+      @apply  mx-auto w-[94%];
+    }
+
+    .page {
+      @apply w-[94%] mx-auto my-0 #{!important};
+    }
+
+    .horizontal-logo {
+      @apply block -order-1; 
+      img {
+        @apply h-8 leading-8 ;
+      }
+    }
+
+    footer {
+      @apply bg-transparent shadow-none dark:bg-transparent #{!important};
+    }
+
+    .app-sidebar {
+      @apply top-[calc(64px-(-1.5rem))] rounded-md bottom-6 h-auto overflow-hidden border border-white/10;
+
+      .main-sidebar-header {
+        @apply hidden;
+      }
+
+      .main-sidebar {
+        @apply mt-0 h-full #{!important};
+      }
+    }
+
+    .content {
+      @apply ms-64;
+    }
+
+    .horizontal-logo {
+      .header-logo {
+
+        .desktop-dark,
+        .toggle-logo,
+        .toggle-dark,
+        .desktop-white,.toggle-white {
+          @apply hidden;
+
+        }
+
+        .desktop-logo {
+          @apply block;
+        }
+      }
+    }
+
+    [data-header-styles="dark"] {
+      .horizontal-logo {
+        .header-logo {
+
+          .desktop-logo,
+          .toggle-logo,
+          .toggle-dark,
+          .desktop-white ,.toggle-white{
+            @apply hidden #{!important};
+
+          }
+
+          .desktop-dark {
+            @apply block #{!important};
+          }
+        }
+      }
+    }
+
+    &.dark {
+      .horizontal-logo {
+        .header-logo {
+
+          .desktop-logo,
+          .toggle-logo,
+          .toggle-dark,.toggle-white {
+            @apply hidden #{!important};
+
+          }
+
+          .desktop-dark {
+            @apply block #{!important};
+          }
+        }
+      }
+    }
+
+    &[data-toggled="detached-close"] {
+      &:not([data-icon-overlay="open"]) {
+        .app-sidebar {
+          @apply w-[5rem];
+
+          // .slide__category,
+          .side-menu__angle {
+            @apply hidden;
+          }
+
+          .side-menu__label {
+            @apply hidden;
+          }
+
+          .side-menu__item {
+            @apply block text-center text-xs;
+
+            .side-menu__icon {
+              @apply mx-auto w-full block;
+            }
+          }
+
+          .slide__category {
+            @apply py-[1.2rem] px-[1.65rem] relative before:absolute before:start-[2.25rem] before:end-0 before:top-[1.25rem] before:w-[0.35rem] before:rounded-[3.125rem] before:h-[0.35rem] before:border before:border-solid before:opacity-[1] #{!important};
+
+            .category-name {
+              @apply hidden;
+            }
+          }
+
+          .slide.has-sub {
+            .slide-menu {
+              @apply hidden #{!important};
+            }
+          }
+
+          .main-menu {
+            @apply px-0;
+          }
+        }
+
+        [data-header-styles="dark"] {
+          .horizontal-logo {
+            .header-logo {
+
+              .desktop-logo,
+              .toggle-logo,
+              .toggle-dark,
+              .desktop-white,.toggle-white {
+                @apply hidden #{!important};
+
+              }
+
+              .desktop-dark {
+                @apply block #{!important};
+              }
+            }
+          }
+        }
+
+        &.dark {
+          .app-sidebar {
+            .main-header {
+              .header-logo {
+
+                .toggle-logo,
+                .desktop-logo,
+                .toggle-dark,.toggle-white {
+                  @apply hidden;
+                }
+
+                .desktop-dark {
+                  @apply block;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .content {
+        @apply ms-24;
+      }
+    }
+
+    &.dark {
+      .app-sidebar {
+        @apply border-white/10;
+      }
+    }
+
+    .app-sidebar {
+      @apply start-[inherit];
+    }
+  }
+}
+
+/* End Detached-Menu Styles */

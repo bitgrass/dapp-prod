@@ -1,0 +1,82 @@
+/* Start Icon-Overlay Styles */
+
+[data-vertical-style="overlay"][data-toggled="icon-overlay-close"] {
+  @media screen and (min-width: 992px) {
+    &:not([data-icon-overlay="open"]) {
+      .app-sidebar {
+        @apply w-[5rem];
+        .main-sidebar-header{
+          @apply w-[5rem] #{!important};
+        }
+      }
+      .app-sidebar {
+        @apply w-[5rem];
+        .main-sidebar-header{
+          @apply w-[5rem] #{!important};
+        }
+        .app-header{
+          @apply ps-[5rem] #{!important};
+        }
+        .side-menu__item {
+          @apply justify-center px-0;
+        }
+
+        .side-menu__label,
+        .side-menu__angle {
+          @apply hidden;
+        } 
+        .side-menu__icon{
+          @apply me-0 #{!important};
+        }
+        .slide__category {
+          @apply py-[1.2rem] px-[1.65rem] relative  before:absolute before:start-[2.25rem] before:end-0 before:top-[1.25rem]  before:w-[0.35rem] before:rounded-[3.125rem] before:h-[0.35rem] before:border before:border-solid before:opacity-[1] #{!important};
+          .category-name{
+            @apply hidden;
+          }
+        }
+
+        .side-menu__item {
+          @apply p-3 #{!important};
+        }
+      
+
+        .header-logo {
+          .desktop-logo,
+          .desktop-dark,.desktop-white {
+            @apply hidden;
+          }
+          .toggle-logo {
+            @apply block;
+          }
+          .toggle-dark ,.toggle-white{
+            @apply hidden;
+          }
+        }
+
+        .slide-menu {
+          @apply hidden #{!important};
+        }
+      }
+      &.dark {
+        .app-sidebar {
+          .main-logo {
+            &.toggle-logo,.toggle-white {
+              @apply hidden #{!important};
+            }
+
+            &.toggle-dark {
+              @apply block #{!important};
+            }
+          }
+        }
+      }
+    }
+    .content {
+      @apply ms-[5rem] #{!important};
+    }
+    .app-header {
+      @apply ps-[5rem] #{!important};
+    }
+  }
+}
+/* End Icon-Overlay Styles */

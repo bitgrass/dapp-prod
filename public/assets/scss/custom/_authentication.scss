@@ -1,0 +1,130 @@
+.authentication {
+  @apply min-h-screen;
+
+  .authentication-brand {
+    &.desktop-logo {
+      @apply block;
+    }
+
+    &.desktop-dark {
+      @apply hidden;
+    }
+  }
+
+  .swiper-button-next,
+  .swiper-button-prev {
+    @apply w-[1.563rem] h-[1.563rem] text-white bg-black/30 rounded-md #{!important};
+    &:after,&:before {
+        @apply text-white #{!important};
+    }
+  }
+
+  .swiper-pagination-bullet {
+    @apply w-[1.25rem] h-[0.25rem] rounded-md bg-white dark:bg-bodybg #{!important};
+  }
+
+  .swiper-pagination-bullet-active {
+    @apply bg-white dark:bg-bodybg #{!important};
+  }
+
+  .swiper-pagination-bullet {
+    @apply opacity-[0.1];
+  }
+
+  .swiper-pagination-bullet-active {
+    @apply opacity-[0.5];
+  }
+
+  .google-svg {
+    @apply w-3 h-3 me-2;
+  }
+
+  .authentication-barrier {
+    @apply relative before:absolute before:w-[45%] before:h-[0.125rem] before:bg-gradient-to-l before:from-transparent before:to-light before:rounded-full before:end-0 before:top-[0.563rem] before:z-[1] after:absolute after:w-[45%] after:h-[0.125rem] after:bg-gradient-to-l after:from-light after:to-transparent after:rounded-full after:start-0 after:top-[0.563rem] after:z-[1];
+
+    span {
+      @apply relative z-[2];
+    }
+  }
+
+  &.coming-soon,
+  &.under-maintenance {
+    .authentication-cover {
+      @apply bg-[url('../public/assets/images/media/media-19.jpg')];
+
+      .aunthentication-cover-content {
+        @apply w-full h-full p-[3rem] backdrop:filter-none bg-white dark:bg-bodybg;
+
+        &:before,
+        &:after {
+          @apply hidden;
+        }
+
+        .coming-soon-time,
+        .under-maintenance-time {
+          @apply border-2 border-dashed border-black/10;
+        }
+
+        .authentication-brand {
+          @apply w-auto h-auto border-0;
+        }
+      }
+    }
+  }
+
+  .coming-soom-image-container,
+  .under-maintenance-image-container {
+    img {
+      @apply w-full h-auto;
+    }
+  }
+
+  .authentication-cover {
+    @apply bg-[url('../public/assets/images/authentication/1.jpg')] bg-cover bg-center bg-no-repeat w-full h-full flex items-center justify-center relative before:absolute before:w-full before:h-full before:inset-0 before:bg-primary/10;
+
+    .aunthentication-cover-content {
+      @apply w-[70%] h-[37.5rem] bg-black/20 p-8 backdrop-blur-[1.875rem] relative #{!important};
+
+      img {
+        @apply my-0 mx-auto w-[13.75rem] h-[13.75rem];
+      }
+    }
+  }
+
+  &.authentication-basic {
+    .desktop-dark {
+      @apply hidden;
+    }
+
+    .desktop-logo {
+      @apply block;
+    }
+  }
+}
+
+.dark {
+  .authentication {
+    &.authentication-basic {
+      .desktop-dark {
+        @apply block;
+      }
+
+      .desktop-logo {
+        @apply hidden;
+      }
+    }
+
+    .authentication-brand {
+      &.desktop-logo {
+        @apply hidden;
+      }
+
+      &.desktop-dark {
+        @apply block;
+      }
+    }
+  }
+}
+// .under-maintenance,.coming-soon {
+//     @apply p-[3rem] #{!important};
+// }

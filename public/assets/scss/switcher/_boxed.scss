@@ -1,0 +1,103 @@
+/* Start Boxed Styles */
+
+[data-width="boxed"] {
+  @media (min-width: 1400px) {
+    body {
+      @apply bg-bodybg dark:bg-bodybg/60 #{!important};
+    }
+    .page {
+      @apply w-[1400px] my-0 mx-auto relative shadow-[0rem_0rem_1rem_rgba(0,0,0,0.1)] dark:shadow-[0rem_0rem_1rem_rgba(255,255,255,0.1)] #{!important};
+      .app-header {
+        @apply w-[1400px] my-0 mx-auto;
+      }
+    }
+    &[data-nav-layout="horizontal"] {
+      .app-sidebar {
+        @apply w-[1400px] mx-auto my-0 #{!important};
+      }
+    }
+    .page {
+      .app-sidebar {
+        @apply start-auto;
+      }
+      .app-header {
+        @apply start-auto;
+
+      }
+    }
+    .main-chart-wrapper .chat-user-details.open {
+      @apply end-0;
+    }
+    &.dark {
+      .page {
+        @apply shadow-[-5px_0px_13px_10px_rgba(255,255,255,0.03)] #{!important};
+      }
+    }
+    &[data-vertical-style="detached"] {
+      .page {
+        @apply w-[1400px] mx-auto #{!important};
+        .app-sidebar {
+          @apply mx-4;
+        }
+      }
+    }
+    #sales-donut {
+      @apply w-full #{!important};
+    }
+    .chat-info {
+      @apply min-w-[21.875rem] max-w-[21.875rem];
+    }
+    .main-chat-area {
+      @apply w-full max-w-full overflow-hidden;
+    }
+    .chat-user-details {
+      @apply hidden;
+    }
+    .main-chart-wrapper .main-chat-right-icons .responsive-userinfo-open {
+      @apply flex;
+    }
+    .main-chart-wrapper .chat-user-details.open {
+      @apply block bottom-2;
+    }
+    .main-chart-wrapper .chat-user-details {
+      @apply absolute;
+    }
+    .mail-info-body {
+      @apply max-h-[calc(100vh-19.3rem)];
+    }
+    #product-quantity {
+      @apply w-8;
+    }
+    .xxxl\:col-span-2 {
+      @apply col-span-4;
+    }
+    .xxxl\:col-span-3,
+    .xxxl\:col-span-4,
+    .xxxl\:col-span-6,
+    .xxxl\:col-span-8 {
+      @apply col-span-12;
+    }
+    .xxxl\:col-span-9 {
+      @apply col-span-12;
+    }
+    .xxxl\:flex {
+      @apply block;
+    }
+    .xxxl\:space-y-0 {
+      @apply space-y-2;
+    }
+    .xxl\:max-w-\[250px\] {
+      @apply max-w-[160px];
+    }
+    .xxxl\:\!col-span-3 {
+      @apply col-span-6 #{!important};
+    }
+    .swiper-text {
+      @apply hidden;
+    }
+    .xxxl\:grid-cols-4 {
+      @apply grid-cols-1 #{!important};
+    }
+  }
+}
+/* End Boxed Styles */

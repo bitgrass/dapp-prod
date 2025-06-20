@@ -1,0 +1,171 @@
+/* Start Background Image Styles */
+[bg-img="bgimg1"] {
+  .app-sidebar {
+    @apply bg-[url('../public/assets/images/menu-bg-images/bg-img1.jpg')] bg-cover bg-center #{!important};
+  }
+
+  &[data-menu-styles=gradient] {
+    .app-sidebar {
+      @apply bg-[url('../public/assets/images/menu-bg-images/bg-img1.jpg')] bg-cover bg-center #{!important};
+    }
+  }
+}
+
+[bg-img="bgimg2"] {
+  .app-sidebar {
+    @apply bg-[url('../public/assets/images/menu-bg-images/bg-img2.jpg')] bg-cover bg-center #{!important};
+  }
+
+  &[data-menu-styles=gradient] {
+    .app-sidebar {
+      @apply bg-[url('../public/assets/images/menu-bg-images/bg-img2.jpg')] bg-cover bg-center #{!important};
+    }
+  }
+}
+
+[bg-img="bgimg3"] {
+  .app-sidebar {
+    @apply bg-[url('../public/assets/images/menu-bg-images/bg-img3.jpg')] bg-cover bg-center #{!important};
+  }
+
+  &[data-menu-styles=gradient] {
+    .app-sidebar {
+      @apply bg-[url('../public/assets/images/menu-bg-images/bg-img3.jpg')] bg-cover bg-center #{!important};
+    }
+  }
+}
+
+[bg-img="bgimg4"] {
+  .app-sidebar {
+    @apply bg-[url('../public/assets/images/menu-bg-images/bg-img4.jpg')] bg-cover bg-center #{!important};
+  }
+
+  &[data-menu-styles=gradient] {
+    .app-sidebar {
+      @apply bg-[url('../public/assets/images/menu-bg-images/bg-img4.jpg')] bg-cover bg-center #{!important};
+    }
+  }
+}
+
+[bg-img="bgimg5"] {
+  .app-sidebar {
+    @apply bg-[url('../public/assets/images/menu-bg-images/bg-img5.jpg')] bg-cover bg-center #{!important};
+  }
+
+  &[data-menu-styles=gradient] {
+    .app-sidebar {
+      @apply bg-[url('../public/assets/images/menu-bg-images/bg-img5.jpg')] bg-cover bg-center #{!important};
+    }
+  }
+}
+
+[bg-img="bgimg5"],
+[bg-img="bgimg4"],
+[bg-img="bgimg3"],
+[bg-img="bgimg2"],
+[bg-img="bgimg1"] {
+  .app-sidebar {
+    @apply bg-cover bg-center bg-no-repeat before:absolute before:inset-x-0 before:top-0 before:w-full before:h-full before:-z-[1];
+  }
+
+  &[data-nav-layout="vertical"][data-nav-style="menu-click"][data-toggled="menu-click-closed"],
+  &[data-nav-layout="vertical"][data-nav-style="menu-hover"][data-toggled="menu-hover-closed"],
+  &[data-nav-layout="vertical"][data-nav-style="icon-click"][data-toggled="icon-click-closed"],
+  &[data-nav-layout="vertical"][data-nav-style="icon-hover"][data-toggled="icon-hover-closed"] {
+    .app-sidebar {
+      position: fixed;
+    }
+  }
+
+  &[data-menu-styles="light"] {
+    .app-sidebar {
+      @apply before:bg-white/80;
+
+      .main-sidebar-header {
+        @apply bg-transparent #{!important};
+      }
+    }
+  }
+
+  &.light {
+    &[data-menu-styles="dark"] {
+      .app-sidebar {
+        @apply before:bg-[#111c43]/80;
+
+        .main-sidebar-header {
+          @apply bg-transparent #{!important};
+        }
+      }
+    }
+  }
+
+  &[data-menu-styles="dark"] {
+    &.dark {
+      .app-sidebar {
+        @apply before:bg-bodybg/80;
+
+        .main-sidebar-header {
+          @apply bg-transparent #{!important};
+        }
+      }
+    }
+
+    .app-sidebar {
+      @apply before:bg-[#111c43]/80;
+
+      .main-sidebar-header {
+        @apply bg-transparent #{!important};
+      }
+    }
+  }
+
+  &[data-menu-styles="color"] {
+    .app-sidebar {
+      @apply before:bg-primary/80 before:bg-gradient-to-t before:from-black/30 before:to-black/30;
+
+      .main-sidebar-header {
+        @apply bg-transparent #{!important};
+      }
+    }
+  }
+
+  &[data-menu-styles="gradient"] {
+    .app-sidebar {
+      @apply before:bg-gradient-to-b before:from-primary/80 before:to-secondary/80 after:absolute after:h-full after:w-full after:inset-0 after:bg-gradient-to-t after:from-black/30 after:to-black/30 after:-z-[1];
+
+      .main-sidebar-header {
+        @apply bg-transparent #{!important};
+      }
+    }
+  }
+
+  &[data-menu-styles="transparent"] {
+    .app-sidebar {
+      @apply before:bg-bodybg/80;
+
+      .main-sidebar-header {
+        @apply bg-transparent #{!important};
+      }
+    }
+
+    &.dark {
+      .app-sidebar {
+        @apply before:bg-bodybg2/80;
+
+        .main-sidebar-header {
+          @apply bg-transparent #{!important};
+        }
+      }
+    }
+  }
+
+  @media (min-width: 992px) {
+    &[data-vertical-style=doublemenu] {
+      .app-sidebar .main-sidebar-header {
+        backdrop-filter: blur(30px);
+      }
+    }
+  }
+}
+
+/* End Background Image Styles */

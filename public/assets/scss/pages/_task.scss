@@ -1,0 +1,89 @@
+/* Start::task-kanboard-board */
+.ynex-kanban-board {
+    @apply flex overflow-x-auto items-stretch mb-3 pb-4;
+    .kanban-tasks-type {
+        @apply min-w-[20rem] me-6 w-full;
+        &:last-child {
+            @apply me-0;
+        }
+        .kanban-tasks{
+           @apply touch-none;
+        }
+    }
+    .task-image {
+        .kanban-image {
+            @apply h-[150px] w-full rounded-md;
+        }
+    } 
+    .kanban-content {
+        @apply mt-3;
+    }
+    .kanban-task-description {
+        @apply text-textmuted text-[0.82rem];
+    }
+    .kanban-tasks-type {
+        &.new {
+            .kanban-tasks.box {
+                @apply border-t-[3px] border-solid border-primary/30;
+            }
+        }
+        &.todo {
+            .kanban-tasks.box {
+                @apply border-t-[3px] border-solid border-warning/30;
+            }
+        }
+        &.in-progress {
+            .kanban-tasks.box {
+                @apply border-t-[3px] border-solid border-info/30;
+            }
+        }
+        &.inreview {
+            .kanban-tasks.box {
+                @apply border-t-[3px] border-solid border-danger/30;
+            }
+        }
+        &.completed {
+            .kanban-tasks.box {
+                @apply border-t-[3px] border-solid border-success/30;
+            }
+        }
+    }
+    #new-tasks,#todo-tasks,#inprogress-tasks,#inreview-tasks,#completed-tasks {
+        .box:last-child {
+            @apply mb-0;
+        }
+    }
+    #new-tasks,#todo-tasks,#inprogress-tasks,#inreview-tasks,#completed-tasks {
+        @apply relative max-h-[35rem];
+        .simplebar-content {
+            @apply pt-0 pb-4 px-0;
+        }
+    }
+    .task-Null {
+        @apply relative min-h-[12.5rem] before:absolute before:inset-0 before:bg-white dark:before:bg-bodybg before:rounded-md before:bg-[url('../public/assets/images/media/media-83.svg')] before:bg-cover before:bg-center before:h-[12.5rem]
+        before:w-full before:my-0 before:mx-auto;
+    }
+}
+/* end::task-kanboard-board */
+
+/* Start::task-details */
+.task-title {
+    @apply relative start-4 before:absolute before:w-2 before:h-2 before:-start-4 before:top-2 before:rounded-full before:bg-secondary;
+}
+.task-details-key-tasks {
+    @apply list-decimal;
+    li {
+        @apply mb-2 text-[0.875rem] text-[#8c9097];
+        &:last-child {
+            @apply mb-0;
+        }
+    }
+}
+.task-description {
+    @apply text-[0.875rem];
+}
+.task-details-progress {
+    @apply w-[6.25rem];
+}
+
+/* End::task-details */
