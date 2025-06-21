@@ -14716,10 +14716,7 @@ display: none;
 filter: blur(4px);
 }
 
-[data-testid="ockTextInput_Input"] {
-      font-size: 2.5rem;
-      background-color: transparent;
-}
+
 
 
 
@@ -14735,6 +14732,15 @@ filter: blur(4px);
     width: 15px;
     fill: rgb(var(--primary))
   }
+
+
+  [data-testid="ockQuantitySelector_decrement"] {
+      width: 2.75rem;
+}
+
+[data-testid="ockQuantitySelector_increment"] {
+      width: 2.75rem;
+}
 
   [data-testid="ockTextInput_Input"] {
     background-color: rgb(var(--camel));;
@@ -14799,13 +14805,18 @@ filter: blur(4px);
 
 }
 
-[data-testid="ockQuantitySelector_decrement"] {
-      width: 2.75rem;
+
+
+
+
+.swap {
+[data-testid="ockTextInput_Input"] {
+      font-size: 2.5rem;
+      background-color: transparent;
+}
 }
 
-[data-testid="ockQuantitySelector_increment"] {
-      width: 2.75rem;
-}
+
 
 
 

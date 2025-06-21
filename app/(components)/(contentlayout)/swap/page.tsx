@@ -120,7 +120,7 @@ const Dashboard = () => {
     return (
         <Fragment>
             <Seo title={"swap"} />
-            <div className='container'>
+            <div className='container swap'>
                 <div className="grid grid-cols-12 gap-x-6 mt-6">
                     <div className="xl:col-span-12 col-span-12">
                         <div className="tab-content">
