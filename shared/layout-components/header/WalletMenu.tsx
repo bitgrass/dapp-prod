@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { usePrivy, useLogin, useLogout, useWallets } from '@privy-io/react-auth';
-import { useAccount, useBalance, useSendTransaction } from 'wagmi';
+import { useAccount, useBalance, useSendTransaction, useSwitchChain } from 'wagmi';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import { parseEther } from 'viem';
 import { base } from 'wagmi/chains';
@@ -16,6 +16,7 @@ const WalletMenu: React.FC = () => {
   const { data: ethBalance } = useBalance({ address, chainId: base.id });
   const { data: tokenBalance } = useBalance({ address, token: btgToken.address as any, chainId: base.id });
   const { sendTransactionAsync } = useSendTransaction();
+  const { switchChainAsync } = useSwitchChain();
 
   const popupRef = useRef<HTMLDivElement>(null);
 
@@ -42,9 +43,9 @@ const WalletMenu: React.FC = () => {
   const twitterImage = user?.twitter?.profilePictureUrl?.replace('_normal', '');
 
   const handleModal = () => {
-    setOpenPanel(null)
-    setOpen(true)
-  }
+    setOpenPanel(null);
+    setOpen(true);
+  };
 
   // Panel toggle logic
   const handleFundPanel = () => {
@@ -66,7 +67,6 @@ const WalletMenu: React.FC = () => {
 
   // Close popup on click outside
   useEffect(() => {
-
     if (!open) return;
     function handleClickOutside(event: any) {
       if (
@@ -84,8 +84,7 @@ const WalletMenu: React.FC = () => {
     };
   }, [open]);
 
-
-
+  // Sidebar disable/enable
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -95,12 +94,10 @@ const WalletMenu: React.FC = () => {
       if (sidebar) {
         sidebar.classList.add("disabled");
       }
-
     } else {
       if (sidebar) {
         sidebar.classList.remove("disabled");
       }
-
     }
   }, [open]);
 
@@ -115,35 +112,48 @@ const WalletMenu: React.FC = () => {
     }
   }, [sendSuccess]);
 
-  // FUND WALLET HANDLER WITH ERROR
+  // FUND WALLET HANDLER
   const handleFund = async () => {
     setFundError('');
     if (!fundAmount || isNaN(Number(fundAmount)) || Number(fundAmount) <= 0) {
       setFundError("Please enter a valid amount.");
       return;
     }
+    if (!embeddedWallet) {
+      setFundError("No embedded wallet connected.");
+      return;
+    }
     try {
-      if (embeddedWallet) {
-        await embeddedWallet.fund({
-          chain: { id: base.id },
-          amount: fundAmount,
-        });
-        setOpenPanel(null);
-        setFundAmount('');
+      const currentChain = embeddedWallet.chainId;
+      if (currentChain !== `eip155:${base.id}`) {
+        await embeddedWallet.switchChain(base.id);
       }
+      await embeddedWallet.fund({
+        chain: { id: base.id },
+        amount: fundAmount,
+      });
+      setOpenPanel(null);
+      setFundAmount('');
     } catch (err: any) {
       if (err?.message?.includes("User rejected")) {
         setFundError("Transaction rejected by user.");
+      } else if (err?.message?.includes("ChainMismatchError")) {
+        setFundError("Please switch to the Base network in your wallet.");
       } else {
         setFundError("Failed to fund wallet.");
       }
     }
   };
 
-  // SEND ETH HANDLER WITH ERROR
+  // SEND ETH HANDLER
   const handleSend = async () => {
     setSendError('');
     setSendSuccess(null);
+
+    if (!address || !wallets.length) {
+      setSendError("No wallet connected. Please connect a wallet.");
+      return;
+    }
     if (!sendToAddress || !sendAmount || isNaN(Number(sendAmount)) || Number(sendAmount) <= 0) {
       setSendError("Enter a valid address and amount.");
       return;
@@ -153,6 +163,18 @@ const WalletMenu: React.FC = () => {
       return;
     }
     try {
+      if (embeddedWallet) {
+        const currentChain = embeddedWallet.chainId;
+        if (currentChain !== `eip155:${base.id}`) {
+          await embeddedWallet.switchChain(base.id);
+        }
+      } else {
+        const currentChainId = wallets[0]?.chainId;
+        if (currentChainId && currentChainId !== `eip155:${base.id}`) {
+          await switchChainAsync({ chainId: base.id });
+        }
+      }
+
       const tx = await sendTransactionAsync({
         to: sendToAddress as `0x${string}`,
         value: parseEther(sendAmount),
@@ -166,6 +188,8 @@ const WalletMenu: React.FC = () => {
         setSendError("Transaction rejected by user.");
       } else if (err?.message?.includes("insufficient funds")) {
         setSendError("Insufficient ETH balance.");
+      } else if (err?.message?.includes("ChainMismatchError")) {
+        setSendError("Please switch to the Base network in your wallet.");
       } else {
         setSendError("Failed to send ETH.");
       }
@@ -191,7 +215,7 @@ const WalletMenu: React.FC = () => {
   }
 
   return (
-    <Fragment >
+    <Fragment>
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 px-3 py-1 ti-btn"
@@ -232,8 +256,10 @@ const WalletMenu: React.FC = () => {
       {open && !openPanel && (
         <div
           className="fixed inset-0 flex items-center justify-center backdrop-blur-sm"
-          style={{ position: "fixed", zIndex: 999999 }}>
-          <div ref={popupRef}
+          style={{ position: "fixed", zIndex: 999999 }}
+        >
+          <div
+            ref={popupRef}
             className="w-[95%] z-[9999] max-w-md bg-camel rounded-xl shadow-2xl p-6"
             onClick={(e) => e.stopPropagation()}
           >
@@ -271,7 +297,7 @@ const WalletMenu: React.FC = () => {
                       setTimeout(() => setShowTooltip(false), 1200);
                     }}
                     className="w-full flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                    style={{ color: "#666666", fontSize: "12px" , padding:"10px 0 0 0" }}
+                    style={{ color: "#666666", fontSize: "12px", padding: "10px 0 0 0" }}
                   >
                     {shortAddress || email || 'User'}
                     <i className="bx bx-copy mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
@@ -290,27 +316,27 @@ const WalletMenu: React.FC = () => {
                 <button
                   onClick={() => window.open(`https://basescan.org/address/${address}`, '_blank')}
                   className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                  style={{ color: "#666666", fontSize: "12px" , padding:"10px 0 0 0" }}
+                  style={{ color: "#666666", fontSize: "12px", padding: "10px 0 0 0" }}
                 >
                   View on Basescan
                   <i className="bx bx-link-alt mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
                 </button>
               )}
 
-              {!hasNonEmbeddedWallet && <button
-                className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                style={{ color: "#666666", fontSize: "12px" , padding:"10px 0 0 0" }}
-                onClick={exportWallet}
-              >
-                Export my wallet  <i className="ri-export-fill mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
-              </button>}
+              {!hasNonEmbeddedWallet && (
+                <button
+                  className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
+                  style={{ color: "#666666", fontSize: "12px", padding: "10px 0 0 0" }}
+                  onClick={exportWallet}
+                >
+                  Export my wallet <i className="ri-export-fill mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
+                </button>
+              )}
             </div>
             <hr style={{ borderColor: "#F2F2F2", borderWidth: "1px", marginTop: "1rem", marginBottom: "1rem" }} />
 
             <div className="flex flex-col items-left gap-4 mb-4">
-
               <span className="font-semibold text-base">Balance</span>
-
 
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
@@ -343,13 +369,7 @@ const WalletMenu: React.FC = () => {
                   {ethBalance ? `${ethBalance.formatted.slice(0, 6)} ${ethBalance.symbol}` : "0"}
                 </div>
               </div>
-
-
-
-
             </div>
-
-
 
             {/* Fund / Send */}
             <div className="flex flex-row gap-2 mt-6 mb-6">
@@ -361,12 +381,11 @@ const WalletMenu: React.FC = () => {
                     style={{ placeContent: 'center' }}
                     className="flex items-center justify-between text-sm font-medium text-[#333335] w-full px-4 py-2 rounded-lg hover:opacity-90 transition ti-btn"
                   >
-                    <span className="flex items-center" >
+                    <span className="flex items-center">
                       <i className="bx bx-credit-card mr-2" style={{ color: '#333335' }} />
                       Deposit
                     </span>
                   </button>
-
                 </div>
               )}
 
@@ -377,24 +396,19 @@ const WalletMenu: React.FC = () => {
                   style={{ placeContent: 'center' }}
                   className="flex items-center justify-between text-sm font-medium text-[#333335] w-full px-4 py-2 rounded-lg hover:opacity-90 transition ti-btn"
                 >
-                  <span className="flex items-center" >
+                  <span className="flex items-center">
                     <i className="bx bx-send mr-2" style={{ color: '#333335' }} />
                     Send
                   </span>
                 </button>
-
               </div>
             </div>
 
             <hr style={{ borderColor: "#F2F2F2", borderWidth: "1px", marginTop: "1rem", marginBottom: "1rem" }} />
 
-
-
-
             {/* Connect wallet if needed */}
             {!hasNonEmbeddedWallet && (
               <div className="flex gap-4">
-
                 <button
                   onClick={handleLinkWallet}
                   style={{ fontSize: "12px" }}
@@ -405,21 +419,19 @@ const WalletMenu: React.FC = () => {
               </div>
             )}
 
-
             {/* Disconnect button */}
             <button
               onClick={() => {
                 setOpen(false);
                 logout();
               }}
-              className="w-full flex items-center justify-center text-sm font-medium bg-[#00382B] hover:bg-red-700 text-white py-2  rounded-lg transition mt-4 ti-btn"
+              className="w-full flex items-center justify-center text-sm font-medium bg-[#00382B] hover:bg-red-700 text-white py-2 rounded-lg transition mt-4 ti-btn"
             >
               <i className="bx bx-log-out mr-2" />Disconnect
             </button>
           </div>
         </div>
       )}
-
 
       {(openPanel === 'send' || openPanel === 'fund') && (
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm" style={{ position: "fixed", zIndex: 999999 }}>
@@ -433,12 +445,10 @@ const WalletMenu: React.FC = () => {
                 <h3 className="font-semibold">
                   {openPanel === 'send' ? 'Send ETH' : 'Deposit ETH'}
                 </h3>
-
                 <span style={{ color: "#666666" }}>
                   {openPanel === 'send' ? '' : 'Choose ETH Amount'}
-                </span >
+                </span>
               </div>
-
               <span></span>
             </div>
 
@@ -446,15 +456,13 @@ const WalletMenu: React.FC = () => {
               <div className="space-y-4 mt-4">
                 {!sendSuccess ? (
                   <>
-                    <span className="text-sm">
-                      Recipient Address
-                    </span>
+                    <span className="text-sm">Recipient Address</span>
                     <input
                       type="text"
                       value={sendToAddress}
                       onChange={(e) => setSendToAddress(e.target.value)}
                       placeholder="Recipient Address"
-                      className="w-full px-3 py-3 border border-secondary rounded-md bg-swap dark:text-white  dark:placeholder:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition shadow-sm text-sm"
+                      className="w-full px-3 py-3 border border-secondary rounded-md bg-swap dark:text-white dark:placeholder:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition shadow-sm text-sm"
                     />
                     <div className="w-full flex flex-row justify-between items-center">
                       <span className="text-sm">Amount</span>
@@ -465,28 +473,40 @@ const WalletMenu: React.FC = () => {
                         </span>
                       </span>
                     </div>
-
                     <input
                       type="number"
                       min="0"
                       value={sendAmount}
                       onChange={(e) => setSendAmount(e.target.value)}
                       placeholder="Amount in ETH"
-                      className="w-full px-3 py-3 border border-secondary rounded-md bg-swap dark:text-white  dark:placeholder:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition shadow-sm text-sm"
+                      className="w-full px-3 py-3 border border-secondary rounded-md bg-swap dark:text-white dark:placeholder:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition shadow-sm text-sm"
                     />
                     <div className="text-xs text-red-500" style={{ height: "20px" }}>{sendError && <span>{sendError}</span>}</div>
+                    {sendError.includes("Please switch to the Base network") && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            if (embeddedWallet) {
+                              await embeddedWallet.switchChain(base.id);
+                            } else {
+                              await switchChainAsync({ chainId: base.id });
+                            }
+                            setSendError('');
+                          } catch (err) {
+                            setSendError("Failed to switch to Base network.");
+                          }
+                        }}
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md font-medium transition mt-2"
+                      >
+                        Switch to Base Network
+                      </button>
+                    )}
                     <button
                       onClick={handleSend}
                       className="w-full bg-secondary hover:bg-secondary/90 text-white py-2 rounded-md font-medium transition"
                     >
                       Send
                     </button>
-                    {/* <button
-                      onClick={handleFundPanel}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-md font-medium transition mt-2"
-                    >
-                      Deposit
-                    </button> */}
                   </>
                 ) : (
                   <div className="flex flex-col items-start gap-1 py-2">
@@ -495,7 +515,9 @@ const WalletMenu: React.FC = () => {
                         <circle cx="12" cy="12" r="12" fill="rgb(var(--secondary))" />
                         <path d="M7 13.5l3 3 7-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <span className="text-[13px] font-semibold" style={{ color: 'rgb(var(--secondary))' }}>Transaction sent successfully!</span>
+                      <span className="text-[13px] font-semibold" style={{ color: 'rgb(var(--secondary))' }}>
+                        Transaction sent successfully!
+                      </span>
                     </div>
                     <a
                       href={`https://basescan.org/tx/${sendSuccess.hash}`}
@@ -513,18 +535,15 @@ const WalletMenu: React.FC = () => {
             {openPanel === 'fund' && (
               <div className="space-y-4 mt-4">
                 <span className="text-sm">Amount</span>
-
                 <input
                   type="number"
                   min="0"
                   value={fundAmount}
                   onChange={(e) => setFundAmount(e.target.value)}
                   placeholder="Amount in ETH"
-                  className="w-full px-3 py-3 border border-secondary rounded-md bg-swap dark:text-white  dark:placeholder:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition shadow-sm text-sm"
+                  className="w-full px-3 py-3 border border-secondary rounded-md bg-swap dark:text-white dark:placeholder:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition shadow-sm text-sm"
                 />
-
                 <div className="text-xs text-red-500" style={{ height: "20px" }}>{fundError && <span>{fundError}</span>}</div>
-
                 <button
                   onClick={handleFund}
                   className="w-full bg-secondary hover:bg-secondary/90 text-white py-2 rounded-md font-medium transition"
@@ -536,11 +555,6 @@ const WalletMenu: React.FC = () => {
           </div>
         </div>
       )}
-
-
-
-
-
     </Fragment>
   );
 };
