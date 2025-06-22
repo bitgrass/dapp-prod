@@ -11,6 +11,7 @@ const nextConfig = {
   images: {
     loader: 'imgix',
     path: '/',
+    unoptimized: true,
   },
   typescript: {
     ignoreBuildErrors: true,

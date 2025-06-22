@@ -13,6 +13,7 @@ import OSM from 'ol/source/OSM';
 import dynamic from 'next/dynamic';
 import * as Heatdata from '@/shared/data/charts/apexcharts/heatmapadata'
 import ShareModal from "@/shared/layout-components/modal/ShareModal"
+import PurchaseCelebrationModal from "@/shared/layout-components/modal/PurchaseCelebrationModal"
 
 
 
@@ -332,6 +333,17 @@ export default function ProjectDetails({ params }: Params) {
         onClose={() => setModalOpen(false)}
         project={project}
       />
+
+       {/* <PurchaseCelebrationModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        name='ahmed'
+        token='0xe14cc93688fec2382b169b61b38f1491a2491eb3'
+        id='17'
+        image='https://ik.imagekit.io/cafu/collection-logo.png?updatedAt=1748949261858&ik-s=354aa8dbbc0e22d358dfbf7a3065a527da05fa53'
+
+
+      /> */}
     </Fragment>
   );
 }

@@ -9342,6 +9342,11 @@ react-color@^2.19.3:
     reactcss "^1.2.0"
     tinycolor2 "^1.4.1"
 
+react-confetti-boom@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/react-confetti-boom/-/react-confetti-boom-2.0.1.tgz#93206bdf4d06ce6a1e6481f43c8e00cf011d88fc"
+  integrity sha512-1Uy3JY8czl6yvIAICb+1xLCHLWtUqdNj16ebYBGc5YunGzR4yiP6wSvwYPBeEGZ6/ZjHWgXyVmdDW1ssbpC/Mg==
+
 react-countdown@^2.3.5:
   version "2.3.6"
   resolved "https://registry.yarnpkg.com/react-countdown/-/react-countdown-2.3.6.tgz#26699ea87e548bd7c981281e5a8fd8b511f774ff"

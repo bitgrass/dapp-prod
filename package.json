@@ -74,6 +74,7 @@
     "react-chartjs-2": "^5.2.0",
     "react-color": "^2.19.3",
     "react-color-palette": "^7.1.1",
+    "react-confetti-boom": "^2.0.1",
     "react-countdown": "^2.3.5",
     "react-countup": "^6.5.3",
     "react-datepicker": "^6.7.0",
