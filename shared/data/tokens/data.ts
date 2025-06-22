@@ -10,7 +10,7 @@ export const btgToken : Token = {
 };
 
 export const nftInfo = {
-   address: "0x477ea15de5e4e9c884c1cc92da3198d333ea85fb"
+   address: "0xc58e79f30b9a1575499da948932b8b16c23a4caf"
 }
 
 export const EthInfo = {
