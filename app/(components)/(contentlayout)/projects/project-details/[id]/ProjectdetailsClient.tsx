@@ -337,8 +337,8 @@ export default function ProjectDetails({ params }: Params) {
        {/* <PurchaseCelebrationModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
-        name='ahmed'
-        token='0xe14cc93688fec2382b169b61b38f1491a2491eb3'
+        name='bitgrass'
+        token='0x6d5fd4f1d8eabb02c471a652b1610d7e93e97eaa'
         id='17'
         image='https://ik.imagekit.io/cafu/collection-logo.png?updatedAt=1748949261858&ik-s=354aa8dbbc0e22d358dfbf7a3065a527da05fa53'
 
