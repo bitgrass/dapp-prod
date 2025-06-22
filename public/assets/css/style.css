@@ -14738,6 +14738,11 @@ filter: blur(4px);
       width: 2.75rem;
 }
 
+[data-testid="ockAvatar_ImageContainer"] {
+      width: 1rem;
+      height: 1rem;
+}
+
 [data-testid="ockQuantitySelector_increment"] {
       width: 2.75rem;
 }
