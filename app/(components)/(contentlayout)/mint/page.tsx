@@ -226,7 +226,6 @@ const Nftdetails = () => {
         if (!walletClient || !isConnected) return;
 
         for (const range of adjustedRanges) {
-            // Adjust the start of the first range to startId if it's within this range
             const effectiveStart = range === adjustedRanges[0] && startId > range.start ? startId : range.start;
             try {
                 const res = await fetch(`/api/listings?start=${effectiveStart}&end=${range.end}`);
@@ -771,13 +770,13 @@ const Nftdetails = () => {
 
                                                     <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
                                                         <img
-                                                            src="../../assets/images/apps/100m2.jpg"
+                                                            src="../../assets/images/apps/100m2v1.jpg"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
                                                     </div>
 
-                                                    <p className="text-[1.5rem] font-bold mb-0">Bitgrass</p>
+
                                                     <NFTQuantitySelector />
                                                     <NFTAssetCost />
                                                     <NFTMintButton />
@@ -789,7 +788,7 @@ const Nftdetails = () => {
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
-                                                    Bitgrass NFT Collection – Standard
+                                                    Bitgrass NFT Collection – Standard 100m2 NFT
                                                 </p>
                                                 <p className="text-[1.125rem] mb-4">
                                                     <i className="ri-circle-fill text-success align-middle"></i>
@@ -811,18 +810,15 @@ const Nftdetails = () => {
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Creator</p>
+                                                        <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/faces/faviconDark.png" alt="" />
+                                                                <img src="../../../assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
-                                                            Bitgrass
+                                                            Up to 0.1 tCO2 /year
                                                         </div>
                                                     </div>
-                                                    <div className="xxl:col-span-5 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Published</p>
-                                                        <span className="block font-semibold mt-2">Soon</span>
-                                                    </div>
+
                                                 </div>
 
                                                 <div className="mb-4">
@@ -912,14 +908,14 @@ const Nftdetails = () => {
 
                                                     <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
                                                         <img
-                                                            src="../../assets/images/apps/500m2.jpg"
+                                                            src="../../assets/images/apps/500m2v1.jpg"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
                                                     </div>
 
-                                                    <p className="text-[1.5rem] font-bold mb-0">Bitgrass</p>
-                                                    <NFTQuantitySelector />
+
+
                                                     <NFTAssetCost />
 
                                                     <button
@@ -939,7 +935,7 @@ const Nftdetails = () => {
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
-                                                    Bitgrass NFT Collection – Premium
+                                                    Bitgrass NFT Collection – Premium 500m2 NFT
                                                 </p>
                                                 <p className="text-[1.125rem] mb-4">
                                                     <i className="ri-circle-fill text-success align-middle"></i>
@@ -961,18 +957,15 @@ const Nftdetails = () => {
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Creator</p>
+                                                        <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/faces/faviconDark.png" alt="" />
+                                                                <img src="../../../assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
-                                                            Bitgrass
+                                                            Up to 0.5 tCO2 /year
                                                         </div>
                                                     </div>
-                                                    <div className="xxl:col-span-5 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Published</p>
-                                                        <span className="block font-semibold mt-2">Soon</span>
-                                                    </div>
+
                                                 </div>
 
                                                 <div className="mb-4">
@@ -1063,14 +1056,12 @@ const Nftdetails = () => {
 
                                                     <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
                                                         <img
-                                                            src="../../assets/images/apps/1000m2.jpg"
+                                                            src="../../assets/images/apps/1000m2v1.jpg"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
                                                     </div>
 
-                                                    <p className="text-[1.5rem] font-bold mb-0">Bitgrass</p>
-                                                    <NFTQuantitySelector />
                                                     <NFTAssetCost />
 
                                                     <button
@@ -1090,7 +1081,7 @@ const Nftdetails = () => {
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
-                                                    Bitgrass NFT Collection – Legendary
+                                                    Bitgrass NFT Collection – Legendary 1000m2 NFT
                                                 </p>
                                                 <p className="text-[1.125rem] mb-4">
                                                     <i className="ri-circle-fill text-success align-middle"></i>
@@ -1112,18 +1103,15 @@ const Nftdetails = () => {
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Creator</p>
+                                                        <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/faces/faviconDark.png" alt="" />
+                                                                <img src="../../../assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
-                                                            Bitgrass
+                                                            Up to 1.0 tCO2 /year
                                                         </div>
                                                     </div>
-                                                    <div className="xxl:col-span-5 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Published</p>
-                                                        <span className="block font-semibold mt-2">Soon</span>
-                                                    </div>
+
                                                 </div>
 
                                                 <div className="mb-4">
