@@ -6,8 +6,12 @@ import Link from "next/link";
 import { BrowserProvider, BigNumberish, BytesLike, Contract } from "ethers";
 import { Transaction, TransactionButton } from "@coinbase/onchainkit/transaction";
 import { Seaport } from "@opensea/seaport-js";
-import { useAccount, useWalletClient } from 'wagmi';
+import { useAccount, useWalletClient, useSwitchChain } from 'wagmi';
+import { base } from 'wagmi/chains';
+
+
 import PurchaseCelebrationModal from "@/shared/layout-components/modal/PurchaseCelebrationModal"
+import { custom } from "viem";
 
 import {
     NFTCreator,
@@ -19,6 +23,7 @@ import {
 import { NFTMedia } from "@coinbase/onchainkit/nft/view";
 import { NFTMintCard } from "@coinbase/onchainkit/nft";
 import { ethers } from "ethers";
+import { set } from "date-fns";
 
 type OrderData = {
     parameters: any;
@@ -28,8 +33,9 @@ type OrderData = {
 const Nftdetails = () => {
     const { isConnected } = useAccount();
     const { data: walletClient, isLoading: isWalletLoading } = useWalletClient();
-    const [activeTab, setActiveTab] = useState("Standard");
-    const tabList = ["Standard", "Premium", "Legendary"];
+    const { switchChainAsync } = useSwitchChain();
+    const [activeTab, setActiveTab] = useState("Standard 100m2 Plot");
+    const tabList = ["Standard 100m2 Plot", "Premium 500m2 Plot", "Legendary 1000m2 Plot"];
     const [orderData, setOrderData] = useState<OrderData | null>(null);
     const [txRequest, setTxRequest] = useState<{
         to: string;
@@ -51,11 +57,24 @@ const Nftdetails = () => {
     ];
     const [listedLegendaryItems, setListedLegendaryItems] = useState<any[]>([]);
     const [listedPremiumItems, setListedPremiumItems] = useState<any[]>([]);
+    const [modalData, setModalData] = useState({
+        id: "",
+        image: "",
+        name: ""
+    })
     const [selectedQuantity, setSelectedQuantity] = useState(1);
-    //const sortedItems = [...listedItems].sort((a: any, b: any) =>
-    //    parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
-    //     parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
-    // );
+    const sortedPremiumItems = [...listedPremiumItems].sort((a: any, b: any) =>
+        parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+        parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+    );
+
+    const sortedLegendaryItems = [...listedLegendaryItems].sort((a: any, b: any) =>
+        parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+        parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+    );
+
+    const [lastBoughtLegendaryId, setLastBoughtLegendaryId] = useState(0);
+    const [lastBoughtPremiumId, setLastBoughtPremiumId] = useState(0);
 
 
     // const itemsToBuy = sortedItems.slice(0, selectedQuantity);
@@ -68,157 +87,368 @@ const Nftdetails = () => {
     //       console.error("Buy failed", err);
     //    }
     //  };
-    useEffect(() => {
-        async function fetchListedLegendaryItems() {
-            if (!walletClient || !isConnected) return;
+    // useEffect(() => {
+    //     async function fetchListedLegendaryItems() {
+    //         if (!walletClient || !isConnected) return;
 
-            const ranges = [
-                { start: 1, end: 20 },
-                { start: 21, end: 40 },
-                { start: 41, end: 60 },
-                { start: 61, end: 80 },
-                { start: 81, end: 100 },
-                { start: 101, end: 120 },
-                { start: 121, end: 140 },
-                { start: 141, end: 160 },
-                { start: 161, end: 180 },
-                { start: 181, end: 200 },
-                { start: 201, end: 220 },
-                { start: 221, end: 240 },
-                { start: 241, end: 260 },
-                { start: 261, end: 280 },
-                { start: 281, end: 300 },
-                { start: 301, end: 320 },
-                { start: 321, end: 340 },
-                { start: 341, end: 360 },
-                { start: 361, end: 380 },
-                { start: 381, end: 400 }
-            ];
+    //         const rawRanges = [
+    //             { start: 1, end: 20 },
+    //             { start: 21, end: 40 },
+    //             { start: 41, end: 60 },
+    //             { start: 61, end: 80 },
+    //             { start: 81, end: 100 },
+    //             { start: 101, end: 120 },
+    //             { start: 121, end: 140 },
+    //             { start: 141, end: 160 },
+    //             { start: 161, end: 180 },
+    //             { start: 181, end: 200 },
+    //             { start: 201, end: 220 },
+    //             { start: 221, end: 240 },
+    //             { start: 241, end: 260 },
+    //             { start: 261, end: 280 },
+    //             { start: 281, end: 300 },
+    //             { start: 301, end: 320 },
+    //             { start: 321, end: 340 },
+    //             { start: 341, end: 360 },
+    //             { start: 361, end: 380 },
+    //             { start: 381, end: 400 }
+    //         ];
 
-            for (const range of ranges) {
-                try {
-                    const res = await fetch(`/api/listings?start=${range.start}&end=${range.end}`);
-                    const data = await res.json();
-                    const orders = data.orders || [];
-                    console.log(`Legendary orders (${range.start}-${range.end}):`, orders);
+    //         let skip = true;
 
-                    if (orders.length > 0) {
-                        const sorted = [...orders]
-                            .filter(
-                                (item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria
-                            )
-                            .sort(
-                                (a: any, b: any) =>
-                                    parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
-                                    parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
-                            );
+    //         for (const range of rawRanges) {
+    //             // Adjust only the first range that includes the bought ID
+    //             let adjustedStart = range.start;
+    //             if (skip && lastBoughtLegendaryId >= range.start && lastBoughtLegendaryId < range.end) {
+    //                 adjustedStart = lastBoughtLegendaryId + 1;
+    //                 skip = false;
+    //             } else if (lastBoughtLegendaryId >= range.end) {
+    //                 continue;
+    //             }
 
-                        console.log(`Legendary sorted (${range.start}-${range.end}):`, sorted);
-                        setListedLegendaryItems(sorted);
-                        return; // Exit after finding non-empty range
-                    }
-                } catch (err) {
-                    console.error(`Failed to fetch legendary listings (${range.start}-${range.end}):`, err);
-                    return; // Exit on error
+    //             try {
+    //                 const res = await fetch(`/api/listings?start=${adjustedStart}&end=${range.end}`);
+    //                 const data = await res.json();
+    //                 const orders = data.orders || [];
+
+    //                 if (orders.length > 0) {
+    //                     const sorted = orders
+    //                         .filter((item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria)
+    //                         .sort((a: any, b: any) =>
+    //                             parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+    //                             parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+    //                         );
+
+    //                     setListedLegendaryItems(sorted);
+    //                     return;
+    //                 }
+    //             } catch (err) {
+    //                 console.error(`Failed to fetch legendary listings (${range.start}-${range.end}):`, err);
+    //                 return;
+    //             }
+    //         }
+
+    //         console.log("All Legendary NFTs are bought");
+    //         setListedLegendaryItems([]);
+    //     }
+    //     fetchListedLegendaryItems()
+    // }, [walletClient, isConnected, isModalOpen]);
+
+
+    const rangesLegendary = [
+        { start: 1, end: 20 },
+        { start: 21, end: 40 },
+        { start: 41, end: 60 },
+        { start: 61, end: 80 },
+        { start: 81, end: 100 },
+        { start: 101, end: 120 },
+        { start: 121, end: 140 },
+        { start: 141, end: 160 },
+        { start: 161, end: 180 },
+        { start: 181, end: 200 },
+        { start: 201, end: 220 },
+        { start: 221, end: 240 },
+        { start: 241, end: 260 },
+        { start: 261, end: 280 },
+        { start: 281, end: 300 },
+        { start: 301, end: 320 },
+        { start: 321, end: 340 },
+        { start: 341, end: 360 },
+        { start: 361, end: 380 },
+        { start: 381, end: 400 }
+    ];
+
+    const rangesPremium = [
+        { start: 401, end: 420 },
+        { start: 421, end: 440 },
+        { start: 441, end: 460 },
+        { start: 461, end: 480 },
+        { start: 481, end: 500 },
+        { start: 501, end: 520 },
+        { start: 521, end: 540 },
+        { start: 541, end: 560 },
+        { start: 561, end: 580 },
+        { start: 581, end: 600 },
+        { start: 601, end: 620 },
+        { start: 621, end: 640 },
+        { start: 641, end: 660 },
+        { start: 661, end: 680 },
+        { start: 681, end: 700 },
+        { start: 701, end: 720 },
+        { start: 721, end: 740 },
+        { start: 741, end: 760 },
+        { start: 761, end: 780 },
+        { start: 781, end: 800 },
+        { start: 801, end: 820 },
+        { start: 821, end: 840 },
+        { start: 841, end: 860 },
+        { start: 861, end: 880 },
+        { start: 881, end: 900 },
+        { start: 901, end: 920 },
+        { start: 921, end: 940 },
+        { start: 941, end: 960 },
+        { start: 961, end: 980 },
+        { start: 981, end: 1000 },
+        { start: 1001, end: 1020 },
+        { start: 1021, end: 1040 },
+        { start: 1041, end: 1060 },
+        { start: 1061, end: 1080 },
+        { start: 1081, end: 1100 },
+        { start: 1101, end: 1120 },
+        { start: 1121, end: 1140 },
+        { start: 1141, end: 1160 },
+        { start: 1161, end: 1180 },
+        { start: 1181, end: 1200 }
+    ];
+
+
+    async function fetchListedLegendaryItems(adjustedRanges: any, startId: any) {
+        if (!walletClient || !isConnected) return;
+
+        for (const range of adjustedRanges) {
+            // Adjust the start of the first range to startId if it's within this range
+            const effectiveStart = range === adjustedRanges[0] && startId > range.start ? startId : range.start;
+            try {
+                const res = await fetch(`/api/listings?start=${effectiveStart}&end=${range.end}`);
+                const data = await res.json();
+                const orders = data.orders || [];
+                console.log(`Legendary orders (${effectiveStart}-${range.end}):`, orders);
+
+                if (orders.length > 0) {
+                    const sorted = [...orders]
+                        .filter(
+                            (item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria
+                        )
+                        .sort(
+                            (a: any, b: any) =>
+                                parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+                                parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+                        );
+
+                    console.log(`Legendary sorted (${effectiveStart}-${range.end}):`, sorted);
+                    setListedLegendaryItems(sorted);
+                    return; // Exit after finding non-empty range
                 }
+            } catch (err) {
+                console.error(`Failed to fetch legendary listings (${effectiveStart}-${range.end}):`, err);
+                return; // Exit on error
             }
-
-            console.log("All NFTs are bought");
-            setListedLegendaryItems([]);
         }
 
-        fetchListedLegendaryItems();
-    }, [walletClient, isConnected , isModalOpen]);
+        console.log("All NFTs are bought");
+        setListedLegendaryItems([]);
+    }
 
     useEffect(() => {
-        async function fetchListedPremiumItems() {
-            if (!walletClient || !isConnected) return;
+        fetchListedLegendaryItems(rangesLegendary, 1);
+    }, [walletClient, isConnected]);
 
-            const ranges = [
-                { start: 401, end: 420 },
-                { start: 421, end: 440 },
-                { start: 441, end: 460 },
-                { start: 461, end: 480 },
-                { start: 481, end: 500 },
-                { start: 501, end: 520 },
-                { start: 521, end: 540 },
-                { start: 541, end: 560 },
-                { start: 561, end: 580 },
-                { start: 581, end: 600 },
-                { start: 601, end: 620 },
-                { start: 621, end: 640 },
-                { start: 641, end: 660 },
-                { start: 661, end: 680 },
-                { start: 681, end: 700 },
-                { start: 701, end: 720 },
-                { start: 721, end: 740 },
-                { start: 741, end: 760 },
-                { start: 761, end: 780 },
-                { start: 781, end: 800 },
-                { start: 801, end: 820 },
-                { start: 821, end: 840 },
-                { start: 841, end: 860 },
-                { start: 861, end: 880 },
-                { start: 881, end: 900 },
-                { start: 901, end: 920 },
-                { start: 921, end: 940 },
-                { start: 941, end: 960 },
-                { start: 961, end: 980 },
-                { start: 981, end: 1000 },
-                { start: 1001, end: 1020 },
-                { start: 1021, end: 1040 },
-                { start: 1041, end: 1060 },
-                { start: 1061, end: 1080 },
-                { start: 1081, end: 1100 },
-                { start: 1101, end: 1120 },
-                { start: 1121, end: 1140 },
-                { start: 1141, end: 1160 },
-                { start: 1161, end: 1180 },
-                { start: 1181, end: 1200 }
-            ];
 
-            for (const range of ranges) {
-                try {
-                    const res = await fetch(`/api/listings?start=${range.start}&end=${range.end}`);
-                    const data = await res.json();
-                    const orders = data.orders || [];
-                    console.log(`Premium orders (${range.start}-${range.end}):`, orders);
+    useEffect(() => {
+        if (!isModalOpen) return; // Only fetch when isModalOpen becomes true
 
-                    if (orders.length > 0) {
-                        const sorted = [...orders]
-                            .filter(
-                                (item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria
-                            )
-                            .sort(
-                                (a: any, b: any) =>
-                                    parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
-                                    parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
-                            );
+        const nextId = lastBoughtLegendaryId + 1; // Start from the next ID (e.g., 182 for 181)
+        const startRangeIndex = rangesLegendary.findIndex(
+            range => nextId >= range.start && nextId <= range.end
+        );
 
-                        console.log(`Premium sorted (${range.start}-${range.end}):`, sorted);
-                        setListedPremiumItems(sorted);
-                        return; // Exit after finding non-empty range
-                    }
-                } catch (err) {
-                    console.error(`Failed to fetch premium listings (${range.start}-${range.end}):`, err);
-                    return; // Exit on error
+        const adjustedRanges = startRangeIndex !== -1
+            ? rangesLegendary.slice(startRangeIndex)
+            : rangesLegendary;
+
+        console.log("adjustedRanges----", adjustedRanges);
+
+        fetchListedLegendaryItems(adjustedRanges, nextId);
+    }, [isModalOpen, lastBoughtLegendaryId]);
+
+    // useEffect(() => {
+    //     async function fetchListedPremiumItems() {
+    //         if (!walletClient || !isConnected) return;
+
+    //         const rawRanges = [
+    //             { start: 401, end: 420 },
+    //             { start: 421, end: 440 },
+    //             { start: 441, end: 460 },
+    //             { start: 461, end: 480 },
+    //             { start: 481, end: 500 },
+    //             { start: 501, end: 520 },
+    //             { start: 521, end: 540 },
+    //             { start: 541, end: 560 },
+    //             { start: 561, end: 580 },
+    //             { start: 581, end: 600 },
+    //             { start: 601, end: 620 },
+    //             { start: 621, end: 640 },
+    //             { start: 641, end: 660 },
+    //             { start: 661, end: 680 },
+    //             { start: 681, end: 700 },
+    //             { start: 701, end: 720 },
+    //             { start: 721, end: 740 },
+    //             { start: 741, end: 760 },
+    //             { start: 761, end: 780 },
+    //             { start: 781, end: 800 },
+    //             { start: 801, end: 820 },
+    //             { start: 821, end: 840 },
+    //             { start: 841, end: 860 },
+    //             { start: 861, end: 880 },
+    //             { start: 881, end: 900 },
+    //             { start: 901, end: 920 },
+    //             { start: 921, end: 940 },
+    //             { start: 941, end: 960 },
+    //             { start: 961, end: 980 },
+    //             { start: 981, end: 1000 },
+    //             { start: 1001, end: 1020 },
+    //             { start: 1021, end: 1040 },
+    //             { start: 1041, end: 1060 },
+    //             { start: 1061, end: 1080 },
+    //             { start: 1081, end: 1100 },
+    //             { start: 1101, end: 1120 },
+    //             { start: 1121, end: 1140 },
+    //             { start: 1141, end: 1160 },
+    //             { start: 1161, end: 1180 },
+    //             { start: 1181, end: 1200 }
+    //         ];
+
+    //         let skip = true;
+
+    //         for (const range of rawRanges) {
+    //             let adjustedStart = range.start;
+    //             if (skip && lastBoughtPremiumId >= range.start && lastBoughtPremiumId < range.end) {
+    //                 adjustedStart = lastBoughtPremiumId + 1;
+    //                 skip = false;
+    //             } else if (lastBoughtPremiumId >= range.end) {
+    //                 continue;
+    //             }
+
+    //             try {
+    //                 const res = await fetch(`/api/listings?start=${adjustedStart}&end=${range.end}`);
+    //                 const data = await res.json();
+    //                 const orders = data.orders || [];
+
+    //                 if (orders.length > 0) {
+    //                     const sorted = orders
+    //                         .filter((item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria)
+    //                         .sort((a: any, b: any) =>
+    //                             parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+    //                             parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+    //                         );
+
+    //                     setListedPremiumItems(sorted);
+    //                     return;
+    //                 }
+    //             } catch (err) {
+    //                 console.error(`Failed to fetch premium listings (${range.start}-${range.end}):`, err);
+    //                 return;
+    //             }
+    //         }
+
+    //         console.log("All Premium NFTs are bought");
+    //         setListedPremiumItems([]);
+    //     }
+
+    //     fetchListedPremiumItems();
+    // }, [walletClient, isConnected, isModalOpen]);
+    async function fetchListedPremiumItems(adjustedRanges: any, startId: any) {
+        if (!walletClient || !isConnected) return;
+
+        for (const range of adjustedRanges) {
+            // Adjust the start of the first range to startId if it's within this range
+            const effectiveStart = range === adjustedRanges[0] && startId > range.start ? startId : range.start;
+            try {
+                const res = await fetch(`/api/listings?start=${effectiveStart}&end=${range.end}`);
+                const data = await res.json();
+                const orders = data.orders || [];
+                console.log(`Premium orders (${effectiveStart}-${range.end}):`, orders);
+
+                if (orders.length > 0) {
+                    const sorted = [...orders]
+                        .filter(
+                            (item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria
+                        )
+                        .sort(
+                            (a: any, b: any) =>
+                                parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+                                parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+                        );
+
+                    console.log(`Premium sorted (${effectiveStart}-${range.end}):`, sorted);
+                    setListedPremiumItems(sorted);
+                    return; // Exit after finding non-empty range
                 }
+            } catch (err) {
+                console.error(`Failed to fetch premium listings (${effectiveStart}-${range.end}):`, err);
+                return; // Exit on error
             }
-
-            console.log("All premium NFTs are bought");
-            setListedPremiumItems([]);
         }
 
-        fetchListedPremiumItems();
-    }, [walletClient, isConnected , isModalOpen]);
+        console.log("All premium NFTs are bought");
+        setListedPremiumItems([]);
+    }
 
-    async function handleBuy(order: any) {
-        console.log("Orderrr", order)
+    useEffect(() => {
+        fetchListedPremiumItems(rangesPremium, 401);
+    }, [walletClient, isConnected]);
+
+
+    useEffect(() => {
+        if (!isModalOpen) return; // Only fetch when isModalOpen becomes true
+
+        const nextId = lastBoughtPremiumId + 1; // Start from the next ID (e.g., 402 for 401)
+        const startRangeIndex = rangesPremium.findIndex(
+            range => nextId >= range.start && nextId <= range.end
+        );
+
+        const adjustedRanges = startRangeIndex !== -1
+            ? rangesPremium.slice(startRangeIndex)
+            : rangesPremium;
+
+        console.log("adjustedRanges----", adjustedRanges);
+
+        fetchListedPremiumItems(adjustedRanges, nextId);
+    }, [isModalOpen, lastBoughtPremiumId]);
+
+    async function handleBuy(order: any, tier: "Legendary" | "Premium") {
+        console.log("Order:", order);
         if (!walletClient) return;
+
         try {
-            const provider = new BrowserProvider(walletClient.transport);
-            const signer = await provider.getSigner();
-            const buyerAddress = await signer.getAddress();
+            const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+            const buyerAddress = walletClient.account.address;
+
+            const currentChainId = await walletClient.getChainId();
+            const baseChainId = 8453;
+
+            if (currentChainId !== baseChainId) {
+                try {
+                    await switchChainAsync({ chainId: baseChainId });
+                } catch (switchError: any) {
+                    if (switchError.code === 4902) {
+                        await walletClient.addChain({ chain: base });
+                        await switchChainAsync({ chainId: baseChainId });
+                    } else {
+                        throw switchError;
+                    }
+                }
+            }
 
             const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
                 method: "POST",
@@ -233,20 +463,18 @@ const Nftdetails = () => {
                         chain: "base",
                         protocol_address: order.protocol_address,
                     },
-                    fulfiller: {
-                        address: buyerAddress,
-                    },
+                    fulfiller: { address: buyerAddress },
                 }),
             });
 
             const { fulfillment_data } = await fulfillmentRes.json();
+            if (!fulfillment_data?.orders?.length) throw new Error("Invalid fulfillment data");
+
             const fullOrder = fulfillment_data.orders[0];
             const { parameters, signature } = fullOrder;
 
-            const seaport = new Seaport(signer, {
-                overrides: {
-                    contractAddress: order.protocol_address,
-                },
+            const seaport = new Seaport(provider, {
+                overrides: { contractAddress: order.protocol_address },
             });
 
             const advancedOrder = {
@@ -268,17 +496,23 @@ const Nftdetails = () => {
                 buyerAddress,
             ]);
 
-            const tx = await signer.sendTransaction({
-                to: seaport.contract.target,
-                data: calldata,
+            const txHash = await walletClient.sendTransaction({
+                account: walletClient.account,
+                to: seaport.contract.target as `0x${string}`,
                 value,
+                data: calldata as `0x${string}`,
             });
-            setModalOpen(true);
-            
-            console.log("✅ Purchase Tx Hash:", tx.hash);
-            //   setListedLegendaryItems((prev: any[]) => prev.filter((item: any) => item.order_hash !== order.order_hash));
-            //   setListedPremiumItems((prev: any[]) => prev.filter((item: any) => item.order_hash !== order.order_hash));
 
+            console.log("✅ Purchase Tx Hash:", txHash);
+
+            const boughtId = parseInt(order.protocol_data.parameters.offer[0].identifierOrCriteria);
+            if (tier === "Legendary") setLastBoughtLegendaryId(boughtId);
+            if (tier === "Premium") setLastBoughtPremiumId(boughtId);
+
+
+            const modalData: any = await getModalData();
+            setModalData(modalData);
+            setModalOpen(true);
         } catch (error) {
             console.error("❌ Purchase failed:", error);
         }
@@ -319,9 +553,9 @@ const Nftdetails = () => {
 
                 const { order_hash, protocol_address } = sellOrder;
 
-                const provider = new BrowserProvider(walletClient.transport);
+                const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
                 await provider.send("eth_requestAccounts", []);
-                const signer = await provider.getSigner();
+                const signer = await provider.getSigner(walletClient.account.address);
                 const fulfillerAddress = await signer.getAddress();
 
                 const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
@@ -399,8 +633,8 @@ const Nftdetails = () => {
             const { order_hash, protocol_address } = sellOrder;
 
             // Step 2: Fulfillment data
-            const provider = new BrowserProvider(walletClient.transport);
-            const signer = await provider.getSigner();
+            const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+            const signer = await provider.getSigner(walletClient.account.address);
             const buyerAddress = await signer.getAddress();
 
             const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
@@ -468,6 +702,38 @@ const Nftdetails = () => {
         }
     }
 
+    const getModalData = () => {
+        let currentItem;
+
+        if (activeTab === "Premium 500m2 Plot" && sortedPremiumItems.length > 0) {
+            currentItem = sortedPremiumItems[0];
+            return {
+                id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
+                image: "/assets/images/apps/500m2.jpg",
+                name: "Bitgrass - Premium Collection"
+            };
+        }
+
+        if (activeTab === "Legendary 1000m2 Plot" && sortedLegendaryItems.length > 0) {
+            currentItem = sortedLegendaryItems[0];
+            return {
+                id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
+                image: "/assets/images/apps/1000m2.jpg",
+                name: "Bitgrass - Legendary Collection"
+            };
+        }
+
+        return {
+            id: "0",
+            image: "/assets/images/apps/100m2.jpg",
+            name: "Bitgrass NFT Collection – Standard"
+        };
+    };
+
+
+
+
+
     return (
         <Fragment>
             <Seo title={"NFT Details"} />
@@ -490,7 +756,7 @@ const Nftdetails = () => {
                     </div>
 
                     {/* Unique Content Per Tab */}
-                    {activeTab === "Standard" && (
+                    {activeTab === "Standard 100m2 Plot" && (
                         <div className="mt-6">{
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
@@ -631,7 +897,7 @@ const Nftdetails = () => {
                         }</div>
                     )}
 
-                    {activeTab === "Premium" && (
+                    {activeTab === "Premium 500m2 Plot" && (
                         <div className="mt-6">{
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
@@ -657,7 +923,7 @@ const Nftdetails = () => {
                                                     <NFTAssetCost />
 
                                                     <button
-                                                        onClick={() => handleBuy(listedPremiumItems[0])}
+                                                        onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
                                                         className="bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm"
 
                                                     >
@@ -782,7 +1048,7 @@ const Nftdetails = () => {
 
                     )}
 
-                    {activeTab === "Legendary" && (
+                    {activeTab === "Legendary 1000m2 Plot" && (
                         <div className="mt-6"> <div className="mt-6">{
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
@@ -808,7 +1074,7 @@ const Nftdetails = () => {
                                                     <NFTAssetCost />
 
                                                     <button
-                                                        onClick={() => handleBuy(listedLegendaryItems[0])}
+                                                        onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
                                                         className="bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm"
 
                                                     >
@@ -932,12 +1198,24 @@ const Nftdetails = () => {
                     )}
                 </div>
 
-                <PurchaseCelebrationModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} name='bitgrass'
-                    token='0x6d5fd4f1d8eabb02c471a652b1610d7e93e97eaa'
-                    id='17'
-                    image='https://ik.imagekit.io/cafu/collection-logo.png?updatedAt=1748949261858&ik-s=354aa8dbbc0e22d358dfbf7a3065a527da05fa53'
-
+                <PurchaseCelebrationModal
+                    isOpen={isModalOpen}
+                    onClose={() => {
+                        setModalOpen(false);
+                        setModalData({
+                            id: "",
+                            image: "",
+                            name: ""
+                        });
+                    }}
+                    name={modalData.name}
+                    token="0xc58e79f30b9a1575499da948932b8b16c23a4caf"
+                    id={modalData.id}
+                    image={modalData.image}
                 />
+
+
+
 
             </div>
         </Fragment>
