@@ -11,6 +11,8 @@ import { base } from 'wagmi/chains';
 
 
 import PurchaseCelebrationModal from "@/shared/layout-components/modal/PurchaseCelebrationModal"
+import PurchaseFailedModal from "@/shared/layout-components/modal/PurchaseFailedModal"
+
 import { custom } from "viem";
 
 import {
@@ -34,8 +36,8 @@ const Nftdetails = () => {
     const { isConnected } = useAccount();
     const { data: walletClient, isLoading: isWalletLoading } = useWalletClient();
     const { switchChainAsync } = useSwitchChain();
-    const [activeTab, setActiveTab] = useState("Standard 100m2 Plot");
-    const tabList = ["Standard 100m2 Plot", "Premium 500m2 Plot", "Legendary 1000m2 Plot"];
+    const [activeTab, setActiveTab] = useState("Standard 100m² Plot");
+    const tabList = ["Standard 100m² Plot", "Premium 500m² Plot", "Legendary 1000m² Plot"];
     const [orderData, setOrderData] = useState<OrderData | null>(null);
     const [txRequest, setTxRequest] = useState<{
         to: string;
@@ -46,6 +48,8 @@ const Nftdetails = () => {
     const [isFetchingOrder, setIsFetchingOrder] = useState(false);
     const [orderFetchError, setOrderFetchError] = useState<string | null>(null);
     const [isModalOpen, setModalOpen] = useState(false);
+    const [failureTxHash, setFailureTxHash] = useState("");
+    const [failureImage, setFailureImage] = useState("");
 
     const OPENSEA_CONTRACT_ADDRESS = "0xc58e79f30b9a1575499da948932b8b16c23a4caf";
     const TOKEN_ID = "16";
@@ -75,7 +79,7 @@ const Nftdetails = () => {
 
     const [lastBoughtLegendaryId, setLastBoughtLegendaryId] = useState(0);
     const [lastBoughtPremiumId, setLastBoughtPremiumId] = useState(0);
-
+    const apiKey = process.env.NEXT_PUBLIC_OPENSEA_API_KEY
 
     // const itemsToBuy = sortedItems.slice(0, selectedQuantity);
     //  const prepareBuyMultiple = async () => {
@@ -153,6 +157,7 @@ const Nftdetails = () => {
     //     }
     //     fetchListedLegendaryItems()
     // }, [walletClient, isConnected, isModalOpen]);
+    const [isFailureModalOpen, setFailureModalOpen] = useState(false);
 
 
     const rangesLegendary = [
@@ -454,7 +459,7 @@ const Nftdetails = () => {
                 headers: {
                     accept: "application/json",
                     "content-type": "application/json",
-                    "x-api-key": "6bc6c7e387ea43f2ade2a3a7202967f0",
+                    "x-api-key": `${apiKey}`,
                 },
                 body: JSON.stringify({
                     listing: {
@@ -501,17 +506,26 @@ const Nftdetails = () => {
                 value,
                 data: calldata as `0x${string}`,
             });
-
-            console.log("✅ Purchase Tx Hash:", txHash);
-
             const boughtId = parseInt(order.protocol_data.parameters.offer[0].identifierOrCriteria);
             if (tier === "Legendary") setLastBoughtLegendaryId(boughtId);
             if (tier === "Premium") setLastBoughtPremiumId(boughtId);
 
+            const txReceipt = await provider.waitForTransaction(txHash);
+            if (txReceipt?.status === 1) {
+                console.log("✅ Transaction confirmed");
 
-            const modalData: any = await getModalData();
-            setModalData(modalData);
-            setModalOpen(true);
+
+
+                const modalData: any = await getModalData();
+                setModalData(modalData);
+                setModalOpen(true); // Show success modal
+            } else {
+                const modalDataFailed: any = await getModalData();
+
+                setFailureTxHash(txHash);  // new
+                setFailureImage(modalDataFailed.image);  // new
+                setFailureModalOpen(true);
+            }
         } catch (error) {
             console.error("❌ Purchase failed:", error);
         }
@@ -535,7 +549,7 @@ const Nftdetails = () => {
                     method: "GET",
                     headers: {
                         "accept": "application/json",
-                        "x-api-key": "6bc6c7e387ea43f2ade2a3a7202967f0",
+                        "x-api-key": `${apiKey}`,
                     },
                 });
 
@@ -562,7 +576,7 @@ const Nftdetails = () => {
                     headers: {
                         "accept": "application/json",
                         "content-type": "application/json",
-                        "x-api-key": "6bc6c7e387ea43f2ade2a3a7202967f0",
+                        "x-api-key": `${apiKey}`,
                     },
                     body: JSON.stringify({
                         listing: {
@@ -604,102 +618,7 @@ const Nftdetails = () => {
         fetchOpenSeaOrder();
     }, [walletClient, isConnected]);
 
-    async function prepareBuy() {
-        if (!walletClient || !isConnected) {
-            console.error("❌ Wallet client not ready");
-            return;
-        }
-
-        try {
-            const tokenAddress = "0xd724f4604bfc25250f16f908d04d6e8cfd4aba4f";
-            const tokenId = "16";
-
-            // Step 1: Fetch the listing
-            const listingApiUrl = `https://api.opensea.io/api/v2/orders/base/seaport/listings?asset_contract_address=${tokenAddress}&token_ids=${tokenId}&limit=1`;
-
-            const listingRes = await fetch(listingApiUrl, {
-                headers: {
-                    accept: "application/json",
-                    "x-api-key": "6bc6c7e387ea43f2ade2a3a7202967f0",
-                },
-            });
-
-            if (!listingRes.ok) throw new Error(`Listing fetch failed: ${listingRes.status}`);
-            const { orders } = await listingRes.json();
-            const sellOrder = orders?.[0];
-            if (!sellOrder) throw new Error("No sell order found.");
-
-            const { order_hash, protocol_address } = sellOrder;
-
-            // Step 2: Fulfillment data
-            const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-            const signer = await provider.getSigner(walletClient.account.address);
-            const buyerAddress = await signer.getAddress();
-
-            const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
-                method: "POST",
-                headers: {
-                    "accept": "application/json",
-                    "content-type": "application/json",
-                    "x-api-key": "6bc6c7e387ea43f2ade2a3a7202967f0",
-                },
-                body: JSON.stringify({
-                    listing: {
-                        hash: order_hash,
-                        chain: "base",
-                        protocol_address,
-                    },
-                    fulfiller: {
-                        address: buyerAddress,
-                    },
-                }),
-            });
-
-            if (!fulfillmentRes.ok) throw new Error(`Fulfillment fetch failed: ${fulfillmentRes.status}`);
-            const fulfillmentData = await fulfillmentRes.json();
-            const orderData = fulfillmentData?.fulfillment_data?.orders?.[0];
-            const { parameters, signature } = orderData;
-
-            const seaport = new Seaport(signer, {
-                overrides: {
-                    contractAddress: protocol_address,
-                },
-            });
-
-            // Create the Advanced Order
-            const advancedOrder = {
-                parameters,
-                signature,
-                numerator: BigInt(1),
-                denominator: BigInt(1),
-                extraData: "0x",
-            };
-
-            // Sum ETH value to send
-            const value = parameters.consideration
-                .filter((item: any) => item.token === "0x0000000000000000000000000000000000000000")
-                .reduce((sum: bigint, item: any) => sum + BigInt(item.startAmount), BigInt(0));
-
-            // Encode calldata
-            const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
-                advancedOrder,
-                [], // criteriaResolvers
-                parameters.conduitKey,
-                buyerAddress,
-            ]);
-
-            // Send transaction
-            const tx = await signer.sendTransaction({
-                to: seaport.contract.target,
-                data: calldata,
-                value,
-            });
-
-            console.log("✅ Transaction sent:", tx.hash);
-        } catch (error: any) {
-            console.error("❌ Direct purchase failed:", error.message || error);
-        }
-    }
+    
 
     const getModalData = () => {
         let currentItem;
@@ -755,7 +674,7 @@ const Nftdetails = () => {
                     </div>
 
                     {/* Unique Content Per Tab */}
-                    {activeTab === "Standard 100m2 Plot" && (
+                    {activeTab === "Standard 100m² Plot" && (
                         <div className="mt-6">{
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
@@ -763,7 +682,7 @@ const Nftdetails = () => {
                                         <div className="xl:col-span-4 col-span-12">
                                             <div>
                                                 <NFTMintCard
-                                                    contractAddress='0xc58e79f30b9a1575499da948932b8b16c23a4caf'
+                                                    contractAddress='0x34df064b9293ea1a07d6c9e5f4dafd0fe28fdd94'
                                                     className="mintNFT">
                                                     <NFTCreator />
 
@@ -788,7 +707,7 @@ const Nftdetails = () => {
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
-                                                    Bitgrass NFT Collection – Standard 100m2 NFT
+                                                    Bitgrass NFT Collection – Standard 100m² NFT
                                                 </p>
                                                 <p className="text-[1.125rem] mb-4">
                                                     <i className="ri-circle-fill text-success align-middle"></i>
@@ -893,7 +812,7 @@ const Nftdetails = () => {
                         }</div>
                     )}
 
-                    {activeTab === "Premium 500m2 Plot" && (
+                    {activeTab === "Premium 500m² Plot" && (
                         <div className="mt-6">{
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
@@ -935,7 +854,7 @@ const Nftdetails = () => {
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
-                                                    Bitgrass NFT Collection – Premium 500m2 NFT
+                                                    Bitgrass NFT Collection – Premium 500m² NFT
                                                 </p>
                                                 <p className="text-[1.125rem] mb-4">
                                                     <i className="ri-circle-fill text-success align-middle"></i>
@@ -1041,7 +960,7 @@ const Nftdetails = () => {
 
                     )}
 
-                    {activeTab === "Legendary 1000m2 Plot" && (
+                    {activeTab === "Legendary 1000m² Plot" && (
                         <div className="mt-6"> <div className="mt-6">{
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
@@ -1081,7 +1000,7 @@ const Nftdetails = () => {
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
-                                                    Bitgrass NFT Collection – Legendary 1000m2 NFT
+                                                    Bitgrass NFT Collection – Legendary 1000m² NFT
                                                 </p>
                                                 <p className="text-[1.125rem] mb-4">
                                                     <i className="ri-circle-fill text-success align-middle"></i>
@@ -1202,6 +1121,12 @@ const Nftdetails = () => {
                     image={modalData.image}
                 />
 
+                <PurchaseFailedModal
+                    isOpen={isFailureModalOpen}
+                    onClose={() => setFailureModalOpen(false)}
+                    image={failureImage}
+                    txHash={failureTxHash}
+                />
 
 
 

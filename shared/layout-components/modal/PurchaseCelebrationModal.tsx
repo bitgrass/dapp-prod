@@ -47,8 +47,8 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
 
   return (
     <>
-      <Confetti style={{ zIndex: 51 }} mode="fall" particleCount={300} colors={['#0F382B', '#66CC33', '#7FC447', '#F5F3EB']} />
-      <Confetti style={{ zIndex: 51 }} mode="boom" effectInterval={10000} particleCount={100} colors={['#0F382B', '#66CC33', '#7FC447', '#F5F3EB']} effectCount={2} />
+      <Confetti style={{ zIndex: 51 }} mode="fall" particleCount={70} colors={['#0F382B', '#66CC33', '#7FC447', '#F5F3EB']} />
+      <Confetti style={{ zIndex: 51 }} mode="boom" effectInterval={10000} particleCount={80} colors={['#0F382B', '#66CC33', '#7FC447', '#F5F3EB']} effectCount={2} />
 
       <div
         className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 dark:bg-black/50"
