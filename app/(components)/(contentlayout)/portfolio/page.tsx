@@ -372,7 +372,7 @@ const Crypto = () => {
             <PortfolioTabs
               activeTab={activeTab}
               setActiveTab={setActiveTab}
-              transactions={transactions}
+              transactions={transactions.sort((a, b) => b.timestamp - a.timestamp)}
               transactionCursor={transactionCursor}
               nftTransactionCursor={nftTransactionCursor} // Pass the NFT transaction cursor
               nftData={nftData}

@@ -30,7 +30,7 @@ const TransactionTable = ({
   nftTransactionCursor,
   fetchMore,
 }: TransactionTableProps) => {
-  const validTransactions = Array.isArray(transactions) ? transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) : [];
+  const validTransactions = Array.isArray(transactions) ? transactions : [];
 
   return (
     <>
