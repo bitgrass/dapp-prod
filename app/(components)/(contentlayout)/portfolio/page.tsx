@@ -7,8 +7,7 @@ import { useAccount } from "wagmi";
 import axios from "axios";
 import { Token } from "@coinbase/onchainkit/token";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { btgToken , nftInfo , EthInfo } from "@/shared/data/tokens/data";
-
+import { btgToken, nftInfo, EthInfo } from "@/shared/data/tokens/data";
 
 const getInitialWalletState = () => {
   if (typeof window !== "undefined") {
@@ -19,8 +18,8 @@ const getInitialWalletState = () => {
 
 const Crypto = () => {
   const { ready, authenticated } = usePrivy();
-const { wallets } = useWallets();
-const { address } = useAccount();
+  const { wallets } = useWallets();
+  const { address } = useAccount();
   const [status, setStatus] = useState("loading");
   const [walletConnected, setWalletConnected] = useState(getInitialWalletState);
   const [btgBalance, setBtgBalance] = useState("0.00");
@@ -30,13 +29,12 @@ const { address } = useAccount();
   const [totalBalance, setTotalBalance] = useState("0.00");
   const [transactions, setTransactions] = useState<any[]>([]);
   const [transactionCursor, setTransactionCursor] = useState(null);
+  const [nftTransactionCursor, setNftTransactionCursor] = useState(null);
   const [nftData, setNftData] = useState<any[]>([]);
   const [nftCursor, setNftCursor] = useState(null);
   const [activeTab, setActiveTab] = useState("crypto-tab-pane");
 
-
-
-  // Fetch eth Data
+  // Fetch ETH Data (unchanged)
   useEffect(() => {
     async function fetchEthData() {
       if (!address) return;
@@ -85,7 +83,7 @@ const { address } = useAccount();
     fetchEthData();
   }, [address]);
 
-  // Fetch BTG Data
+  // Fetch BTG Data (unchanged)
   useEffect(() => {
     async function fetchBtgData() {
       if (!address) return;
@@ -131,7 +129,7 @@ const { address } = useAccount();
     fetchBtgData();
   }, [address]);
 
-  // Fetch Crypto Transactions
+  // Fetch Crypto Transactions (unchanged)
   const fetchCryptoTransactions = async (cursor = null, limit = 5) => {
     if (!address) return;
     try {
@@ -151,7 +149,7 @@ const { address } = useAccount();
         }
       );
 
-      const cryptoTransactions = response.data.result.map((tx : any) => {
+      const cryptoTransactions = response.data.result.map((tx: any) => {
         const baseToken = tx.bought;
         const quoteToken = tx.sold;
         return {
@@ -174,7 +172,49 @@ const { address } = useAccount();
     }
   };
 
-  // Fetch NFTs
+  // Fetch NFT Transactions (unchanged)
+  const fetchNftTransactions = async (cursor = null, limit = 5) => {
+    if (!address) return;
+    try {
+      const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
+      const params = new URLSearchParams({
+        chain: "base",
+        format: "decimal",
+        "token_addresses[0]": nftInfo.address,
+        normalizeMetadata: "true",
+        media_items: "false",
+        include_prices: "false",
+        limit: limit.toString(),
+      });
+      if (cursor) params.append("cursor", cursor);
+
+      const response = await axios.get(
+        `https://deep-index.moralis.io/api/v2.2/${address}/nft/transfers?${params.toString()}`, // Changed to /nft/transfers
+        {
+          headers: { accept: "application/json", "X-API-Key": API_KEY },
+        }
+      );
+
+      const nftTransactions = response.data.result
+        .filter((tx: any) => tx.token_address.toLowerCase() === nftInfo.address.toLowerCase()) // Filter by token_address
+        .map((tx: any) => ({
+          type: "nft",
+          transaction: "NFT Minted",
+          value: `+${tx.amount || 1} NFT(s)`,
+          grayValue: `NFT ID: ${tx.token_id}`,
+          date: new Date(tx.block_timestamp).toLocaleString(),
+          timestamp: new Date(tx.block_timestamp).getTime(),
+          transactionHash: tx.transaction_hash,
+        }));
+
+      setTransactions((prev) => [...prev, ...nftTransactions]);
+      setNftTransactionCursor(response.data.cursor || null);
+    } catch (error) {
+      console.error("Error fetching NFT transactions:", error);
+    }
+  };
+
+  // Fetch NFTs (unchanged)
   const fetchNfts = async (cursor = null, limit = 4) => {
     if (!address) return;
     try {
@@ -225,43 +265,55 @@ const { address } = useAccount();
     }
   };
 
-  // Load More based on Active Tab
+  // Load More based on Active Tab (updated)
   const loadMore = () => {
     if (activeTab === "transactions-tab-pane") {
-      fetchCryptoTransactions(transactionCursor, 5);
+      // Load more crypto or NFT transactions only if their cursors are not null
+      const promises = [];
+      if (transactionCursor) {
+        promises.push(fetchCryptoTransactions(transactionCursor, 5));
+      }
+      if (nftTransactionCursor) {
+        promises.push(fetchNftTransactions(nftTransactionCursor, 5));
+      }
+      Promise.all(promises);
     } else if (activeTab === "nfts-tab-pane") {
       fetchNfts(nftCursor, 4);
     }
   };
 
-  // Initial Fetch
+  // Initial Fetch (unchanged)
   useEffect(() => {
     if (address) {
       setTransactions([]);
       setTransactionCursor(null);
+      setNftTransactionCursor(null);
       setNftData([]);
       setNftCursor(null);
-      // Fetch 5 transactions and 4 NFTs initially
-      Promise.all([fetchCryptoTransactions(null, 5), fetchNfts(null, 4)]);
+      Promise.all([
+        fetchCryptoTransactions(null, 5),
+        fetchNftTransactions(null, 5),
+        fetchNfts(null, 4),
+      ]);
     }
   }, [address]);
 
-  // Wallet Connection Status
+  // Wallet Connection Status (unchanged)
   useEffect(() => {
-  if (!ready) {
-    setStatus("loading");
-    return;
-  }
-  if (authenticated && wallets.length > 0 && address) {
-    localStorage.setItem("walletConnected", "true");
-    setStatus("loaded");
-  } else {
-    localStorage.setItem("walletConnected", "false");
-    setStatus("disconnected");
-  }
-}, [ready, authenticated, wallets, address]);
+    if (!ready) {
+      setStatus("loading");
+      return;
+    }
+    if (authenticated && wallets.length > 0 && address) {
+      localStorage.setItem("walletConnected", "true");
+      setStatus("loaded");
+    } else {
+      localStorage.setItem("walletConnected", "false");
+      setStatus("disconnected");
+    }
+  }, [ready, authenticated, wallets, address]);
 
-  // Handle Tab Navigation
+  // Handle Tab Navigation (unchanged)
   useEffect(() => {
     const hash = window.location.hash;
     if (hash === "#nfts-tab-pane" || hash === "#transactions-tab-pane") {
@@ -322,6 +374,7 @@ const { address } = useAccount();
               setActiveTab={setActiveTab}
               transactions={transactions}
               transactionCursor={transactionCursor}
+              nftTransactionCursor={nftTransactionCursor} // Pass the NFT transaction cursor
               nftData={nftData}
               nftCursor={nftCursor}
               loadMore={loadMore}

@@ -20,11 +20,17 @@ interface Transaction {
 interface TransactionTableProps {
   transactions?: Transaction[];
   transactionCursor: string | null;
-  fetchMore: (cursor: any | null) => void;
+  nftTransactionCursor: string | null; // Added nftTransactionCursor
+  fetchMore: () => void; // Removed cursor parameter to match loadMore
 }
 
-const TransactionTable = ({ transactions, transactionCursor, fetchMore }: TransactionTableProps) => {
-  const validTransactions = Array.isArray(transactions) ? transactions : [];
+const TransactionTable = ({
+  transactions,
+  transactionCursor,
+  nftTransactionCursor,
+  fetchMore,
+}: TransactionTableProps) => {
+  const validTransactions = Array.isArray(transactions) ? transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) : [];
 
   return (
     <>
@@ -138,11 +144,11 @@ const TransactionTable = ({ transactions, transactionCursor, fetchMore }: Transa
                   </table>
                 </div>
               </div>
-              {transactionCursor && (
+              {(transactionCursor || nftTransactionCursor) && ( // Check both cursors
                 <div className="box-footer text-center">
                   <button
                     className="ti-btn bg-secondary text-white !font-medium m-0 !me-[0.375rem] btn btn-primary px-6 py-2"
-                    onClick={() => fetchMore(transactionCursor)}
+                    onClick={fetchMore} // No cursor parameter needed
                   >
                     Load More
                   </button>

@@ -8,9 +8,10 @@ interface PortfolioTabsProps {
   setActiveTab: (tab: string) => void;
   transactions: any[];
   transactionCursor: string | null;
+  nftTransactionCursor: string | null; // Added nftTransactionCursor
   nftData: any[];
   nftCursor: string | null;
-  loadMore: () => void; // Replaced fetchTransactions and fetchMoreNfts with loadMore
+  loadMore: () => void;
   ethBalance: string;
   ethPrice: number;
   btgPrice: number;
@@ -23,6 +24,7 @@ const PortfolioTabs = ({
   setActiveTab,
   transactions,
   transactionCursor,
+  nftTransactionCursor, // Added to destructured props
   nftData,
   nftCursor,
   loadMore,
@@ -89,16 +91,6 @@ const PortfolioTabs = ({
                   Transactions
                 </Link>
               </nav>
-              {/* <div className="flex flex-wrap items-center md:mt-0 justify-evenly gap-6 portfolio-assets">
-                <div className="md:text-end">
-                  <span className="block font-semibold">Total NFTs Transactions</span>
-                  <span className="!text-primary">{nftData.length}</span>
-                </div>
-                <div className="md:text-end">
-                  <span className="block font-semibold">Total $BTG Transactions</span>
-                  <span className="!text-secondary">{transactions.length}</span>
-                </div>
-              </div> */}
             </div>
             <div className="!p-4">
               <div className="tab-content" id="myTabContent">
@@ -132,6 +124,7 @@ const PortfolioTabs = ({
                   <TransactionTable
                     transactions={transactions}
                     transactionCursor={transactionCursor}
+                    nftTransactionCursor={nftTransactionCursor} // Pass nftTransactionCursor
                     fetchMore={loadMore}
                   />
                 </div>
