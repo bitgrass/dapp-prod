@@ -137,7 +137,7 @@ export const MenuItems: any = [
   {
     title: "Staking",
     icon: WidgetsIcon,
-    path: "https://tms-bitgrass.decubate.tech/staking",
+    path: "https://staking.bitgrass.com",
     type: "link",
     active: false,
     selected: false,
