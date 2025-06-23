@@ -30,7 +30,6 @@ export async function GET(req: NextRequest) {
     for (let i = start; i <= end; i++) {
       url.searchParams.append("token_ids", i.toString());
     }
-    console.log("Requesting OpenSea URL:", url.toString()); // 🐞 DEBUG URL
 
     const res = await fetch(url.toString(), {
       headers: {
@@ -42,7 +41,7 @@ export async function GET(req: NextRequest) {
 
     if (!res.ok) {
       const errText = await res.text();
-      console.error("OpenSea fetch failed:", res.status, errText);
+            console.error("OpenSea fetch failed:", res.status, errText);
       return NextResponse.json({ error: "OpenSea API failed" }, { status: res.status });
     }
 
