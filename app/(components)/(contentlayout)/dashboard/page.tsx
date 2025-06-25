@@ -19,7 +19,7 @@ import {
 import type { Token } from '@coinbase/onchainkit/token';
 import Moralis from 'moralis';
 import axios from 'axios';
-import { btgToken, ETHToken } from "@/shared/data/tokens/data";
+import { btgToken, ETHToken , btgInfo } from "@/shared/data/tokens/data";
 
 
 async function initializeMoralis() {
@@ -45,11 +45,13 @@ const Dashboard = () => {
     const normalizedRadius = radius - strokeWidth / 2;
     const circumference = 2 * Math.PI * normalizedRadius;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
-    const [h24Volume, setVolume] = useState('');
+      const shortAddress = btgInfo && btgInfo.address ? `${btgInfo.address.slice(0, 6)}…${btgInfo.address.slice(-4)}` : '';
 
 
 
-    const [degenPrice, setDegenPrice] = useState(0);
+
+    const [btgPrice, setBtgPrice] = useState(0);
+    const [btgPercentChange , setBtgPercentChange] = useState(0)
     const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState('overview');
 
@@ -68,7 +70,7 @@ const Dashboard = () => {
     const [tooltipText, setTooltipText] = useState('Copy address');
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(btgToken.address);
+        navigator.clipboard.writeText(btgInfo.address);
         setTooltipText('Copied!');
         setTimeout(() => setTooltipText('Copy address'), 2000); // Reset tooltip text after 2 seconds
     };
@@ -260,13 +262,24 @@ const Dashboard = () => {
                         },
                     }
                 )
+
                 const prices = response.data.usdPrice;
+                const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
+
+                
 
 
                 if (prices) {
-                    setDegenPrice(prices.toFixed(6)); // Set the price as a string
+                    setBtgPrice(prices.toFixed(6)); // Set the price as a string
                 } else {
                     console.warn('Uniswap V3 0.30% price not found');
+                }
+
+
+                if (dayHrPercentChange) {
+                    setBtgPercentChange(dayHrPercentChange.toFixed(2))
+                } else {
+                    console.warn('24HrPercentChange price not found');
                 }
             } catch (error) {
                 console.error("Error fetching Degen price:", error);
@@ -275,6 +288,9 @@ const Dashboard = () => {
 
         fetchPrice();
     }, []);
+
+
+    
     const formatLargeValue = (value: any) => {
         const totalValue = value;
         return totalValue >= 1000000
@@ -617,7 +633,7 @@ const Dashboard = () => {
                                                             <h5 className="font-bold mb-0 sm:flex items-center">
                                                                 <Link href="#!" scroll={false}>Bitgrass - <span className='font-normal text-[#8c9097] dark:text-white/50'>BTG</span></Link>
                                                             </h5>
-                                                            <p className="text-[1rem] text-secondary font-semibold mb-4">${degenPrice} USD</p>
+                                                            <p className="text-[1rem] text-secondary font-semibold mb-4">${btgPrice} USD</p>
 
                                                         </div>
                                                     </div>
@@ -631,7 +647,7 @@ const Dashboard = () => {
                                                                         style={{ width: '15px', height: '15px', marginRight: '5px', verticalAlign: 'middle' }}
                                                                         alt=""
                                                                     />
-                                                                    Base : TBA
+                                                                    Base : {shortAddress}
                                                                 </span>                                                          <div className="hs-tooltip ti-main-tooltip [--placement:top] ms-2">
                                                                     <button
                                                                         type="button"
@@ -656,7 +672,7 @@ const Dashboard = () => {
                                                             <span className="avatar-list-stacked">
                                                                 {/* OFFICIAL LINKS — CLICKABLE */}
                                                                 <a
-                                                                    href="https://etherscan.io"
+                                                                    href="https://basescan.org/token/0xF0D560f492CE0DBb3B5BEa7f003030c71ff4b2E4"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="avatar avatar-sm avatar-rounded flex items-center justify-center bg-icons"
@@ -808,7 +824,7 @@ const Dashboard = () => {
                                                                         </svg>                                                                    </span>
                                                                 </div>
                                                                 <div className="flex-grow">
-                                                                    <h5 className="font-semibold ">{formatLargeValue(degenPrice * 10000000)}</h5>
+                                                                    <h5 className="font-semibold ">{formatLargeValue(btgPrice * 10000000)}</h5>
                                                                     <p className="text-[#8c9097] dark:text-white/50 mb-0 text-[0.75rem]">Market Cap</p>
                                                                 </div>
 
@@ -824,7 +840,7 @@ const Dashboard = () => {
                                                                         </svg>                                                                    </span>
                                                                 </div>
                                                                 <div className="flex-grow">
-                                                                    <h5 className="font-semibold ">{h24Volume || "TBA"}</h5>
+                                                                    <h5 className="font-semibold ">{btgPercentChange || "TBA"}</h5>
                                                                     <p className="text-[#8c9097] dark:text-white/50 mb-0 text-[0.75rem]">24h Volume</p>
                                                                 </div>
 
