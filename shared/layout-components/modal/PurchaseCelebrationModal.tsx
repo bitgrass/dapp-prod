@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Confetti from 'react-confetti-boom';
+import WarpcastIcon from '../images/WarpcastIcon';
+import XIcon from '../images/XIcon';
 
 interface PurchaseCelebrationModalProps {
   image: string;
@@ -14,6 +16,22 @@ interface PurchaseCelebrationModalProps {
 
 const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ image, name, token, id, isOpen, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const currentUrl = typeof window !== "undefined"
+    ? window.location.href.replace(/\/$/, "")
+    : "";
+
+      const openseaUrl = `https://opensea.io/item/base/${token}/${id}`
+
+  const shareTextTwitter = `Checkout $${name} on @bitgrass!\n\nOwn it now:\n${openseaUrl}\n\nMore details:\n${currentUrl}`;
+
+const shareTextWarpcast = `Checkout $${name} on @bitgrass!\n\nOwn it now:\n${openseaUrl}\n\nMore details:\n${currentUrl}`;
+  const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
+  const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
+
+
+const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}`;
+const warpcastUrl = `https://warpcast.com/~/compose?text=${encodedTextWarpcast}&embeds[]=${openseaUrl}&embeds[]=${currentUrl}`;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -94,12 +112,34 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
           {/* Content */}
           <div className="flex flex-col items-center gap-4 text-center mb-6">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              You just purchased{' '} <span className="text-sm text-secondary">Plot #{id}.</span> <br/>
+              You just purchased{' '} <span className="text-sm text-secondary">Plot #{id}.</span> <br />
 
-                from the {' '} {name} 
-     
-              
+              from the {' '} {name}
+
+
             </p>
+          </div>
+
+          <div className="flex flex items-center mb-4" style={{placeSelf:'center'}}>
+            <span className="font-medium text-sm text-gray-900 dark:text-white mb-2 text-center">
+              Share to...
+            </span>
+
+            <div className="flex items-center gap-1 ms-2">
+              <button
+                onClick={() => window.open(twitterUrl, "_blank")}
+                className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
+              >
+                <XIcon size={14} color="#7FC447" />
+              </button>
+
+              <button
+                onClick={() => window.open(warpcastUrl, "_blank")}
+                className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
+              >
+                <WarpcastIcon size={14} color="#7FC447" />
+              </button>
+            </div>
           </div>
 
           {/* Buttons */}

@@ -19,7 +19,7 @@ import {
 } from "@coinbase/onchainkit/nft/mint";
 import { NFTMintCard } from "@coinbase/onchainkit/nft";
 import { ethers } from "ethers";
-import { nftInfo , rangesLegendary , rangesPremium } from "@/shared/data/tokens/data";
+import { nftInfo, rangesLegendary, rangesPremium } from "@/shared/data/tokens/data";
 
 
 type OrderData = {
@@ -32,6 +32,8 @@ const Nftdetails = () => {
     const { data: walletClient, isLoading: isWalletLoading } = useWalletClient();
     const { switchChainAsync } = useSwitchChain();
     const [activeTab, setActiveTab] = useState("Standard 100m² Plot");
+    const [activeTabSeo, setActiveTabSeo] = useState("NFT Collection – Standard");
+
     const tabList = ["Standard 100m² Plot", "Premium 500m² Plot", "Legendary 1000m² Plot"];
     const [orderData, setOrderData] = useState<OrderData | null>(null);
 
@@ -83,7 +85,6 @@ const Nftdetails = () => {
                 const res = await fetch(`/api/listings?start=${effectiveStart}&end=${range.end}`);
                 const data = await res.json();
                 const orders = data.orders || [];
-                console.log(`Legendary orders (${effectiveStart}-${range.end}):`, orders);
 
                 if (orders.length > 0) {
                     const sorted = [...orders]
@@ -131,7 +132,7 @@ const Nftdetails = () => {
         fetchListedLegendaryItems(adjustedRanges, nextId);
     }, [isModalOpen, lastBoughtLegendaryId]);
 
-    
+
     async function fetchListedPremiumItems(adjustedRanges: any, startId: any) {
         if (!walletClient || !isConnected) return;
 
@@ -378,12 +379,12 @@ const Nftdetails = () => {
         fetchOpenSeaOrder();
     }, [walletClient, isConnected]);
 
-    
+
 
     const getModalData = () => {
         let currentItem;
 
-        if (activeTab === "Premium 500m2 Plot" && sortedPremiumItems.length > 0) {
+        if (activeTab === "Premium 500m² Plot" && sortedPremiumItems.length > 0) {
             currentItem = sortedPremiumItems[0];
             return {
                 id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
@@ -392,7 +393,7 @@ const Nftdetails = () => {
             };
         }
 
-        if (activeTab === "Legendary 1000m2 Plot" && sortedLegendaryItems.length > 0) {
+        if (activeTab === "Legendary 1000m² Plot" && sortedLegendaryItems.length > 0) {
             currentItem = sortedLegendaryItems[0];
             return {
                 id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
@@ -408,13 +409,45 @@ const Nftdetails = () => {
         };
     };
 
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+
+        if (tab.includes("Premium")) {
+            window.history.replaceState(null, "", `#premium-collection`);
+        }
+        else if (tab.includes("Legendary")) {
+            window.history.replaceState(null, "", `#legendary-collection`);
+        }
+        else {
+            window.history.replaceState(null, "", `#standard-collection`);
+        }
+    };
+
+
+    useEffect(() => {
+        const hash = window.location.hash;
+
+        if (hash === "#legendary-collection") {
+            setActiveTabSeo('Legendary Collection');
+            setActiveTab('Legendary 1000m² Plot')
+        } else if (hash === "#premium-collection") {
+            setActiveTabSeo("Premium Collection");
+            setActiveTab('Premium 500m² Plot')
+
+        } else {
+            setActiveTabSeo("NFT Collection – Standard");
+            setActiveTab('Standard 100m² Plot')
+
+        }
+    }, []);
+
 
 
 
 
     return (
         <Fragment>
-            <Seo title={"NFT Details"} />
+            <Seo title={activeTabSeo} />
             <div className="container">
                 <div className="container">
                     {/* Tabs Header */}
@@ -422,7 +455,7 @@ const Nftdetails = () => {
                         {tabList.map((tab) => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab)}
+                                onClick={() => handleTabChange(tab)}
                                 className={`text-sm px-4 py-2 font-semibold ${activeTab === tab
                                     ? "border-b-2 border-primary text-primary"
                                     : ""
@@ -864,6 +897,7 @@ const Nftdetails = () => {
                         }</div></div>
                     )}
                 </div>
+
 
                 <PurchaseCelebrationModal
                     isOpen={isModalOpen}

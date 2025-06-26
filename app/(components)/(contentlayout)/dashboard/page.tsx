@@ -840,7 +840,7 @@ const Dashboard = () => {
                                                                         </svg>                                                                    </span>
                                                                 </div>
                                                                 <div className="flex-grow">
-                                                                    <h5 className="font-semibold ">{btgPercentChange || "TBA"}</h5>
+                                                                    <h5 className="font-semibold ">{btgPercentChange || "TBA"} %</h5>
                                                                     <p className="text-[#8c9097] dark:text-white/50 mb-0 text-[0.75rem]">24h Volume</p>
                                                                 </div>
 
