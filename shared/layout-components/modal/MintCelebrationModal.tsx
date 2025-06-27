@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Confetti from 'react-confetti-boom';
+import WarpcastIcon from '../images/WarpcastIcon';
+import XIcon from '../images/XIcon';
 
 interface MintCelebrationModalProps {
   image: string;
@@ -14,6 +16,23 @@ interface MintCelebrationModalProps {
 
 const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({ image, name, token, id, isOpen, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const currentUrl = typeof window !== "undefined"
+        ? window.location.href.replace(/\/$/, "")
+        : "";
+    const shareTextTwitter = `Checkout $${name} on @bitgrass`;
+    const shareTextWarpcast = `Checkout $${name} on @bitgrass`;
+
+
+    const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
+    const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
+
+    const encodedLink = encodeURIComponent(currentUrl);
+
+
+
+    const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
+    const warpcastUrl = `https://farcaster.xyz/~/compose?text=${encodedTextWarpcast}&embeds[]=${encodedLink}`;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,6 +61,7 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({ image, name
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose]);
+
 
   if (!isOpen) return null;
 
@@ -94,12 +114,34 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({ image, name
           {/* Content */}
           <div className="flex flex-col items-center gap-4 text-center mb-6">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              You just Minted{' '} <span className="text-sm text-secondary">Plot #{id}.</span> <br/>
+              You just Minted{' '} <span className="text-sm text-secondary">Plot #{id}.</span> <br />
 
-                from the {' '} {name} 
-     
-              
+              from the {' '} {name}
+
+
             </p>
+          </div>
+
+          <div className="flex flex items-center mb-4" style={{placeSelf:'center'}}>
+            <span className="font-medium text-sm text-gray-900 dark:text-white mb-2 text-center">
+              Share to...
+            </span>
+
+            <div className="flex items-center gap-1 ms-2">
+              <button
+                onClick={() => window.open(twitterUrl, "_blank")}
+                className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
+              >
+                <XIcon size={14} color="#7FC447" />
+              </button>
+
+              <button
+                onClick={() => window.open(warpcastUrl, "_blank")}
+                className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
+              >
+                <WarpcastIcon size={14} color="#7FC447" />
+              </button>
+            </div>
           </div>
 
           {/* Buttons */}
