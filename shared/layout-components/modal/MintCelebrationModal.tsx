@@ -123,7 +123,7 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({ image, name
           </div>
 
           <div className="flex flex items-center mb-4" style={{placeSelf:'center'}}>
-            <span className="font-medium text-sm text-gray-900 dark:text-white mb-2 text-center">
+            <span className="font-medium text-sm text-gray-900 dark:text-white  text-center">
               Share to...
             </span>
 
@@ -145,16 +145,16 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({ image, name
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row max-[420px]:flex-col gap-2">
             <Link
               href={`https://opensea.io/item/base/${token}/${id}`}
-              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-camel10 dark:bg-[#FFFFFF0D] text-gray-900 dark:text-gray-300 hover:bg-camel20 dark:hover:bg-[#FFFFFF1A] transition text-sm font-medium"
+              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-camel10 dark:bg-[#FFFFFF0D] text-gray-900 dark:text-gray-300 hover:bg-camel20 dark:hover:bg-[#FFFFFF1A] transition text-sm font-medium text-center"
             >
               View Item on Opensea
             </Link>
             <Link
               href="/portfolio#nfts-tab-pane"
-              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium"
+              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
             >
               View Item on Portfolio
             </Link>

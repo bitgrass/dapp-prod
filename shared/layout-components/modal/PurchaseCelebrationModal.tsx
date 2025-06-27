@@ -18,21 +18,21 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
   const modalRef = useRef<HTMLDivElement>(null);
 
   const currentUrl = typeof window !== "undefined"
-        ? window.location.href.replace(/\/$/, "")
-        : "";
-    const shareTextTwitter = `Checkout $${name} on @bitgrass`;
-    const shareTextWarpcast = `Checkout $${name} on @bitgrass`;
+    ? window.location.href.replace(/\/$/, "")
+    : "";
+  const shareTextTwitter = `Checkout $${name} on @bitgrass`;
+  const shareTextWarpcast = `Checkout $${name} on @bitgrass`;
 
 
-    const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
-    const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
+  const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
+  const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
 
-    const encodedLink = encodeURIComponent(currentUrl);
+  const encodedLink = encodeURIComponent(currentUrl);
 
 
 
-    const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
-    const warpcastUrl = `https://farcaster.xyz/~/compose?text=${encodedTextWarpcast}&embeds[]=${encodedLink}`;
+  const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
+  const warpcastUrl = `https://farcaster.xyz/~/compose?text=${encodedTextWarpcast}&embeds[]=${encodedLink}`;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -122,8 +122,8 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
             </p>
           </div>
 
-          <div className="flex flex items-center mb-4" style={{placeSelf:'center'}}>
-            <span className="font-medium text-sm text-gray-900 dark:text-white mb-2 text-center">
+          <div className="flex flex items-center mb-4" style={{ placeSelf: 'center' }}>
+            <span className="font-medium text-sm text-gray-900 dark:text-white text-center">
               Share to...
             </span>
 
@@ -145,20 +145,21 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row max-[420px]:flex-col gap-2">
             <Link
               href={`https://opensea.io/item/base/${token}/${id}`}
-              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-camel10 dark:bg-[#FFFFFF0D] text-gray-900 dark:text-gray-300 hover:bg-camel20 dark:hover:bg-[#FFFFFF1A] transition text-sm font-medium"
+              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-camel10 dark:bg-[#FFFFFF0D] text-gray-900 dark:text-gray-300 hover:bg-camel20 dark:hover:bg-[#FFFFFF1A] transition text-sm font-medium text-center"
             >
               View Item on Opensea
             </Link>
             <Link
               href="/portfolio#nfts-tab-pane"
-              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium"
+              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
             >
               View Item on Portfolio
             </Link>
           </div>
+
         </div>
       </div>
     </>

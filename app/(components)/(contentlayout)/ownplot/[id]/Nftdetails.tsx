@@ -106,7 +106,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         setActiveTabSeo(seoName);
     }, [initialTabId]);
 
-    const handleMintAbi = async (quantity: number) => {
+     const handleMintAbi = async (quantity: number) => {
         try {
             if (!window.ethereum) {
                 alert("Please connect a wallet.");
@@ -120,18 +120,29 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 return;
             }
 
+            // ✅ Get address directly from walletClient
+            const userAddress = walletClient.account.address;
+
+            // ✅ Use public RPC to read mint price (fix for embedded wallets)
+            const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+            const readSeaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, publicProvider);
+            const publicDrop = await readSeaDrop.getPublicDrop(CONTRACT_ADDRESS);
+
+            const mintPrice = publicDrop.mintPrice;
+            if (!mintPrice || mintPrice === BigInt(0)) {
+                setToastMessage("Mint not active or misconfigured.");
+                setShowToast(true);
+                return;
+            }
+
+            const totalPrice = mintPrice * BigInt(quantity);
+            console.log("✅ tx", CONTRACT_ADDRESS, SEADROP_CONDUIT, userAddress, quantity, totalPrice);
+
+            // 🔐 Now create signer from the user's actual wallet to send the tx
             const provider = new ethers.BrowserProvider(walletClient.transport);
             const signer = await provider.getSigner();
-            const userAddress = await signer.getAddress();
 
             const seaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, signer);
-
-            // 1. Fetch drop price
-            const publicDrop = await seaDrop.getPublicDrop(CONTRACT_ADDRESS);
-            const mintPrice = publicDrop.mintPrice;
-            const totalPrice = mintPrice * BigInt(quantity);
-
-            // 2. Execute mint
             const tx = await seaDrop.mintPublic(
                 CONTRACT_ADDRESS,
                 SEADROP_CONDUIT,
@@ -139,7 +150,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 quantity,
                 { value: totalPrice }
             );
-
             const receipt = await tx.wait();
             console.log("✅ Mint successful!");
             setTxHash(receipt.hash);
@@ -162,14 +172,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             // 4. Show modal with all token IDs
             if (mintedTokenIds.length > 0) {
                 setModalData({
-                    id: mintedTokenIds.join(", "),
+                    id: mintedTokenIds.join(", "), // "1896, 1897, 1898"
                     image: "/assets/images/apps/100m2.jpg",
                     name: `Bitgrass - Standard Collection`,
                 });
                 setIsStandardMintModalOpen(true);
             }
+
         } catch (error: any) {
+            // Case 1: User rejected in wallet
             console.error("❌ Mint failed:", error);
+
             const rejected =
                 error?.code === 4001 ||
                 error?.message?.toLowerCase().includes("user rejected");
@@ -189,6 +202,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 return;
             }
 
+            // Case 2: Smart contract custom error
             if (error?.data) {
                 try {
                     const iface = new ethers.Interface(SeaDropABI);
@@ -205,6 +219,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                         case "NotActive":
                             setToastMessage("Mint is not active right now.");
                             break;
+
                         default:
                             setToastMessage(`⚠️ Mint failed: ${errorName}`);
                     }
@@ -216,6 +231,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 }
             }
 
+
             setToastMessage("⚠️ Something went wrong. Please try again.");
             setShowToast(true);
         } finally {
@@ -223,19 +239,26 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
     };
 
-    useEffect(() => {
+ useEffect(() => {
         const fetchPrices = async () => {
             try {
-                if (!walletClient) return;
+                // ✅ Use public RPC just for reading drop data (Seadrop is read-only)
+                const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
 
-                const provider = new ethers.BrowserProvider(walletClient.transport);
-                const signer = await provider.getSigner();
-
-                const seaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, signer);
+                const seaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, publicProvider);
                 const publicDrop = await seaDrop.getPublicDrop(CONTRACT_ADDRESS);
 
                 const mintPriceWei = publicDrop.mintPrice;
+                console.log("mintPriceWei", mintPriceWei)
+                if (!mintPriceWei || mintPriceWei === BigInt(0)) {
+                    console.warn("⚠️ PublicDrop returned zero. Mint may not be live or configured.");
+                    setToastMessage("Mint not active. Please check back later.");
+                    setShowToast(true);
+                    return;
+                }
+
                 const pricePerNFT = Number(ethers.formatEther(mintPriceWei));
+
                 const totalEth = pricePerNFT * quantity;
 
                 setMintPriceEth(totalEth.toFixed(5));
@@ -254,11 +277,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 setMintPriceUsd((totalEth * ethToUsd).toFixed(2));
             } catch (err) {
                 console.error("Error fetching mint price:", err);
+                setToastMessage("Error loading mint price. Try again shortly.");
+                setShowToast(true);
             }
         };
 
         fetchPrices();
     }, [walletClient, quantity]);
+
 
     async function fetchAvailableNfts() {
         if (!walletClient || !isConnected || !apiKey) {
@@ -1187,20 +1213,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     )}
                 </div>
 
-                <button onClick={() => setModalOpen(true)}>open</button>
 
 
-                <PurchaseCelebrationModal
-                    isOpen={isModalOpen}
-                    onClose={() => setModalOpen(false)}
-                    name='bitgrass'
-                    token='0x6d5fd4f1d8eabb02c471a652b1610d7e93e97eaa'
-                    id='17'
-                    image='https://ik.imagekit.io/cafu/collection-logo.png?updatedAt=1748949261858&ik-s=354aa8dbbc0e22d358dfbf7a3065a527da05fa53'
 
-
-                />
-                {/* <PurchaseCelebrationModal
+                 <PurchaseCelebrationModal
                     isOpen={isModalOpen}
                     onClose={() => {
                         setModalOpen(false);
@@ -1214,7 +1230,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     token="0xc58e79f30b9a1575499da948932b8b16c23a4caf"
                     id={modalData.id}
                     image={modalData.image}
-                /> */}
+                />
                 <PurchaseFailedModal
                     isOpen={isFailureModalOpen}
                     onClose={() => setFailureModalOpen(false)}
