@@ -7,19 +7,19 @@ const tabData = [
     id: "standard",
     title: "Bitgrass NFT Collection – Standard 100m² Plot",
     description: "Discover the Bitgrass Standard 100m² NFT, a tokenized land plot offering carbon credit rights and staking benefits.",
-    image: "https://ik.imagekit.io/cafu/ShareBitgrassNft.webp?updatedAt=1750882435787&ik-s=37c673025412e3a4e1b662679b6b2c269b1cda87",
+    image: "https://ik.imagekit.io/cafu/bitgrass/100m2Share.webp?updatedAt=1751037776589&ik-s=a2715b2b9d2a1d53e36830c47212d2fcc58f28bf",
   },
   {
     id: "premium",
     title: "Bitgrass NFT Collection – Premium 500m² Plot",
     description: "Explore the Bitgrass Premium 500m² NFT, a tokenized land plot with enhanced carbon credit potential and staking rewards.",
-    image: "https://ik.imagekit.io/cafu/ShareBitgrassNft.webp?updatedAt=1750882435787&ik-s=37c673025412e3a4e1b662679b6b2c269b1cda87",
+    image: "https://ik.imagekit.io/cafu/bitgrass/500m2Share.webp?updatedAt=1751037775707&ik-s=0a4a436924505de65a90c3c7f6075d0e132426da",
   },
   {
     id: "legendary",
     title: "Bitgrass NFT Collection – Legendary 1000m² Plot",
     description: "Own a Bitgrass Legendary 1000m² NFT, a premium tokenized land plot with high carbon credit potential and exclusive benefits.",
-    image: "https://ik.imagekit.io/cafu/ShareBitgrassNft.webp?updatedAt=1750882435787&ik-s=37c673025412e3a4e1b662679b6b2c269b1cda87",
+    image: "https://ik.imagekit.io/cafu/bitgrass/1000m2Share.webp?updatedAt=1751037779175&ik-s=aaa06f48d035369ec9782a489ea3b2c59fc7753e",
   },
 ];
 
