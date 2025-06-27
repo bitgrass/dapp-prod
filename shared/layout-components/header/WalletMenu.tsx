@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { usePrivy, useLogin, useLogout, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useLogin, useLogout, useWallets, ConnectedWallet } from '@privy-io/react-auth';
 import { useAccount, useBalance, useSendTransaction, useSwitchChain } from 'wagmi';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import { parseEther } from 'viem';
 import { base } from 'wagmi/chains';
 import { Fragment } from 'react';
 import { btgToken, ETHToken } from "@/shared/data/tokens/data";
+import { useSetActiveWallet } from '@privy-io/wagmi';
 
 const WalletMenu: React.FC = () => {
   const { ready, authenticated, user, linkWallet, exportWallet } = usePrivy();
@@ -17,22 +18,30 @@ const WalletMenu: React.FC = () => {
   const { data: tokenBalance } = useBalance({ address, token: btgToken.address as any, chainId: base.id });
   const { sendTransactionAsync } = useSendTransaction();
   const { switchChainAsync } = useSwitchChain();
+  const { setActiveWallet } = useSetActiveWallet();
+
+  const [activePrivyWallet, setActivePrivyWallet] = useState<ConnectedWallet | null>(null);
+
+  useEffect(() => {
+    if (!wallets.length) return;
+    const external = wallets.find(w => w.walletClientType !== 'privy');
+    const embedded = wallets.find(w => w.walletClientType === 'privy');
+    const walletToUse = external || embedded;
+    if (walletToUse) {
+      setActiveWallet(walletToUse);
+      setActivePrivyWallet(walletToUse);
+    }
+  }, [wallets, setActiveWallet]);
 
   const popupRef = useRef<HTMLDivElement>(null);
-
-  // Panel management
   const [open, setOpen] = useState(false);
   const [openPanel, setOpenPanel] = useState<null | 'fund' | 'send'>(null);
-
-  // Inputs & errors
   const [fundAmount, setFundAmount] = useState('');
   const [sendAmount, setSendAmount] = useState('');
   const [sendToAddress, setSendToAddress] = useState('');
   const [sendError, setSendError] = useState('');
   const [fundError, setFundError] = useState('');
   const [sendSuccess, setSendSuccess] = useState<{ hash: string } | null>(null);
-
-  // Tooltip for copy address
   const [showTooltip, setShowTooltip] = useState(false);
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
@@ -47,7 +56,6 @@ const WalletMenu: React.FC = () => {
     setOpen(true);
   };
 
-  // Panel toggle logic
   const handleFundPanel = () => {
     setOpenPanel(openPanel === 'fund' ? null : 'fund');
     setSendError('');
@@ -65,14 +73,10 @@ const WalletMenu: React.FC = () => {
     setFundAmount('');
   };
 
-  // Close popup on click outside
   useEffect(() => {
     if (!open) return;
     function handleClickOutside(event: any) {
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(event.target as Node)
-      ) {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
         setOpen(false);
         setSendError('');
         setFundError('');
@@ -84,24 +88,13 @@ const WalletMenu: React.FC = () => {
     };
   }, [open]);
 
-  // Sidebar disable/enable
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
     const sidebar = document.querySelector(".app-sidebar");
-
-    if (open) {
-      if (sidebar) {
-        sidebar.classList.add("disabled");
-      }
-    } else {
-      if (sidebar) {
-        sidebar.classList.remove("disabled");
-      }
-    }
+    if (open && sidebar) sidebar.classList.add("disabled");
+    if (!open && sidebar) sidebar.classList.remove("disabled");
   }, [open]);
 
-  // Success message auto-hide
   useEffect(() => {
     if (sendSuccess) {
       const timer = setTimeout(() => {
@@ -112,23 +105,22 @@ const WalletMenu: React.FC = () => {
     }
   }, [sendSuccess]);
 
-  // FUND WALLET HANDLER
   const handleFund = async () => {
     setFundError('');
     if (!fundAmount || isNaN(Number(fundAmount)) || Number(fundAmount) <= 0) {
       setFundError("Please enter a valid amount.");
       return;
     }
-    if (!embeddedWallet) {
+    if (!activePrivyWallet || activePrivyWallet.walletClientType !== 'privy') {
       setFundError("No embedded wallet connected.");
       return;
     }
     try {
-      const currentChain = embeddedWallet.chainId;
-      if (currentChain !== `eip155:${base.id}`) {
-        await embeddedWallet.switchChain(base.id);
+      const currentChain = activePrivyWallet.chainId;
+      if (currentChain !== `eip155:${base.id}` && activePrivyWallet.switchChain) {
+        await activePrivyWallet.switchChain(base.id);
       }
-      await embeddedWallet.fund({
+      await activePrivyWallet.fund({
         chain: { id: base.id },
         amount: fundAmount,
       });
@@ -145,11 +137,9 @@ const WalletMenu: React.FC = () => {
     }
   };
 
-  // SEND ETH HANDLER
   const handleSend = async () => {
     setSendError('');
     setSendSuccess(null);
-
     if (!address || !wallets.length) {
       setSendError("No wallet connected. Please connect a wallet.");
       return;
@@ -163,16 +153,11 @@ const WalletMenu: React.FC = () => {
       return;
     }
     try {
-      if (embeddedWallet) {
-        const currentChain = embeddedWallet.chainId;
-        if (currentChain !== `eip155:${base.id}`) {
-          await embeddedWallet.switchChain(base.id);
-        }
-      } else {
-        const currentChainId = wallets[0]?.chainId;
-        if (currentChainId && currentChainId !== `eip155:${base.id}`) {
-          await switchChainAsync({ chainId: base.id });
-        }
+      const chainMismatch = activePrivyWallet?.chainId !== `eip155:${base.id}`;
+      if (chainMismatch && activePrivyWallet?.walletClientType === 'privy' && activePrivyWallet.switchChain) {
+        await activePrivyWallet.switchChain(base.id);
+      } else if (chainMismatch) {
+        await switchChainAsync({ chainId: base.id });
       }
 
       const tx = await sendTransactionAsync({
@@ -297,7 +282,7 @@ const WalletMenu: React.FC = () => {
                       setTimeout(() => setShowTooltip(false), 1200);
                     }}
                     className="w-full flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                    style={{ color: "#666666", fontSize: "12px", padding: "10px 0 0 0" }}
+                    style={{ color: "#666666", fontSize: "12px", padding: "6px" ,marginTop:"12px" }}
                   >
                     {shortAddress || email || 'User'}
                     <i className="bx bx-copy mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
@@ -316,17 +301,17 @@ const WalletMenu: React.FC = () => {
                 <button
                   onClick={() => window.open(`https://basescan.org/address/${address}`, '_blank')}
                   className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                  style={{ color: "#666666", fontSize: "12px", padding: "10px 0 0 0" }}
+                  style={{ color: "#666666", fontSize: "12px",  padding: "6px" ,marginTop:"12px" }}
                 >
                   View on Basescan
                   <i className="bx bx-link-alt mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
                 </button>
               )}
 
-              {!hasNonEmbeddedWallet && (
+              {activePrivyWallet?.walletClientType === 'privy' && (
                 <button
                   className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                  style={{ color: "#666666", fontSize: "12px", padding: "10px 0 0 0" }}
+                  style={{ color: "#666666", fontSize: "12px",  padding: "6px" ,marginTop:"12px" }}
                   onClick={exportWallet}
                 >
                   Export my wallet <i className="ri-export-fill mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
@@ -371,10 +356,10 @@ const WalletMenu: React.FC = () => {
               </div>
             </div>
 
-            {/* Fund / Send */}
+
+            {/* Deposit/Send buttons */}
             <div className="flex flex-row gap-2 mt-6 mb-6">
-              {/* FUND WALLET */}
-              {embeddedWallet && (
+              {activePrivyWallet?.walletClientType === 'privy' && (
                 <div style={{ backgroundColor: '#F5F3EB' }} className="flex-1 p-1 rounded-lg">
                   <button
                     onClick={handleFundPanel}
@@ -389,7 +374,6 @@ const WalletMenu: React.FC = () => {
                 </div>
               )}
 
-              {/* SEND ETH */}
               <div style={{ backgroundColor: '#F5F3EB' }} className="flex-1 p-1 rounded-lg">
                 <button
                   onClick={handleSendPanel}
@@ -411,8 +395,7 @@ const WalletMenu: React.FC = () => {
               <div className="flex gap-4">
                 <button
                   onClick={handleLinkWallet}
-                  style={{ fontSize: "12px" }}
-                  className="flex-1 flex items-center justify-between font-medium bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition ti-btn"
+                  className="flex-1 flex items-center text-sm justify-between font-medium bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition ti-btn"
                 >
                   <span className="text-white"><i className="bx bx-plug mr-2" />Connect External Wallet</span>
                 </button>
