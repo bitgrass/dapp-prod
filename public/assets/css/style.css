@@ -14821,6 +14821,21 @@ filter: blur(4px);
 }
 }
 
+.ock-text-foreground.ock-bg-default.absolute.right-0.bottom-0.flex.translate-y-\[102\%\].flex-col.gap-2.z-10.min-w-80.rounded.border.p-2.ock-border-radius {
+    --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+    top: 60px;
+}
+
+
+#market-tab-pane {
+  [data-testid="ockTextInput_Input"] {
+      font-size: 2.5rem;
+      background-color: transparent;
+}
+}
+
 
 .btn-qty {
   width: 12%;

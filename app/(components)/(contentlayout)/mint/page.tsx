@@ -3,8 +3,6 @@
 import React, { Fragment, useState, useEffect } from "react";
 import Seo from "@/shared/layout-components/seo/seo";
 import Link from "next/link";
-import { BrowserProvider, BigNumberish, BytesLike, Contract } from "ethers";
-import { Transaction, TransactionButton } from "@coinbase/onchainkit/transaction";
 import { Seaport } from "@opensea/seaport-js";
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi';
 import { base } from 'wagmi/chains';
@@ -12,16 +10,13 @@ import { id } from 'ethers'; // at top if not already
 import { MintModal } from '@reservoir0x/reservoir-kit-ui'
 import axios from "axios";
 import { EthInfo } from "@/shared/data/tokens/data";
-
-
 import PurchaseCelebrationModal from "@/shared/layout-components/modal/PurchaseCelebrationModal"
 import PurchaseFailedModal from "@/shared/layout-components/modal/PurchaseFailedModal"
 import MintCelebrationModal from "@/shared/layout-components/modal/MintCelebrationModal";
-
 import ReservoirMintWrapper from '../../ReservoirMintWrapper';
-
 import { custom } from "viem";
 import { useWriteContract } from 'wagmi';
+
 
 import {
     NFTCreator,
@@ -30,13 +25,15 @@ import {
     NFTAssetCost,
     NFTMintButton,
 } from "@coinbase/onchainkit/nft/mint";
-import { NFTMedia } from "@coinbase/onchainkit/nft/view";
 import { NFTMintCard } from "@coinbase/onchainkit/nft";
 import { ethers } from "ethers";
 import { set } from "date-fns";
 import { parseEther } from 'ethers';
 import { useReadContract } from 'wagmi';
 import NFT_ABI from "../../ContractAbi.json";
+import { nftInfo, rangesLegendary, rangesPremium } from "@/shared/data/tokens/data";
+
+
 
 type OrderData = {
     parameters: any;
@@ -209,13 +206,12 @@ const Nftdetails = () => {
     const { isConnected } = useAccount();
 
     const [activeTab, setActiveTab] = useState("Standard 100m² Plot");
+    const [activeTabSeo, setActiveTabSeo] = useState("NFT Collection – Standard");
+
     const tabList = ["Standard 100m² Plot", "Premium 500m² Plot", "Legendary 1000m² Plot"];
     const [orderData, setOrderData] = useState<OrderData | null>(null);
-    const [txRequest, setTxRequest] = useState<{
-        to: string;
-        data: string;
-        value: BigNumberish;
-    } | null>(null);
+
+
 
     const [isFetchingOrder, setIsFetchingOrder] = useState(false);
     const [orderFetchError, setOrderFetchError] = useState<string | null>(null);
@@ -225,14 +221,9 @@ const Nftdetails = () => {
     const [failureTxHash, setFailureTxHash] = useState("");
     const [failureImage, setFailureImage] = useState("");
 
-    const OPENSEA_CONTRACT_ADDRESS = "0xc58e79f30b9a1575499da948932b8b16c23a4caf";
+    const OPENSEA_CONTRACT_ADDRESS = nftInfo.address;
     const TOKEN_ID = "16";
-    const sellerAddress = "0x4203cea1da19f04ca7b3228ebf4041bd54eea48f";
-    const OPENSEA_CONDUIT = "0xa26b00c1f0df003000390027140000faa7190000";
-    const ERC721_ABI = [
-        "function ownerOf(uint256 tokenId) external view returns (address)",
-        "function getApproved(uint256 tokenId) external view returns (address)"
-    ];
+
     const [listedLegendaryItems, setListedLegendaryItems] = useState<any[]>([]);
     const [listedPremiumItems, setListedPremiumItems] = useState<any[]>([]);
     const [modalData, setModalData] = useState({
@@ -240,7 +231,6 @@ const Nftdetails = () => {
         image: "",
         name: ""
     })
-    const [selectedQuantity, setSelectedQuantity] = useState(1);
     const sortedPremiumItems = [...listedPremiumItems].sort((a: any, b: any) =>
         parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
         parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
@@ -254,75 +244,10 @@ const Nftdetails = () => {
     const [lastBoughtLegendaryId, setLastBoughtLegendaryId] = useState(0);
     const [lastBoughtPremiumId, setLastBoughtPremiumId] = useState(0);
     const apiKey = process.env.NEXT_PUBLIC_OPENSEA_API_KEY
-
     const [isFailureModalOpen, setFailureModalOpen] = useState(false);
 
 
-    const rangesLegendary = [
-        { start: 1, end: 20 },
-        { start: 21, end: 40 },
-        { start: 41, end: 60 },
-        { start: 61, end: 80 },
-        { start: 81, end: 100 },
-        { start: 101, end: 120 },
-        { start: 121, end: 140 },
-        { start: 141, end: 160 },
-        { start: 161, end: 180 },
-        { start: 181, end: 200 },
-        { start: 201, end: 220 },
-        { start: 221, end: 240 },
-        { start: 241, end: 260 },
-        { start: 261, end: 280 },
-        { start: 281, end: 300 },
-        { start: 301, end: 320 },
-        { start: 321, end: 340 },
-        { start: 341, end: 360 },
-        { start: 361, end: 380 },
-        { start: 381, end: 400 }
-    ];
 
-    const rangesPremium = [
-        { start: 401, end: 420 },
-        { start: 421, end: 440 },
-        { start: 441, end: 460 },
-        { start: 461, end: 480 },
-        { start: 481, end: 500 },
-        { start: 501, end: 520 },
-        { start: 521, end: 540 },
-        { start: 541, end: 560 },
-        { start: 561, end: 580 },
-        { start: 581, end: 600 },
-        { start: 601, end: 620 },
-        { start: 621, end: 640 },
-        { start: 641, end: 660 },
-        { start: 661, end: 680 },
-        { start: 681, end: 700 },
-        { start: 701, end: 720 },
-        { start: 721, end: 740 },
-        { start: 741, end: 760 },
-        { start: 761, end: 780 },
-        { start: 781, end: 800 },
-        { start: 801, end: 820 },
-        { start: 821, end: 840 },
-        { start: 841, end: 860 },
-        { start: 861, end: 880 },
-        { start: 881, end: 900 },
-        { start: 901, end: 920 },
-        { start: 921, end: 940 },
-        { start: 941, end: 960 },
-        { start: 961, end: 980 },
-        { start: 981, end: 1000 },
-        { start: 1001, end: 1020 },
-        { start: 1021, end: 1040 },
-        { start: 1041, end: 1060 },
-        { start: 1061, end: 1080 },
-        { start: 1081, end: 1100 },
-        { start: 1101, end: 1120 },
-        { start: 1121, end: 1140 },
-        { start: 1141, end: 1160 },
-        { start: 1161, end: 1180 },
-        { start: 1181, end: 1200 }
-    ];
 
     useEffect(() => {
         const fetchPrices = async () => {
@@ -371,7 +296,6 @@ const Nftdetails = () => {
                 const res = await fetch(`/api/listings?start=${effectiveStart}&end=${range.end}`);
                 const data = await res.json();
                 const orders = data.orders || [];
-                console.log(`Legendary orders (${effectiveStart}-${range.end}):`, orders);
 
                 if (orders.length > 0) {
                     const sorted = [...orders]
@@ -415,7 +339,6 @@ const Nftdetails = () => {
             ? rangesLegendary.slice(startRangeIndex)
             : rangesLegendary;
 
-        console.log("adjustedRanges----", adjustedRanges);
 
         fetchListedLegendaryItems(adjustedRanges, nextId);
     }, [isModalOpen, lastBoughtLegendaryId]);
@@ -475,7 +398,6 @@ const Nftdetails = () => {
             ? rangesPremium.slice(startRangeIndex)
             : rangesPremium;
 
-        console.log("adjustedRanges----", adjustedRanges);
 
         fetchListedPremiumItems(adjustedRanges, nextId);
     }, [isModalOpen, lastBoughtPremiumId]);
@@ -682,7 +604,7 @@ const Nftdetails = () => {
     const getModalData = () => {
         let currentItem;
 
-        if (activeTab === "Premium 500m2 Plot" && sortedPremiumItems.length > 0) {
+        if (activeTab === "Premium 500m² Plot" && sortedPremiumItems.length > 0) {
             currentItem = sortedPremiumItems[0];
             return {
                 id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
@@ -691,7 +613,7 @@ const Nftdetails = () => {
             };
         }
 
-        if (activeTab === "Legendary 1000m2 Plot" && sortedLegendaryItems.length > 0) {
+        if (activeTab === "Legendary 1000m² Plot" && sortedLegendaryItems.length > 0) {
             currentItem = sortedLegendaryItems[0];
             return {
                 id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
@@ -707,13 +629,45 @@ const Nftdetails = () => {
         };
     };
 
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+
+        if (tab.includes("Premium")) {
+            window.history.replaceState(null, "", `#premium-collection`);
+        }
+        else if (tab.includes("Legendary")) {
+            window.history.replaceState(null, "", `#legendary-collection`);
+        }
+        else {
+            window.history.replaceState(null, "", `#standard-collection`);
+        }
+    };
+
+
+    useEffect(() => {
+        const hash = window.location.hash;
+
+        if (hash === "#legendary-collection") {
+            setActiveTabSeo('Legendary Collection');
+            setActiveTab('Legendary 1000m² Plot')
+        } else if (hash === "#premium-collection") {
+            setActiveTabSeo("Premium Collection");
+            setActiveTab('Premium 500m² Plot')
+
+        } else {
+            setActiveTabSeo("NFT Collection – Standard");
+            setActiveTab('Standard 100m² Plot')
+
+        }
+    }, []);
+
 
 
 
 
     return (
         <Fragment>
-            <Seo title={"NFT Details"} />
+            <Seo title={activeTabSeo} />
             <div className="container">
                 <div className="container">
                     {/* Tabs Header */}
@@ -721,7 +675,7 @@ const Nftdetails = () => {
                         {tabList.map((tab) => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab)}
+                                onClick={() => handleTabChange(tab)}
                                 className={`text-sm px-4 py-2 font-semibold ${activeTab === tab
                                     ? "border-b-2 border-primary text-primary"
                                     : ""
@@ -825,7 +779,7 @@ const Nftdetails = () => {
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="../../../assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
-                                                            TBA
+                                                            0.05
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
@@ -972,7 +926,7 @@ const Nftdetails = () => {
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="../../../assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
-                                                            TBA
+                                                            0.2
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
@@ -1118,7 +1072,7 @@ const Nftdetails = () => {
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="../../../assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
-                                                            TBA
+                                                            0.35
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
@@ -1204,6 +1158,7 @@ const Nftdetails = () => {
                         }</div></div>
                     )}
                 </div>
+
 
                 <PurchaseCelebrationModal
                     isOpen={isModalOpen}
