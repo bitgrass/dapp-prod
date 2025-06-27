@@ -1,23 +1,20 @@
 "use client";
 
 import React, { Fragment, useState, useEffect } from "react";
-import Seo from "@/shared/layout-components/seo/seo";
 import Link from "next/link";
 import { Seaport } from "@opensea/seaport-js";
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { id } from 'ethers'; // at top if not already
-import { MintModal } from '@reservoir0x/reservoir-kit-ui'
+import { id } from 'ethers';
+import { MintModal } from '@reservoir0x/reservoir-kit-ui';
 import axios from "axios";
 import { EthInfo } from "@/shared/data/tokens/data";
-import PurchaseCelebrationModal from "@/shared/layout-components/modal/PurchaseCelebrationModal"
-import PurchaseFailedModal from "@/shared/layout-components/modal/PurchaseFailedModal"
+import PurchaseCelebrationModal from "@/shared/layout-components/modal/PurchaseCelebrationModal";
+import PurchaseFailedModal from "@/shared/layout-components/modal/PurchaseFailedModal";
 import MintCelebrationModal from "@/shared/layout-components/modal/MintCelebrationModal";
-import ReservoirMintWrapper from '../../ReservoirMintWrapper';
+import ReservoirMintWrapper from '../../../ReservoirMintWrapper';
 import { custom } from "viem";
 import { useWriteContract } from 'wagmi';
-
-
 import {
     NFTCreator,
     NFTCollectionTitle,
@@ -27,38 +24,95 @@ import {
 } from "@coinbase/onchainkit/nft/mint";
 import { NFTMintCard } from "@coinbase/onchainkit/nft";
 import { ethers } from "ethers";
-import { set } from "date-fns";
 import { parseEther } from 'ethers';
 import { useReadContract } from 'wagmi';
-import NFT_ABI from "../../ContractAbi.json";
+import NFT_ABI from "../../../ContractAbi.json";
 import { nftInfo, rangesLegendary, rangesPremium } from "@/shared/data/tokens/data";
-
-
 
 type OrderData = {
     parameters: any;
     signature: string;
 };
 
-const Nftdetails = () => {
-    const CONTRACT_ADDRESS = "0x34df064b9293ea1a07d6c9e5f4dafd0fe28fdd94"; // Replace with your deployed address
+interface NftdetailsProps {
+    initialTabId: string;
+}
+
+const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
+    const CONTRACT_ADDRESS = "0x34df064b9293ea1a07d6c9e5f4dafd0fe28fdd94";
     const SEADROP_ADDRESS = "0x00005EA00Ac477B1030CE78506496e8C2dE24bf5";
-    const SEADROP_CONDUIT = "0x0000a26b00c1F0DF003000390027140000fAa719"
+    const SEADROP_CONDUIT = "0x0000a26b00c1F0DF003000390027140000fAa719";
     const SeaDropABI =
         [{ "inputs": [], "stateMutability": "nonpayable", "type": "constructor" }, { "inputs": [], "name": "CreatorPayoutAddressCannotBeZeroAddress", "type": "error" }, { "inputs": [], "name": "DuplicateFeeRecipient", "type": "error" }, { "inputs": [], "name": "DuplicatePayer", "type": "error" }, { "inputs": [], "name": "FeeRecipientCannotBeZeroAddress", "type": "error" }, { "inputs": [], "name": "FeeRecipientNotAllowed", "type": "error" }, { "inputs": [], "name": "FeeRecipientNotPresent", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "got", "type": "uint256" }, { "internalType": "uint256", "name": "want", "type": "uint256" }], "name": "IncorrectPayment", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "feeBps", "type": "uint256" }], "name": "InvalidFeeBps", "type": "error" }, { "inputs": [], "name": "InvalidProof", "type": "error" }, { "inputs": [{ "internalType": "address", "name": "recoveredSigner", "type": "address" }], "name": "InvalidSignature", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "got", "type": "uint256" }, { "internalType": "uint256", "name": "maximum", "type": "uint256" }], "name": "InvalidSignedEndTime", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "got", "type": "uint256" }, { "internalType": "uint256", "name": "minimumOrMaximum", "type": "uint256" }], "name": "InvalidSignedFeeBps", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "got", "type": "uint256" }, { "internalType": "uint256", "name": "maximum", "type": "uint256" }], "name": "InvalidSignedMaxTokenSupplyForStage", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "got", "type": "uint256" }, { "internalType": "uint256", "name": "maximum", "type": "uint256" }], "name": "InvalidSignedMaxTotalMintableByWallet", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "got", "type": "uint256" }, { "internalType": "uint256", "name": "minimum", "type": "uint256" }], "name": "InvalidSignedMintPrice", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "got", "type": "uint256" }, { "internalType": "uint256", "name": "minimum", "type": "uint256" }], "name": "InvalidSignedStartTime", "type": "error" }, { "inputs": [], "name": "MintQuantityCannotBeZero", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "total", "type": "uint256" }, { "internalType": "uint256", "name": "allowed", "type": "uint256" }], "name": "MintQuantityExceedsMaxMintedPerWallet", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "total", "type": "uint256" }, { "internalType": "uint256", "name": "maxSupply", "type": "uint256" }], "name": "MintQuantityExceedsMaxSupply", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "total", "type": "uint256" }, { "internalType": "uint256", "name": "maxTokenSupplyForStage", "type": "uint256" }], "name": "MintQuantityExceedsMaxTokenSupplyForStage", "type": "error" }, { "inputs": [{ "internalType": "uint256", "name": "currentTimestamp", "type": "uint256" }, { "internalType": "uint256", "name": "startTimestamp", "type": "uint256" }, { "internalType": "uint256", "name": "endTimestamp", "type": "uint256" }], "name": "NotActive", "type": "error" }, { "inputs": [{ "internalType": "address", "name": "sender", "type": "address" }], "name": "OnlyINonFungibleSeaDropToken", "type": "error" }, { "inputs": [], "name": "PayerCannotBeZeroAddress", "type": "error" }, { "inputs": [], "name": "PayerNotAllowed", "type": "error" }, { "inputs": [], "name": "PayerNotPresent", "type": "error" }, { "inputs": [], "name": "SignatureAlreadyUsed", "type": "error" }, { "inputs": [], "name": "SignedMintsMustRestrictFeeRecipients", "type": "error" }, { "inputs": [], "name": "SignerCannotBeZeroAddress", "type": "error" }, { "inputs": [], "name": "SignerNotPresent", "type": "error" }, { "inputs": [], "name": "TokenGatedDropAllowedNftTokenCannotBeDropToken", "type": "error" }, { "inputs": [], "name": "TokenGatedDropAllowedNftTokenCannotBeZeroAddress", "type": "error" }, { "inputs": [], "name": "TokenGatedDropStageNotPresent", "type": "error" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "allowedNftToken", "type": "address" }, { "internalType": "uint256", "name": "allowedNftTokenId", "type": "uint256" }], "name": "TokenGatedNotTokenOwner", "type": "error" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "allowedNftToken", "type": "address" }, { "internalType": "uint256", "name": "allowedNftTokenId", "type": "uint256" }], "name": "TokenGatedTokenIdAlreadyRedeemed", "type": "error" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "indexed": true, "internalType": "bytes32", "name": "previousMerkleRoot", "type": "bytes32" }, { "indexed": true, "internalType": "bytes32", "name": "newMerkleRoot", "type": "bytes32" }, { "indexed": false, "internalType": "string[]", "name": "publicKeyURI", "type": "string[]" }, { "indexed": false, "internalType": "string", "name": "allowListURI", "type": "string" }], "name": "AllowListUpdated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "indexed": true, "internalType": "address", "name": "feeRecipient", "type": "address" }, { "indexed": true, "internalType": "bool", "name": "allowed", "type": "bool" }], "name": "AllowedFeeRecipientUpdated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "indexed": true, "internalType": "address", "name": "newPayoutAddress", "type": "address" }], "name": "CreatorPayoutAddressUpdated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "indexed": false, "internalType": "string", "name": "newDropURI", "type": "string" }], "name": "DropURIUpdated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "indexed": true, "internalType": "address", "name": "payer", "type": "address" }, { "indexed": true, "internalType": "bool", "name": "allowed", "type": "bool" }], "name": "PayerUpdated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "components": [{ "internalType": "uint80", "name": "mintPrice", "type": "uint80" }, { "internalType": "uint48", "name": "startTime", "type": "uint48" }, { "internalType": "uint48", "name": "endTime", "type": "uint48" }, { "internalType": "uint16", "name": "maxTotalMintableByWallet", "type": "uint16" }, { "internalType": "uint16", "name": "feeBps", "type": "uint16" }, { "internalType": "bool", "name": "restrictFeeRecipients", "type": "bool" }], "indexed": false, "internalType": "struct PublicDrop", "name": "publicDrop", "type": "tuple" }], "name": "PublicDropUpdated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "indexed": true, "internalType": "address", "name": "minter", "type": "address" }, { "indexed": true, "internalType": "address", "name": "feeRecipient", "type": "address" }, { "indexed": false, "internalType": "address", "name": "payer", "type": "address" }, { "indexed": false, "internalType": "uint256", "name": "quantityMinted", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "unitMintPrice", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "feeBps", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "dropStageIndex", "type": "uint256" }], "name": "SeaDropMint", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "indexed": true, "internalType": "address", "name": "signer", "type": "address" }, { "components": [{ "internalType": "uint80", "name": "minMintPrice", "type": "uint80" }, { "internalType": "uint24", "name": "maxMaxTotalMintableByWallet", "type": "uint24" }, { "internalType": "uint40", "name": "minStartTime", "type": "uint40" }, { "internalType": "uint40", "name": "maxEndTime", "type": "uint40" }, { "internalType": "uint40", "name": "maxMaxTokenSupplyForStage", "type": "uint40" }, { "internalType": "uint16", "name": "minFeeBps", "type": "uint16" }, { "internalType": "uint16", "name": "maxFeeBps", "type": "uint16" }], "indexed": false, "internalType": "struct SignedMintValidationParams", "name": "signedMintValidationParams", "type": "tuple" }], "name": "SignedMintValidationParamsUpdated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "nftContract", "type": "address" }, { "indexed": true, "internalType": "address", "name": "allowedNftToken", "type": "address" }, { "components": [{ "internalType": "uint80", "name": "mintPrice", "type": "uint80" }, { "internalType": "uint16", "name": "maxTotalMintableByWallet", "type": "uint16" }, { "internalType": "uint48", "name": "startTime", "type": "uint48" }, { "internalType": "uint48", "name": "endTime", "type": "uint48" }, { "internalType": "uint8", "name": "dropStageIndex", "type": "uint8" }, { "internalType": "uint32", "name": "maxTokenSupplyForStage", "type": "uint32" }, { "internalType": "uint16", "name": "feeBps", "type": "uint16" }, { "internalType": "bool", "name": "restrictFeeRecipients", "type": "bool" }], "indexed": false, "internalType": "struct TokenGatedDropStage", "name": "dropStage", "type": "tuple" }], "name": "TokenGatedDropStageUpdated", "type": "event" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }], "name": "getAllowListMerkleRoot", "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }], "name": "getAllowedFeeRecipients", "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "allowedNftToken", "type": "address" }, { "internalType": "uint256", "name": "allowedNftTokenId", "type": "uint256" }], "name": "getAllowedNftTokenIdIsRedeemed", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }], "name": "getCreatorPayoutAddress", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "feeRecipient", "type": "address" }], "name": "getFeeRecipientIsAllowed", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "payer", "type": "address" }], "name": "getPayerIsAllowed", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }], "name": "getPayers", "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }], "name": "getPublicDrop", "outputs": [{ "components": [{ "internalType": "uint80", "name": "mintPrice", "type": "uint80" }, { "internalType": "uint48", "name": "startTime", "type": "uint48" }, { "internalType": "uint48", "name": "endTime", "type": "uint48" }, { "internalType": "uint16", "name": "maxTotalMintableByWallet", "type": "uint16" }, { "internalType": "uint16", "name": "feeBps", "type": "uint16" }, { "internalType": "bool", "name": "restrictFeeRecipients", "type": "bool" }], "internalType": "struct PublicDrop", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "signer", "type": "address" }], "name": "getSignedMintValidationParams", "outputs": [{ "components": [{ "internalType": "uint80", "name": "minMintPrice", "type": "uint80" }, { "internalType": "uint24", "name": "maxMaxTotalMintableByWallet", "type": "uint24" }, { "internalType": "uint40", "name": "minStartTime", "type": "uint40" }, { "internalType": "uint40", "name": "maxEndTime", "type": "uint40" }, { "internalType": "uint40", "name": "maxMaxTokenSupplyForStage", "type": "uint40" }, { "internalType": "uint16", "name": "minFeeBps", "type": "uint16" }, { "internalType": "uint16", "name": "maxFeeBps", "type": "uint16" }], "internalType": "struct SignedMintValidationParams", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }], "name": "getSigners", "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }], "name": "getTokenGatedAllowedTokens", "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "allowedNftToken", "type": "address" }], "name": "getTokenGatedDrop", "outputs": [{ "components": [{ "internalType": "uint80", "name": "mintPrice", "type": "uint80" }, { "internalType": "uint16", "name": "maxTotalMintableByWallet", "type": "uint16" }, { "internalType": "uint48", "name": "startTime", "type": "uint48" }, { "internalType": "uint48", "name": "endTime", "type": "uint48" }, { "internalType": "uint8", "name": "dropStageIndex", "type": "uint8" }, { "internalType": "uint32", "name": "maxTokenSupplyForStage", "type": "uint32" }, { "internalType": "uint16", "name": "feeBps", "type": "uint16" }, { "internalType": "bool", "name": "restrictFeeRecipients", "type": "bool" }], "internalType": "struct TokenGatedDropStage", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "feeRecipient", "type": "address" }, { "internalType": "address", "name": "minterIfNotPayer", "type": "address" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }, { "components": [{ "internalType": "uint256", "name": "mintPrice", "type": "uint256" }, { "internalType": "uint256", "name": "maxTotalMintableByWallet", "type": "uint256" }, { "internalType": "uint256", "name": "startTime", "type": "uint256" }, { "internalType": "uint256", "name": "endTime", "type": "uint256" }, { "internalType": "uint256", "name": "dropStageIndex", "type": "uint256" }, { "internalType": "uint256", "name": "maxTokenSupplyForStage", "type": "uint256" }, { "internalType": "uint256", "name": "feeBps", "type": "uint256" }, { "internalType": "bool", "name": "restrictFeeRecipients", "type": "bool" }], "internalType": "struct MintParams", "name": "mintParams", "type": "tuple" }, { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" }], "name": "mintAllowList", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "feeRecipient", "type": "address" }, { "internalType": "address", "name": "minterIfNotPayer", "type": "address" }, { "components": [{ "internalType": "address", "name": "allowedNftToken", "type": "address" }, { "internalType": "uint256[]", "name": "allowedNftTokenIds", "type": "uint256[]" }], "internalType": "struct TokenGatedMintParams", "name": "mintParams", "type": "tuple" }], "name": "mintAllowedTokenHolder", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "feeRecipient", "type": "address" }, { "internalType": "address", "name": "minterIfNotPayer", "type": "address" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "mintPublic", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "address", "name": "feeRecipient", "type": "address" }, { "internalType": "address", "name": "minterIfNotPayer", "type": "address" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }, { "components": [{ "internalType": "uint256", "name": "mintPrice", "type": "uint256" }, { "internalType": "uint256", "name": "maxTotalMintableByWallet", "type": "uint256" }, { "internalType": "uint256", "name": "startTime", "type": "uint256" }, { "internalType": "uint256", "name": "endTime", "type": "uint256" }, { "internalType": "uint256", "name": "dropStageIndex", "type": "uint256" }, { "internalType": "uint256", "name": "maxTokenSupplyForStage", "type": "uint256" }, { "internalType": "uint256", "name": "feeBps", "type": "uint256" }, { "internalType": "bool", "name": "restrictFeeRecipients", "type": "bool" }], "internalType": "struct MintParams", "name": "mintParams", "type": "tuple" }, { "internalType": "uint256", "name": "salt", "type": "uint256" }, { "internalType": "bytes", "name": "signature", "type": "bytes" }], "name": "mintSigned", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [{ "components": [{ "internalType": "bytes32", "name": "merkleRoot", "type": "bytes32" }, { "internalType": "string[]", "name": "publicKeyURIs", "type": "string[]" }, { "internalType": "string", "name": "allowListURI", "type": "string" }], "internalType": "struct AllowListData", "name": "allowListData", "type": "tuple" }], "name": "updateAllowList", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "feeRecipient", "type": "address" }, { "internalType": "bool", "name": "allowed", "type": "bool" }], "name": "updateAllowedFeeRecipient", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "_payoutAddress", "type": "address" }], "name": "updateCreatorPayoutAddress", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "dropURI", "type": "string" }], "name": "updateDropURI", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "payer", "type": "address" }, { "internalType": "bool", "name": "allowed", "type": "bool" }], "name": "updatePayer", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "components": [{ "internalType": "uint80", "name": "mintPrice", "type": "uint80" }, { "internalType": "uint48", "name": "startTime", "type": "uint48" }, { "internalType": "uint48", "name": "endTime", "type": "uint48" }, { "internalType": "uint16", "name": "maxTotalMintableByWallet", "type": "uint16" }, { "internalType": "uint16", "name": "feeBps", "type": "uint16" }, { "internalType": "bool", "name": "restrictFeeRecipients", "type": "bool" }], "internalType": "struct PublicDrop", "name": "publicDrop", "type": "tuple" }], "name": "updatePublicDrop", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "signer", "type": "address" }, { "components": [{ "internalType": "uint80", "name": "minMintPrice", "type": "uint80" }, { "internalType": "uint24", "name": "maxMaxTotalMintableByWallet", "type": "uint24" }, { "internalType": "uint40", "name": "minStartTime", "type": "uint40" }, { "internalType": "uint40", "name": "maxEndTime", "type": "uint40" }, { "internalType": "uint40", "name": "maxMaxTokenSupplyForStage", "type": "uint40" }, { "internalType": "uint16", "name": "minFeeBps", "type": "uint16" }, { "internalType": "uint16", "name": "maxFeeBps", "type": "uint16" }], "internalType": "struct SignedMintValidationParams", "name": "signedMintValidationParams", "type": "tuple" }], "name": "updateSignedMintValidationParams", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "allowedNftToken", "type": "address" }, { "components": [{ "internalType": "uint80", "name": "mintPrice", "type": "uint80" }, { "internalType": "uint16", "name": "maxTotalMintableByWallet", "type": "uint16" }, { "internalType": "uint48", "name": "startTime", "type": "uint48" }, { "internalType": "uint48", "name": "endTime", "type": "uint48" }, { "internalType": "uint8", "name": "dropStageIndex", "type": "uint8" }, { "internalType": "uint32", "name": "maxTokenSupplyForStage", "type": "uint32" }, { "internalType": "uint16", "name": "feeBps", "type": "uint16" }, { "internalType": "bool", "name": "restrictFeeRecipients", "type": "bool" }], "internalType": "struct TokenGatedDropStage", "name": "dropStage", "type": "tuple" }], "name": "updateTokenGatedDrop", "outputs": [], "stateMutability": "nonpayable", "type": "function" }]
         ;
 
     const [loading, setLoading] = useState(false);
-    const [quantity, setQuantity] = useState(1); // default mint 1
+    const [quantity, setQuantity] = useState(1);
     const [txHash, setTxHash] = useState("");
-
-
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [showToast, setShowToast] = useState(false);
+    const [mintPriceEth, setMintPriceEth] = useState<string>("0");
+    const [mintPriceUsd, setMintPriceUsd] = useState<string>("0.00");
+    const { address: user } = useAccount();
+    const { data: walletClient } = useWalletClient();
+    const { switchChainAsync } = useSwitchChain();
+    const [isMinting, setIsMinting] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState(false);
+    const { isConnected } = useAccount();
+    const [activeTab, setActiveTab] = useState("Standard 100m² Plot");
+    const [activeTabSeo, setActiveTabSeo] = useState("NFT Collection – Standard");
+    const tabList = ["Standard 100m² Plot", "Premium 500m² Plot", "Legendary 1000m² Plot"];
+    const [orderData, setOrderData] = useState<OrderData | null>(null);
+    const [isFetchingOrder, setIsFetchingOrder] = useState(false);
+    const [orderFetchError, setOrderFetchError] = useState<string | null>(null);
+    const [isModalOpen, setModalOpen] = useState(false);
+    const [isStandardMintModalOpen, setIsStandardMintModalOpen] = useState(false);
+    const [failureTxHash, setFailureTxHash] = useState("");
+    const [failureImage, setFailureImage] = useState("");
+    const OPENSEA_CONTRACT_ADDRESS = nftInfo.address;
+    const TOKEN_ID = "16";
+    const [listedLegendaryItems, setListedLegendaryItems] = useState<any[]>([]);
+    const [listedPremiumItems, setListedPremiumItems] = useState<any[]>([]);
+    const [modalData, setModalData] = useState({
+        id: "",
+        image: "",
+        name: ""
+    });
+    const sortedPremiumItems = [...listedPremiumItems].sort((a: any, b: any) =>
+        parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+        parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+    );
+    const sortedLegendaryItems = [...listedLegendaryItems].sort((a: any, b: any) =>
+        parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+        parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+    );
+    const [lastBoughtLegendaryId, setLastBoughtLegendaryId] = useState(0);
+    const [lastBoughtPremiumId, setLastBoughtPremiumId] = useState(0);
+    const apiKey = process.env.NEXT_PUBLIC_OPENSEA_API_KEY;
+    const [isFailureModalOpen, setFailureModalOpen] = useState(false);
 
+    // Map tab IDs to tab names
+    const tabIdToName: Record<string, string> = {
+        standard: "Standard 100m² Plot",
+        premium: "Premium 500m² Plot",
+        legendary: "Legendary 1000m² Plot",
+    };
 
+    // Map tab IDs to SEO titles
+    const tabIdToSeo: Record<string, string> = {
+        standard: "NFT Collection – Standard",
+        premium: "Premium Collection",
+        legendary: "Legendary Collection",
+    };
 
-
+    // Set initial tab based on initialTabId
+    useEffect(() => {
+        const tabName = tabIdToName[initialTabId] || "Standard 100m² Plot";
+        const seoName = tabIdToSeo[initialTabId] || "NFT Collection – Standard";
+        setActiveTab(tabName);
+        setActiveTabSeo(seoName);
+    }, [initialTabId]);
 
     const handleMintAbi = async (quantity: number) => {
         try {
@@ -82,7 +136,7 @@ const Nftdetails = () => {
 
             // 1. Fetch drop price
             const publicDrop = await seaDrop.getPublicDrop(CONTRACT_ADDRESS);
-            const mintPrice = publicDrop.mintPrice; // in wei (BigInt)
+            const mintPrice = publicDrop.mintPrice;
             const totalPrice = mintPrice * BigInt(quantity);
 
             // 2. Execute mint
@@ -116,19 +170,16 @@ const Nftdetails = () => {
             // 4. Show modal with all token IDs
             if (mintedTokenIds.length > 0) {
                 setModalData({
-                    id: mintedTokenIds.join(", "), // "1896, 1897, 1898"
+                    id: mintedTokenIds.join(", "),
                     image: "/assets/images/apps/100m2.jpg",
                     name: `Bitgrass - Standard Collection`,
                 });
                 setIsStandardMintModalOpen(true);
             }
-
         } catch (error: any) {
             console.error("❌ Mint failed:", error);
-
-            // Case 1: User rejected in wallet
             const rejected =
-                error?.code === 4001 || 
+                error?.code === 4001 ||
                 error?.message?.toLowerCase().includes("user rejected");
 
             if (rejected) {
@@ -146,7 +197,6 @@ const Nftdetails = () => {
                 return;
             }
 
-            // Case 2: Smart contract custom error
             if (error?.data) {
                 try {
                     const iface = new ethers.Interface(SeaDropABI);
@@ -163,7 +213,6 @@ const Nftdetails = () => {
                         case "NotActive":
                             setToastMessage("Mint is not active right now.");
                             break;
-
                         default:
                             setToastMessage(`⚠️ Mint failed: ${errorName}`);
                     }
@@ -175,79 +224,12 @@ const Nftdetails = () => {
                 }
             }
 
-            // Fallback for unknown errors
             setToastMessage("⚠️ Something went wrong. Please try again.");
             setShowToast(true);
         } finally {
             setLoading(false);
         }
     };
-
-
-    const [mintPriceEth, setMintPriceEth] = useState<string>("0");
-    const [mintPriceUsd, setMintPriceUsd] = useState<string>("0.00");
-
-
-
-
-
-
-
-
-    const { address: user } = useAccount();
-    const { data: walletClient } = useWalletClient();
-    const { switchChainAsync } = useSwitchChain();
-    const [isMinting, setIsMinting] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState(false);
-
-
-
-    const { isConnected } = useAccount();
-
-    const [activeTab, setActiveTab] = useState("Standard 100m² Plot");
-    const [activeTabSeo, setActiveTabSeo] = useState("NFT Collection – Standard");
-
-    const tabList = ["Standard 100m² Plot", "Premium 500m² Plot", "Legendary 1000m² Plot"];
-    const [orderData, setOrderData] = useState<OrderData | null>(null);
-
-
-
-    const [isFetchingOrder, setIsFetchingOrder] = useState(false);
-    const [orderFetchError, setOrderFetchError] = useState<string | null>(null);
-    const [isModalOpen, setModalOpen] = useState(false);
-    const [isStandardMintModalOpen, setIsStandardMintModalOpen] = useState(false);
-
-    const [failureTxHash, setFailureTxHash] = useState("");
-    const [failureImage, setFailureImage] = useState("");
-
-    const OPENSEA_CONTRACT_ADDRESS = nftInfo.address;
-    const TOKEN_ID = "16";
-
-    const [listedLegendaryItems, setListedLegendaryItems] = useState<any[]>([]);
-    const [listedPremiumItems, setListedPremiumItems] = useState<any[]>([]);
-    const [modalData, setModalData] = useState({
-        id: "",
-        image: "",
-        name: ""
-    })
-    const sortedPremiumItems = [...listedPremiumItems].sort((a: any, b: any) =>
-        parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
-        parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
-    );
-
-    const sortedLegendaryItems = [...listedLegendaryItems].sort((a: any, b: any) =>
-        parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
-        parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
-    );
-
-    const [lastBoughtLegendaryId, setLastBoughtLegendaryId] = useState(0);
-    const [lastBoughtPremiumId, setLastBoughtPremiumId] = useState(0);
-    const apiKey = process.env.NEXT_PUBLIC_OPENSEA_API_KEY
-    const [isFailureModalOpen, setFailureModalOpen] = useState(false);
-
-
-
 
     useEffect(() => {
         const fetchPrices = async () => {
@@ -258,7 +240,7 @@ const Nftdetails = () => {
                 const signer = await provider.getSigner();
 
                 const seaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, signer);
-                const publicDrop = await seaDrop.getPublicDrop("0x34df064b9293ea1a07d6c9e5f4dafd0fe28fdd94");
+                const publicDrop = await seaDrop.getPublicDrop(CONTRACT_ADDRESS);
 
                 const mintPriceWei = publicDrop.mintPrice;
                 const pricePerNFT = Number(ethers.formatEther(mintPriceWei));
@@ -286,7 +268,6 @@ const Nftdetails = () => {
         fetchPrices();
     }, [walletClient, quantity]);
 
-
     async function fetchListedLegendaryItems(adjustedRanges: any, startId: any) {
         if (!walletClient || !isConnected) return;
 
@@ -299,9 +280,7 @@ const Nftdetails = () => {
 
                 if (orders.length > 0) {
                     const sorted = [...orders]
-                        .filter(
-                            (item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria
-                        )
+                        .filter((item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria)
                         .sort(
                             (a: any, b: any) =>
                                 parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
@@ -310,11 +289,11 @@ const Nftdetails = () => {
 
                     console.log(`Legendary sorted (${effectiveStart}-${range.end}):`, sorted);
                     setListedLegendaryItems(sorted);
-                    return; // Exit after finding non-empty range
+                    return;
                 }
             } catch (err) {
                 console.error(`Failed to fetch legendary listings (${effectiveStart}-${range.end}):`, err);
-                return; // Exit on error
+                return;
             }
         }
 
@@ -326,11 +305,10 @@ const Nftdetails = () => {
         fetchListedLegendaryItems(rangesLegendary, 1);
     }, [walletClient, isConnected]);
 
-
     useEffect(() => {
-        if (!isModalOpen) return; // Only fetch when isModalOpen becomes true
+        if (!isModalOpen) return;
 
-        const nextId = lastBoughtLegendaryId + 1; // Start from the next ID (e.g., 182 for 181)
+        const nextId = lastBoughtLegendaryId + 1;
         const startRangeIndex = rangesLegendary.findIndex(
             range => nextId >= range.start && nextId <= range.end
         );
@@ -339,16 +317,13 @@ const Nftdetails = () => {
             ? rangesLegendary.slice(startRangeIndex)
             : rangesLegendary;
 
-
         fetchListedLegendaryItems(adjustedRanges, nextId);
     }, [isModalOpen, lastBoughtLegendaryId]);
-
 
     async function fetchListedPremiumItems(adjustedRanges: any, startId: any) {
         if (!walletClient || !isConnected) return;
 
         for (const range of adjustedRanges) {
-            // Adjust the start of the first range to startId if it's within this range
             const effectiveStart = range === adjustedRanges[0] && startId > range.start ? startId : range.start;
             try {
                 const res = await fetch(`/api/listings?start=${effectiveStart}&end=${range.end}`);
@@ -358,9 +333,7 @@ const Nftdetails = () => {
 
                 if (orders.length > 0) {
                     const sorted = [...orders]
-                        .filter(
-                            (item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria
-                        )
+                        .filter((item: any) => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria)
                         .sort(
                             (a: any, b: any) =>
                                 parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
@@ -369,11 +342,11 @@ const Nftdetails = () => {
 
                     console.log(`Premium sorted (${effectiveStart}-${range.end}):`, sorted);
                     setListedPremiumItems(sorted);
-                    return; // Exit after finding non-empty range
+                    return;
                 }
             } catch (err) {
                 console.error(`Failed to fetch premium listings (${effectiveStart}-${range.end}):`, err);
-                return; // Exit on error
+                return;
             }
         }
 
@@ -385,11 +358,10 @@ const Nftdetails = () => {
         fetchListedPremiumItems(rangesPremium, 401);
     }, [walletClient, isConnected]);
 
-
     useEffect(() => {
-        if (!isModalOpen) return; // Only fetch when isModalOpen becomes true
+        if (!isModalOpen) return;
 
-        const nextId = lastBoughtPremiumId + 1; // Start from the next ID (e.g., 402 for 401)
+        const nextId = lastBoughtPremiumId + 1;
         const startRangeIndex = rangesPremium.findIndex(
             range => nextId >= range.start && nextId <= range.end
         );
@@ -398,12 +370,10 @@ const Nftdetails = () => {
             ? rangesPremium.slice(startRangeIndex)
             : rangesPremium;
 
-
         fetchListedPremiumItems(adjustedRanges, nextId);
     }, [isModalOpen, lastBoughtPremiumId]);
 
     async function handleBuy(order: any, tier: "Legendary" | "Premium") {
-        console.log("Order:", order);
         if (!walletClient) return;
 
         try {
@@ -485,17 +455,13 @@ const Nftdetails = () => {
             const txReceipt = await provider.waitForTransaction(txHash);
             if (txReceipt?.status === 1) {
                 console.log("✅ Transaction confirmed");
-
-
-
                 const modalData: any = await getModalData();
                 setModalData(modalData);
-                setModalOpen(true); // Show success modal
+                setModalOpen(true);
             } else {
                 const modalDataFailed: any = await getModalData();
-
-                setFailureTxHash(txHash);  // new
-                setFailureImage(modalDataFailed.image);  // new
+                setFailureTxHash(txHash);
+                setFailureImage(modalDataFailed.image);
                 setFailureModalOpen(true);
             }
         } catch (error) {
@@ -507,11 +473,10 @@ const Nftdetails = () => {
         if (showToast) {
             const timer = setTimeout(() => {
                 setShowToast(false);
-            }, 6000); // Match the 4s animation
+            }, 6000);
             return () => clearTimeout(timer);
         }
     }, [showToast]);
-
 
     useEffect(() => {
         async function fetchOpenSeaOrder() {
@@ -529,7 +494,7 @@ const Nftdetails = () => {
                 const listingRes = await fetch(listingApiUrl, {
                     method: "GET",
                     headers: {
-                        "accept": "application/json",
+                        accept: "application/json",
                         "x-api-key": `${apiKey}`,
                     },
                 });
@@ -555,7 +520,7 @@ const Nftdetails = () => {
                 const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
                     method: "POST",
                     headers: {
-                        "accept": "application/json",
+                        accept: "application/json",
                         "content-type": "application/json",
                         "x-api-key": `${apiKey}`,
                     },
@@ -587,7 +552,6 @@ const Nftdetails = () => {
                     parameters: fullOrder.parameters,
                     signature: fullOrder.signature,
                 });
-
             } catch (err: any) {
                 console.error("Fetch OpenSea order failed:", err);
                 setOrderFetchError(err.message || "Unknown error");
@@ -598,8 +562,6 @@ const Nftdetails = () => {
 
         fetchOpenSeaOrder();
     }, [walletClient, isConnected]);
-
-
 
     const getModalData = () => {
         let currentItem;
@@ -632,63 +594,40 @@ const Nftdetails = () => {
     const handleTabChange = (tab: string) => {
         setActiveTab(tab);
 
-        if (tab.includes("Premium")) {
-            window.history.replaceState(null, "", `#premium-collection`);
-        }
-        else if (tab.includes("Legendary")) {
-            window.history.replaceState(null, "", `#legendary-collection`);
-        }
-        else {
-            window.history.replaceState(null, "", `#standard-collection`);
-        }
+        // Update URL without reloading
+        const tabId = Object.keys(tabIdToName).find(key => tabIdToName[key] === tab) || "standard";
+        window.history.replaceState(null, "", `/mint/${tabId}`);
+        setActiveTabSeo(tabIdToSeo[tabId]);
     };
-
-
-    useEffect(() => {
-        const hash = window.location.hash;
-
-        if (hash === "#legendary-collection") {
-            setActiveTabSeo('Legendary Collection');
-            setActiveTab('Legendary 1000m² Plot')
-        } else if (hash === "#premium-collection") {
-            setActiveTabSeo("Premium Collection");
-            setActiveTab('Premium 500m² Plot')
-
-        } else {
-            setActiveTabSeo("NFT Collection – Standard");
-            setActiveTab('Standard 100m² Plot')
-
-        }
-    }, []);
-
-
-
-
 
     return (
         <Fragment>
-            <Seo title={activeTabSeo} />
             <div className="container">
                 <div className="container">
                     {/* Tabs Header */}
                     <div className="flex gap-4 mt-6 p-[1.25rem]">
                         {tabList.map((tab) => (
-                            <button
+                            <Link
                                 key={tab}
-                                onClick={() => handleTabChange(tab)}
-                                className={`text-sm px-4 py-2 font-semibold ${activeTab === tab
-                                    ? "border-b-2 border-primary text-primary"
-                                    : ""
-                                    }`}
+                                href={`/ownplot/${Object.keys(tabIdToName).find(key => tabIdToName[key] === tab)}`}
+                                scroll={false}
                             >
-                                {tab}
-                            </button>
+                                <button
+                                    onClick={() => handleTabChange(tab)}
+                                    className={`text-sm px-4 py-2 font-semibold ${activeTab === tab
+                                        ? "border-b-2 border-primary text-primary"
+                                        : ""
+                                        }`}
+                                >
+                                    {tab}
+                                </button>
+                            </Link>
                         ))}
                     </div>
 
                     {/* Unique Content Per Tab */}
                     {activeTab === "Standard 100m² Plot" && (
-                        <div className="mt-6">{
+                        <div className="mt-6">
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
@@ -699,22 +638,18 @@ const Nftdetails = () => {
                                                     className="mintNFT"
                                                 >
                                                     <NFTCreator />
-
-
                                                     <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
                                                         <img
-                                                            src="../../assets/images/apps/100m2v1.jpg"
+                                                            src="/assets/images/apps/100m2v1.jpg"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
                                                     </div>
-
-
                                                     <div className="text-center my-2">
                                                         <p className="text-lg font-semibold">{mintPriceEth} ETH</p>
                                                         <p className="text-sm text-gray-500">~ ${mintPriceUsd} USD</p>
                                                     </div>
-                                                    <div className="w-full h-full flex items-center justify-between" style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', }}>
+                                                    <div className="w-full h-full flex items-center justify-between" style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
                                                         <button
                                                             type="button"
                                                             onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
@@ -722,7 +657,6 @@ const Nftdetails = () => {
                                                         >
                                                             −
                                                         </button>
-
                                                         <input
                                                             type="number"
                                                             value={quantity}
@@ -733,31 +667,24 @@ const Nftdetails = () => {
                                                             }}
                                                             className="input-qty"
                                                         />
-
                                                         <button
                                                             type="button"
                                                             onClick={() => setQuantity((prev) => prev + 1)}
                                                             className="btn-qty"
-
                                                         >
                                                             +
                                                         </button>
                                                     </div>
-
                                                     <button
                                                         className="bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm"
-                                                        onClick={() => handleMintAbi(quantity)} disabled={loading}>
+                                                        onClick={() => handleMintAbi(quantity)}
+                                                        disabled={loading}
+                                                    >
                                                         {loading ? "Minting..." : "Mint Plot"}
                                                     </button>
-
-
-
                                                 </NFTMintCard>
-
                                             </div>
-
                                         </div>
-
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
@@ -771,13 +698,12 @@ const Nftdetails = () => {
                                                         </Link>
                                                     </span>
                                                 </p>
-
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
                                                         <p className="mb-1 text-[.9375rem] font-semibold">Price</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/brand-logos/eth.png" alt="" />
+                                                                <img src="/assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
                                                             0.05
                                                         </div>
@@ -786,14 +712,12 @@ const Nftdetails = () => {
                                                         <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/faces/Leaf.svg" alt="" />
+                                                                <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
                                                             Up to 0.1 tCO2 /year
                                                         </div>
                                                     </div>
-
                                                 </div>
-
                                                 <div className="mb-4">
                                                     <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
                                                     <p>
@@ -802,15 +726,14 @@ const Nftdetails = () => {
                                                         This NFT offers multiple utilities: Boost your $BTG APY, earn Carbon credits or $BTG by staking your Landplot, or choose to burn it to offset your carbon footprint. Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
-
                                                 <div className="mb-4">
                                                     <div className="grid grid-cols-12 sm:gap-x-6 justify-center">
                                                         <div className="xxl:col-span-4 col-span-12">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
-                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path><path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
+                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path>
+                                                                        <path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
                                                                     </svg>
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Proof of Ownership</p>
@@ -819,8 +742,7 @@ const Nftdetails = () => {
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
                                                                         <path d="m20.26,14h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-4.5-6c-.38-.5-1.22-.5-1.6,0l-2.2,2.93-2.2-2.93c-.38-.5-1.22-.5-1.6,0l-4.5,6c-.23.3-.26.71-.09,1.05s.52.55.89.55l-1.8,2.4c-.23.3-.26.71-.09,1.05s.52.55.89.55h.2l-1.54,2.47c-.19.31-.2.7-.03,1.01.18.32.51.52.87.52h5v4h2v-4h4v4h2v-4h5c.37,0,.7-.2.88-.52.18-.32.16-.71-.04-1.02l-1.58-2.46Zm-15.46,2l1.54-2.47c.19-.31.2-.7.03-1.01-.18-.32-.51-.52-.87-.52l1.8-2.4c.23-.3.26-.71.09-1.05s-.52-.55-.89-.55l2.5-3.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46H4.8Zm10.74,0l-1.29-2h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.05-1.4,1.75-2.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46h-3.62Z"></path>
                                                                     </svg>
                                                                 </p>
@@ -830,9 +752,13 @@ const Nftdetails = () => {
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
-                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path><path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path><path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path><path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path><path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path><path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
+                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path>
+                                                                        <path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path>
+                                                                        <path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path>
+                                                                        <path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path>
+                                                                        <path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path>
+                                                                        <path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
                                                                     </svg>
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Community Governance</p>
@@ -840,9 +766,6 @@ const Nftdetails = () => {
                                                         </div>
                                                     </div>
                                                 </div>
-
-
-
                                                 <div>
                                                     <p className="text-[.9375rem] font-semibold mb-2">NFT Details :</p>
                                                     <div className="table-responsive">
@@ -863,11 +786,10 @@ const Nftdetails = () => {
                                     </div>
                                 </div>
                             </div>
-                        }</div>
+                        </div>
                     )}
-
                     {activeTab === "Premium 500m² Plot" && (
-                        <div className="mt-6">{
+                        <div className="mt-6">
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
@@ -875,36 +797,26 @@ const Nftdetails = () => {
                                             <div>
                                                 <NFTMintCard
                                                     contractAddress='0x477ea15de5e4e9c884c1cc92da3198d333ea85fb'
-                                                    className="mintNFT">
+                                                    className="mintNFT"
+                                                >
                                                     <NFTCreator />
-
-
                                                     <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
                                                         <img
-                                                            src="../../assets/images/apps/500m2v1.jpg"
+                                                            src="/assets/images/apps/500m2v1.jpg"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
                                                     </div>
-
-
-
                                                     <NFTAssetCost />
-
                                                     <button
                                                         onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
                                                         className="bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm"
-
                                                     >
                                                         Buy Now
                                                     </button>
-
-
                                                 </NFTMintCard>
-
                                             </div>
                                         </div>
-
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
@@ -918,13 +830,12 @@ const Nftdetails = () => {
                                                         </Link>
                                                     </span>
                                                 </p>
-
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
                                                         <p className="mb-1 text-[.9375rem] font-semibold">Price</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/brand-logos/eth.png" alt="" />
+                                                                <img src="/assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
                                                             0.2
                                                         </div>
@@ -933,14 +844,12 @@ const Nftdetails = () => {
                                                         <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/faces/Leaf.svg" alt="" />
+                                                                <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
                                                             Up to 0.5 tCO2 /year
                                                         </div>
                                                     </div>
-
                                                 </div>
-
                                                 <div className="mb-4">
                                                     <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
                                                     <p>
@@ -949,15 +858,14 @@ const Nftdetails = () => {
                                                         This NFT offers multiple utilities: Boost your $BTG APY, earn Carbon credits or $BTG by staking your Landplot, or choose to burn it to offset your carbon footprint. Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
-
                                                 <div className="mb-4">
                                                     <div className="grid grid-cols-12 sm:gap-x-6 justify-center">
                                                         <div className="xxl:col-span-4 col-span-12">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
-                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path><path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
+                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path>
+                                                                        <path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
                                                                     </svg>
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Proof of Ownership</p>
@@ -966,8 +874,7 @@ const Nftdetails = () => {
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
                                                                         <path d="m20.26,14h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-4.5-6c-.38-.5-1.22-.5-1.6,0l-2.2,2.93-2.2-2.93c-.38-.5-1.22-.5-1.6,0l-4.5,6c-.23.3-.26.71-.09,1.05s.52.55.89.55l-1.8,2.4c-.23.3-.26.71-.09,1.05s.52.55.89.55h.2l-1.54,2.47c-.19.31-.2.7-.03,1.01.18.32.51.52.87.52h5v4h2v-4h4v4h2v-4h5c.37,0,.7-.2.88-.52.18-.32.16-.71-.04-1.02l-1.58-2.46Zm-15.46,2l1.54-2.47c.19-.31.2-.7.03-1.01-.18-.32-.51-.52-.87-.52l1.8-2.4c.23-.3.26-.71.09-1.05s-.52-.55-.89-.55l2.5-3.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46H4.8Zm10.74,0l-1.29-2h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.05-1.4,1.75-2.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46h-3.62Z"></path>
                                                                     </svg>
                                                                 </p>
@@ -977,9 +884,13 @@ const Nftdetails = () => {
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
-                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path><path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path><path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path><path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path><path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path><path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
+                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path>
+                                                                        <path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path>
+                                                                        <path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path>
+                                                                        <path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path>
+                                                                        <path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path>
+                                                                        <path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
                                                                     </svg>
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Community Governance</p>
@@ -987,9 +898,6 @@ const Nftdetails = () => {
                                                         </div>
                                                     </div>
                                                 </div>
-
-
-
                                                 <div>
                                                     <p className="text-[.9375rem] font-semibold mb-2">NFT Details :</p>
                                                     <div className="table-responsive">
@@ -1010,12 +918,10 @@ const Nftdetails = () => {
                                     </div>
                                 </div>
                             </div>
-                        }</div>
-
+                        </div>
                     )}
-
                     {activeTab === "Legendary 1000m² Plot" && (
-                        <div className="mt-6"> <div className="mt-6">{
+                        <div className="mt-6">
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
@@ -1023,34 +929,26 @@ const Nftdetails = () => {
                                             <div>
                                                 <NFTMintCard
                                                     contractAddress='0x477ea15de5e4e9c884c1cc92da3198d333ea85fb'
-                                                    className="mintNFT">
+                                                    className="mintNFT"
+                                                >
                                                     <NFTCreator />
-
-
                                                     <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
                                                         <img
-                                                            src="../../assets/images/apps/1000m2v1.jpg"
+                                                            src="/assets/images/apps/1000m2v1.jpg"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
                                                     </div>
-
                                                     <NFTAssetCost />
-
                                                     <button
                                                         onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
                                                         className="bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm"
-
                                                     >
                                                         Buy Now
                                                     </button>
-
-
                                                 </NFTMintCard>
-
                                             </div>
                                         </div>
-
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
                                                 <p className="text-[1.125rem] font-semibold mb-0">
@@ -1064,13 +962,12 @@ const Nftdetails = () => {
                                                         </Link>
                                                     </span>
                                                 </p>
-
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
                                                         <p className="mb-1 text-[.9375rem] font-semibold">Price</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/brand-logos/eth.png" alt="" />
+                                                                <img src="/assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
                                                             0.35
                                                         </div>
@@ -1079,31 +976,28 @@ const Nftdetails = () => {
                                                         <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="../../../assets/images/faces/Leaf.svg" alt="" />
+                                                                <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
                                                             Up to 1.0 tCO2 /year
                                                         </div>
                                                     </div>
-
                                                 </div>
-
                                                 <div className="mb-4">
                                                     <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
                                                     <p>
-                                                        <b>Discover the Bitgrass NFT </b>—a <b>Tokenized 100 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                        <b>Discover the Bitgrass NFT </b>—a <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
                                                         This NFT offers multiple utilities: Boost your $BTG APY, earn Carbon credits or $BTG by staking your Landplot, or choose to burn it to offset your carbon footprint. Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
-
                                                 <div className="mb-4">
                                                     <div className="grid grid-cols-12 sm:gap-x-6 justify-center">
                                                         <div className="xxl:col-span-4 col-span-12">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
-                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path><path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
+                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path>
+                                                                        <path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
                                                                     </svg>
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Proof of Ownership</p>
@@ -1112,8 +1006,7 @@ const Nftdetails = () => {
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
                                                                         <path d="m20.26,14h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-4.5-6c-.38-.5-1.22-.5-1.6,0l-2.2,2.93-2.2-2.93c-.38-.5-1.22-.5-1.6,0l-4.5,6c-.23.3-.26.71-.09,1.05s.52.55.89.55l-1.8,2.4c-.23.3-.26.71-.09,1.05s.52.55.89.55h.2l-1.54,2.47c-.19.31-.2.7-.03,1.01.18.32.51.52.87.52h5v4h2v-4h4v4h2v-4h5c.37,0,.7-.2.88-.52.18-.32.16-.71-.04-1.02l-1.58-2.46Zm-15.46,2l1.54-2.47c.19-.31.2-.7.03-1.01-.18-.32-.51-.52-.87-.52l1.8-2.4c.23-.3.26-.71.09-1.05s-.52-.55-.89-.55l2.5-3.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46H4.8Zm10.74,0l-1.29-2h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.05-1.4,1.75-2.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46h-3.62Z"></path>
                                                                     </svg>
                                                                 </p>
@@ -1123,9 +1016,13 @@ const Nftdetails = () => {
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                                        style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24" >
-                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path><path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path><path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path><path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path><path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path><path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
+                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path>
+                                                                        <path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path>
+                                                                        <path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path>
+                                                                        <path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path>
+                                                                        <path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path>
+                                                                        <path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
                                                                     </svg>
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Community Governance</p>
@@ -1133,8 +1030,6 @@ const Nftdetails = () => {
                                                         </div>
                                                     </div>
                                                 </div>
-
-
                                                 <div>
                                                     <p className="text-[.9375rem] font-semibold mb-2">NFT Details :</p>
                                                     <div className="table-responsive">
@@ -1155,12 +1050,24 @@ const Nftdetails = () => {
                                     </div>
                                 </div>
                             </div>
-                        }</div></div>
+                        </div>
                     )}
                 </div>
 
+                <button onClick={() => setModalOpen(true)}>open</button>
+
 
                 <PurchaseCelebrationModal
+                    isOpen={isModalOpen}
+                    onClose={() => setModalOpen(false)}
+                    name='bitgrass'
+                    token='0x6d5fd4f1d8eabb02c471a652b1610d7e93e97eaa'
+                    id='17'
+                    image='https://ik.imagekit.io/cafu/collection-logo.png?updatedAt=1748949261858&ik-s=354aa8dbbc0e22d358dfbf7a3065a527da05fa53'
+
+
+                />
+                {/* <PurchaseCelebrationModal
                     isOpen={isModalOpen}
                     onClose={() => {
                         setModalOpen(false);
@@ -1174,8 +1081,7 @@ const Nftdetails = () => {
                     token="0xc58e79f30b9a1575499da948932b8b16c23a4caf"
                     id={modalData.id}
                     image={modalData.image}
-                />
-
+                /> */}
                 <PurchaseFailedModal
                     isOpen={isFailureModalOpen}
                     onClose={() => setFailureModalOpen(false)}
@@ -1189,7 +1095,7 @@ const Nftdetails = () => {
                         setModalData({ id: "", image: "", name: "" });
                     }}
                     name={modalData.name}
-                    token="0xc58e79f30b9a1575499da948932b8b16c23a4caf" // Standard contract
+                    token="0xc58e79f30b9a1575499da948932b8b16c23a4caf"
                     id={modalData.id}
                     image={modalData.image}
                 />
