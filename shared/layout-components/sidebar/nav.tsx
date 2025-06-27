@@ -124,9 +124,9 @@ export const MenuItems: any = [
 
   },
   {
-    title: "Mint NFT",
+    title: "Own plot",
     icon: AuthenticationIcon,
-    path: "/mint",
+    path: "/ownplot/standard",
     type: "link",
     active: false,
     selected: false,

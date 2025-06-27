@@ -18,20 +18,21 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
   const modalRef = useRef<HTMLDivElement>(null);
 
   const currentUrl = typeof window !== "undefined"
-    ? window.location.href.replace(/\/$/, "")
-    : "";
-
-      const openseaUrl = `https://opensea.io/item/base/${token}/${id}`
-
-  const shareTextTwitter = `Checkout $${name} on @bitgrass!\n\nOwn it now:\n${openseaUrl}\n\nMore details:\n${currentUrl}`;
-
-const shareTextWarpcast = `Checkout $${name} on @bitgrass!\n\nOwn it now:\n${openseaUrl}\n\nMore details:\n${currentUrl}`;
-  const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
-  const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
+        ? window.location.href.replace(/\/$/, "")
+        : "";
+    const shareTextTwitter = `Checkout $${name} on @bitgrass`;
+    const shareTextWarpcast = `Checkout $${name} on @bitgrass`;
 
 
-const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}`;
-const warpcastUrl = `https://warpcast.com/~/compose?text=${encodedTextWarpcast}&embeds[]=${openseaUrl}&embeds[]=${currentUrl}`;
+    const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
+    const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
+
+    const encodedLink = encodeURIComponent(currentUrl);
+
+
+
+    const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
+    const warpcastUrl = `https://farcaster.xyz/~/compose?text=${encodedTextWarpcast}&embeds[]=${encodedLink}`;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -60,6 +61,7 @@ const warpcastUrl = `https://warpcast.com/~/compose?text=${encodedTextWarpcast}&
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose]);
+
 
   if (!isOpen) return null;
 
