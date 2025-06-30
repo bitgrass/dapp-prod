@@ -108,11 +108,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
      const handleMintAbi = async (quantity: number) => {
         try {
-            if (!window.ethereum) {
-                alert("Please connect a wallet.");
-                return;
-            }
-
             setLoading(true);
 
             if (!walletClient) {
@@ -276,9 +271,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 const ethToUsd = usdPriceRes.data.usdPrice;
                 setMintPriceUsd((totalEth * ethToUsd).toFixed(2));
             } catch (err) {
-                console.error("Error fetching mint price:", err);
-                setToastMessage("Error loading mint price. Try again shortly.");
-                setShowToast(true);
+
             }
         };
 
