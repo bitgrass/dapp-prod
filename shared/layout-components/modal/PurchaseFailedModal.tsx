@@ -53,7 +53,7 @@ const PurchaseFailedModal: React.FC<PurchaseFailedModalProps> = ({ txHash, image
       >
         <div
           ref={modalRef}
-          className="w-[95%] z-[9999] max-w-md bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-lg shadow-2xl p-6 relative"
+          className="w-[95%] z-[9999] max-w-md bg-camel  text-gray-800 dark:text-gray-100 rounded-lg shadow-2xl p-6 relative"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
@@ -76,13 +76,13 @@ const PurchaseFailedModal: React.FC<PurchaseFailedModalProps> = ({ txHash, image
 
           {/* Image */}
           <div className="flex justify-center mb-6">
-            <div className="relative w-40 h-40 rounded-md overflow-hidden border border-gray-300 dark:border-gray-700">
+            <div className="relative w-40 h-40 rounded-md overflow-hidden">
               <Image
-                src={image}
+                src={image || "/assets/images/apps/500m2.jpg"}
                 alt=""
                 width={140}
                 height={140}
-                className="object-cover w-full h-full"
+                className="object-cover w-full h-full filter grayscale"
               />
             </div>
           </div>
@@ -90,18 +90,19 @@ const PurchaseFailedModal: React.FC<PurchaseFailedModalProps> = ({ txHash, image
           {/* Message */}
           <div className="flex flex-col items-center gap-4 text-center mb-6">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              The listing is no longer valid. Someone else may have purchased it before you.
+              The NFT is no longer available. Someone else may have purchased it before you.
             </p>
           </div>
 
           {/* Buttons */}
           <div className="flex flex-row gap-2">
-            <Link
-              href={`https://basescan.org/tx/${txHash}`}
-              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition text-sm font-medium"
+            <button
+              onClick={onClose}
+              className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-secondary dark:bg-secondary text-white transition text-sm font-medium"
             >
-              View transaction
-            </Link>
+              Try again
+            </button>
+
           </div>
         </div>
       </div>

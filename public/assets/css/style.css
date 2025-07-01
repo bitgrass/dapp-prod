@@ -84,6 +84,8 @@ Toast
 @import url("../iconfonts/boxicons/css/boxicons.css");
 /* Start Icons */
 :root {
+  --bg-w:	249 225 229;
+  --red-w:	175 35 58;
   --camel:	249 248 247;
   --body-bg:	249 248 247;
   --primary:	15 56 43;

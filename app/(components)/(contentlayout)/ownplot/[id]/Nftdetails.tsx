@@ -20,7 +20,7 @@ import {
 } from "@coinbase/onchainkit/nft/mint";
 import { NFTMintCard } from "@coinbase/onchainkit/nft";
 import { ethers } from "ethers";
-import { nftInfo , SeaDropABIData , CONTRACT_ADDRESS_INFO , SEADROP_ADDRESS_INFO , SEADROP_CONDUIT_INFO } from "@/shared/data/tokens/data";
+import { nftInfo, SeaDropABIData, CONTRACT_ADDRESS_INFO, SEADROP_ADDRESS_INFO, SEADROP_CONDUIT_INFO } from "@/shared/data/tokens/data";
 
 type OrderData = {
     parameters: any;
@@ -50,6 +50,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [isMinting, setIsMinting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
+    const [toastTitle, setToastTitle] = useState<string | null>(null);
+
     const { isConnected } = useAccount();
     const [activeTab, setActiveTab] = useState("Standard 100m² Plot");
     const [activeTabSeo, setActiveTabSeo] = useState("NFT Collection – Standard");
@@ -106,7 +108,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         setActiveTabSeo(seoName);
     }, [initialTabId]);
 
-     const handleMintAbi = async (quantity: number) => {
+    const handleMintAbi = async (quantity: number) => {
         try {
             setLoading(true);
 
@@ -124,12 +126,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             const publicDrop = await readSeaDrop.getPublicDrop(CONTRACT_ADDRESS);
 
             const mintPrice = publicDrop.mintPrice;
-            if (!mintPrice || mintPrice === BigInt(0)) {
-                setToastMessage("Mint not active or misconfigured.");
-                setShowToast(true);
-                return;
-            }
-
             const totalPrice = mintPrice * BigInt(quantity);
             console.log("✅ tx", CONTRACT_ADDRESS, SEADROP_CONDUIT, userAddress, quantity, totalPrice);
 
@@ -183,7 +179,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 error?.message?.toLowerCase().includes("user rejected");
 
             if (rejected) {
-                setToastMessage("You rejected the request. You missed your plot.");
+                setToastTitle("Transaction Rejected");
+                setToastMessage("You missed your plot.");
                 setShowToast(true);
                 return;
             }
@@ -192,8 +189,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 error?.message?.toLowerCase().includes("insufficient funds");
 
             if (insufficientFunds) {
-                setToastMessage("Insufficient funds. You need more ETH to mint.");
+                setToastTitle("Insufficient Funds");
+                setToastMessage("You need more ETH in your wallet to complete your mint.");
                 setShowToast(true);
+
                 return;
             }
 
@@ -209,7 +208,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             setToastMessage("Incorrect payment amount.");
                             break;
                         case "MintQuantityExceedsMaxSupply":
-                            setToastMessage("No more plots available. Supply reached.");
+                            setToastTitle("Supply Reached");
+                            setToastMessage("No more plots available.");
+                            setShowToast(true);
                             break;
                         case "NotActive":
                             setToastMessage("Mint is not active right now.");
@@ -234,7 +235,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
     };
 
- useEffect(() => {
+    useEffect(() => {
         const fetchPrices = async () => {
             try {
                 // ✅ Use public RPC just for reading drop data (Seadrop is read-only)
@@ -245,12 +246,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
                 const mintPriceWei = publicDrop.mintPrice;
                 console.log("mintPriceWei", mintPriceWei)
-                if (!mintPriceWei || mintPriceWei === BigInt(0)) {
-                    console.warn("⚠️ PublicDrop returned zero. Mint may not be live or configured.");
-                    setToastMessage("Mint not active. Please check back later.");
-                    setShowToast(true);
-                    return;
-                }
 
                 const pricePerNFT = Number(ethers.formatEther(mintPriceWei));
 
@@ -388,7 +383,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
     }
 
-    async function fetchListedLegendaryItems(tokenIds : any) {
+    async function fetchListedLegendaryItems(tokenIds: any) {
         if (!walletClient || !isConnected || !apiKey) {
             console.log("Missing wallet client, connection, or API key, skipping fetch...");
             return;
@@ -426,7 +421,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
             const data = await res.json();
             const now = Math.floor(Date.now() / 1000);
-            const orders = (data.orders || []).filter((order :any) => {
+            const orders = (data.orders || []).filter((order: any) => {
                 const isActive = !order.cancelled && !order.fulfilled && order.expiration_time > now;
                 return isActive;
             });
@@ -452,7 +447,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
     }
 
-    async function fetchListedPremiumItems(tokenIds : any) {
+    async function fetchListedPremiumItems(tokenIds: any) {
         if (!walletClient || !isConnected || !apiKey) {
             console.log("Missing wallet client, connection, or API key, skipping fetch...");
             return;
@@ -490,7 +485,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
             const data = await res.json();
             const now = Math.floor(Date.now() / 1000);
-            const orders = (data.orders || []).filter((order : any) => {
+            const orders = (data.orders || []).filter((order: any) => {
                 const isActive = !order.cancelled && !order.fulfilled && order.expiration_time > now;
                 return isActive;
             });
@@ -786,7 +781,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                         <div className="xl:col-span-4 col-span-12">
                                             <div>
                                                 <NFTMintCard
-                                                    contractAddress='0x34df064b9293ea1a07d6c9e5f4dafd0fe28fdd94'
+                                                    contractAddress='0xe2d29582718057c9e3f69400ea0d2bb415908370'
                                                     className="mintNFT"
                                                 >
                                                     <NFTCreator />
@@ -1207,9 +1202,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 </div>
 
 
+                <button onClick={() => setFailureModalOpen(true)}>open</button>
 
 
-                 <PurchaseCelebrationModal
+                <PurchaseCelebrationModal
                     isOpen={isModalOpen}
                     onClose={() => {
                         setModalOpen(false);
@@ -1243,40 +1239,46 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 />
 
                 {showToast && toastMessage && (
-                    <div className="fixed bottom-6 right-6 z-50">
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:left-auto md:right-6 md:translate-x-0">
                         <div
                             role="alert"
-                            className="bg-camel border-t border-l border-r border-primary  shadow-lg rounded-md w-full max-w-md min-w-[320px] px-6 py-5 relative animate-fade-in"
+                            className="bg-bgW shadow-lg rounded-md w-full max-w-md min-w-[320px] px-5 py-4 text-redW"
                         >
-                            <div className="flex justify-between items-start gap-6">
-                                <p className="text-xs leading-relaxed flex-1">
-                                    {toastMessage}
-                                </p>
+                            <div className="flex items-center gap-3">
+                                {/* Left custom icon - vertically centered */}
+                                <div className="flex-shrink-0">
+                                    <img
+                                        src="/assets/images/svg/errorIcon.svg"
+                                        alt="Warning"
+                                        width={25}
+                                        height={25}
+                                        className="mt-0.5"
+                                    />
+                                </div>
 
-                                <button
-                                    onClick={() => setShowToast(false)}
-                                    className="text-red-500 hover:text-red-700 transition-colors duration-200 mt-0.5"
-                                    aria-label="Close"
-                                >
-                                    <svg
-                                        className="w-4 h-4"
-                                        viewBox="0 0 16 16"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
+                                {/* Text content and Close */}
+                                <div className="flex justify-between items-start flex-1">
+                                    {/* Title + Description */}
+                                    <div className="flex flex-col">
+                                        <strong className="text-sm font-bold">{toastTitle}</strong>
+                                        <p className="text-xs">{toastMessage}</p>
+                                    </div>
+
+                                    {/* Close button */}
+                                    <button
+                                        onClick={() => setShowToast(false)}
+                                        className="text-redW hover:text-red-400 transition-colors duration-200 ml-4 mt-0.5"
+                                        aria-label="Close"
                                     >
-                                        <path d="M1 1L15 15M15 1L1 15" />
-                                    </svg>
-                                </button>
+                                        <svg className="w-2.5 h-2.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M1 1L15 15M15 1L1 15" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-
-                            {/* Animated bottom border */}
-                            <div className="absolute bottom-0 left-0 h-[2px] bg-red-500 animate-border-progress rounded-b-xl" />
                         </div>
                     </div>
                 )}
-
-
 
 
             </div>

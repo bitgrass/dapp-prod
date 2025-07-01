@@ -67,7 +67,8 @@ module.exports = {
         camel10:"rgb(var(--camel-10))",
         camel:"rgb(var(--camel))",
         icons:"rgb(var(--icons))",
-
+        redW:"rgb(var(--red-w))",
+        bgW:"rgb(var(--bg-w))",
         swap:"rgb(var(--swap))",
         bodybg:"rgb(var(--body-bg))",
         bodybg2:"rgb(var(--dark-bg))",
