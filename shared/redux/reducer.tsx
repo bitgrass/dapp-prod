@@ -7,7 +7,7 @@ let initialState = {
     dataNavLayout: "vertical",
     dataHeaderStyles: "light",
     dataVerticalStyle: "overlay",
-    dataToggled: "",
+    dataToggled: "close",
     dataNavStyle: "",
     horStyle: "",
     dataPageStyle: "regular",
