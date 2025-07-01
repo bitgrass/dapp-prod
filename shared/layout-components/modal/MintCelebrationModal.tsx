@@ -62,6 +62,9 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({ image, name
     };
   }, [isOpen, onClose]);
 
+    const formattedTokenIds = id.split(", ").map(id => `#${id.trim()}`).join(", ");
+  const firstTokenId = id.split(", ")[0].trim();
+
 
   if (!isOpen) return null;
 
@@ -114,7 +117,7 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({ image, name
           {/* Content */}
           <div className="flex flex-col items-center gap-4 text-center mb-6">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              You just Minted{' '} <span className="text-sm text-secondary">Plot #{id}.</span> <br />
+              You just Minted{' '} <span className="text-sm text-secondary">Plot {formattedTokenIds}.</span> <br />
 
               from the {' '} {name}
 
@@ -147,7 +150,7 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({ image, name
           {/* Buttons */}
           <div className="flex flex-row max-[420px]:flex-col gap-2">
             <Link
-              href={`https://opensea.io/item/base/${token}/${id}`}
+              href={`https://opensea.io/item/base/${token}/${firstTokenId}`}
               className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-camel10 dark:bg-[#FFFFFF0D] text-gray-900 dark:text-gray-300 hover:bg-camel20 dark:hover:bg-[#FFFFFF1A] transition text-sm font-medium text-center"
             >
               View Item on Opensea
