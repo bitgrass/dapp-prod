@@ -92,6 +92,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const openseaAddress = process.env.NEXT_PUBLIC_OPENSEA_ADDRESS as string;
     const apiKey = process.env.NEXT_PUBLIC_OPENSEA_API_KEY;
     const [isFailureModalOpen, setFailureModalOpen] = useState(false);
+    const [activeOrder, setActiveOrder] = useState(false)
 
     // Map tab IDs to tab names
     const tabIdToName: Record<string, string> = {
@@ -524,6 +525,15 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     async function handleBuy(order: any, tier: "Legendary" | "Premium") {
         if (!walletClient) return;
 
+        if (!order) {
+            const modalDataFailed: any = await getModalData();
+            setFailureTxHash(txHash);
+            setFailureImage(modalDataFailed.image);
+            setActiveOrder(false)
+            setFailureModalOpen(true);
+            return;
+        }
+
         try {
             const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
             const buyerAddress = walletClient.account.address;
@@ -610,6 +620,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 const modalDataFailed: any = await getModalData();
                 setFailureTxHash(txHash);
                 setFailureImage(modalDataFailed.image);
+                setActiveOrder(true)
                 setFailureModalOpen(true);
             }
         } catch (error) {
@@ -734,8 +745,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
         return {
             id: "0",
-            image: "/assets/images/apps/100m2.jpg",
-            name: "Bitgrass NFT Collection – Standard"
+            image: activeTab === "Premium 500m² Plot" ? "/assets/images/apps/500m2.jpg" : activeTab === "Legendary 1000m² Plot" ? "/assets/images/apps/1000m2.jpg" : "/assets/images/apps/100m2.jpg",
+            name: activeTab === "Premium 500m² Plot" ? "Bitgrass - Premium Collection" : activeTab === "Legendary 1000m² Plot" ? "Bitgrass - Legendary Collection" : "Bitgrass NFT Collection – Standard",
         };
     };
 
@@ -1258,9 +1269,12 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 />
                 <PurchaseFailedModal
                     isOpen={isFailureModalOpen}
-                    onClose={() => setFailureModalOpen(false)}
+                    onClose={() => {
+                        setFailureModalOpen(false);
+                        setActiveOrder(true);
+                    }}
                     image={failureImage}
-                    txHash={failureTxHash}
+                    activeOrder={activeOrder}
                 />
                 <MintCelebrationModal
                     isOpen={isStandardMintModalOpen}

@@ -4,13 +4,13 @@ import Link from 'next/link';
 
 interface PurchaseFailedModalProps {
   image: string;
-  txHash: string;
+  activeOrder: boolean;
   isOpen: boolean;
   onClose: () => void;
 }
 
 
-const PurchaseFailedModal: React.FC<PurchaseFailedModalProps> = ({ txHash, image, isOpen, onClose }) => {
+const PurchaseFailedModal: React.FC<PurchaseFailedModalProps> = ({ activeOrder, image, isOpen, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,7 +90,9 @@ const PurchaseFailedModal: React.FC<PurchaseFailedModalProps> = ({ txHash, image
           {/* Message */}
           <div className="flex flex-col items-center gap-4 text-center mb-6">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              The NFT is no longer available. Someone else may have purchased it before you.
+             
+
+              {activeOrder ?  "The NFT is no longer available. Someone else may have purchased it before you." : "All NFTs of this type have been sold."}
             </p>
           </div>
 
@@ -100,7 +102,7 @@ const PurchaseFailedModal: React.FC<PurchaseFailedModalProps> = ({ txHash, image
               onClick={onClose}
               className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-secondary dark:bg-secondary text-white transition text-sm font-medium"
             >
-              Try again
+              {activeOrder ?  "Try again" : "Close"}
             </button>
 
           </div>
