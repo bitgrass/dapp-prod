@@ -40,10 +40,10 @@ const PRIVY_APP_ID = "cmbqbbsqm00kljy0n1yzjeij7"!;
 import dynamic from 'next/dynamic';
 
 
+const WalletMenu = dynamic(() => import('./WalletMenu'), { ssr: false });
 
 
 const Header = ({ local_varaiable, ThemeChanger }: any) => {
-const WalletMenu = dynamic(() => import('./WalletMenu'), { ssr: false });
 
   const { address, isConnected } = useAccount();
 
