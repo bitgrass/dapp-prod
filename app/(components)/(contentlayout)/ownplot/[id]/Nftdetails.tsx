@@ -749,7 +749,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         setActiveTabSeo(seoTitle);
 
         // Only update URL if needed
-        const newUrl = `/mint/${tabId}`;
+        const newUrl = `/ownplot/${tabId}`;
         if (window.location.pathname !== newUrl) {
             window.history.replaceState(null, "", newUrl);
         }
