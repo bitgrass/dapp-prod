@@ -31,14 +31,14 @@ const NFTTable = ({ nftData, nftCursor, fetchMore }: NFTTableProps) => {
             >
               <div className="box overflow-hidden">
                 <img
-                  src={nft.image || "/placeholder.png"}
+                  src={nft.image || "/assets/images/apps/placeholder.jpg"}
                   className="card-img-top object-cover h-40 w-full"
                   alt={nft.name || "NFT Image"}
                 />
                 <div className="box-body">
                   <div className="flex items-center mb-3">
                     <img
-                      src={nft.image || "/placeholder.png"}
+                      src={nft.image || "/assets/images/apps/placeholder.jpg"}
                       alt={nft.name}
                       className="avatar avatar-md rounded-md me-2"
                     />

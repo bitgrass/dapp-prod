@@ -14,7 +14,7 @@ export const btgInfo = {
 }
 
 export const nftInfo = {
-   address: "0xc58e79f30b9a1575499da948932b8b16c23a4caf"
+   address: "0xe2d29582718057c9e3f69400ea0d2bb415908370"
 }
 
 export const EthInfo = {
