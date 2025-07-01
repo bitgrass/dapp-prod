@@ -22,6 +22,7 @@ import { NFTMintCard } from "@coinbase/onchainkit/nft";
 import { ethers } from "ethers";
 import { nftInfo, SeaDropABIData, CONTRACT_ADDRESS_INFO, SEADROP_ADDRESS_INFO, SEADROP_CONDUIT_INFO } from "@/shared/data/tokens/data";
 import { usePrivy, useLogin } from '@privy-io/react-auth';
+import { motion } from "framer-motion";
 
 type OrderData = {
     parameters: any;
@@ -739,12 +740,19 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     };
 
     const handleTabChange = (tab: string) => {
-        setActiveTab(tab);
+        if (tab === activeTab) return; // Prevent re-setting same tab
 
-        // Update URL without reloading
         const tabId = Object.keys(tabIdToName).find(key => tabIdToName[key] === tab) || "standard";
-        window.history.replaceState(null, "", `/mint/${tabId}`);
-        setActiveTabSeo(tabIdToSeo[tabId]);
+        const seoTitle = tabIdToSeo[tabId];
+
+        setActiveTab(tab);
+        setActiveTabSeo(seoTitle);
+
+        // Only update URL if needed
+        const newUrl = `/mint/${tabId}`;
+        if (window.location.pathname !== newUrl) {
+            window.history.replaceState(null, "", newUrl);
+        }
     };
 
     return (
@@ -788,11 +796,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                    <img
-                                                        src="/assets/images/apps/100m2v1.jpg"
-                                                        alt="Custom NFT Preview"
-                                                        className="object-cover w-full h-full animate-fade-in-img"
-                                                    />
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 30 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md"
+                                                    >
+                                                        <img
+                                                            src="/assets/images/apps/100m2v1.jpg"
+                                                            alt="Custom NFT Preview"
+                                                            className="object-cover w-full h-full animate-fade-in-img"
+                                                        />
+                                                    </motion.div>
                                                 </div>
                                                 <div className="text-center my-2">
                                                     <p className="text-lg font-semibold">{mintPriceEth} ETH</p>
@@ -952,11 +967,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                    <img
-                                                        src="/assets/images/apps/500m2v1.jpg"
-                                                        alt="Custom NFT Preview"
-                                                        className="object-cover w-full h-full"
-                                                    />
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 30 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md"
+                                                    >
+                                                        <img
+                                                            src="/assets/images/apps/500m2v1.jpg"
+                                                            alt="Custom NFT Preview"
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    </motion.div>
                                                 </div>
 
                                                 <button
@@ -1087,11 +1109,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                    <img
-                                                        src="/assets/images/apps/1000m2v1.jpg"
-                                                        alt="Custom NFT Preview"
-                                                        className="object-cover w-full h-full"
-                                                    />
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 30 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md"
+                                                    >
+                                                        <img
+                                                            src="/assets/images/apps/1000m2v1.jpg"
+                                                            alt="Custom NFT Preview"
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    </motion.div>
                                                 </div>
 
                                                 <button
