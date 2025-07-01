@@ -7,6 +7,7 @@ import { base } from 'wagmi/chains';
 import { Fragment } from 'react';
 import { btgToken, ETHToken } from "@/shared/data/tokens/data";
 import { useSetActiveWallet } from '@privy-io/wagmi';
+import { disconnect } from 'wagmi/actions';
 
 const WalletMenu: React.FC = () => {
   const { ready, authenticated, user, linkWallet, exportWallet } = usePrivy();
@@ -407,6 +408,7 @@ const WalletMenu: React.FC = () => {
               onClick={() => {
                 setOpen(false);
                 logout();
+                window.location.reload();
               }}
               className="w-full flex items-center justify-center text-sm font-medium bg-[#00382B] hover:bg-red-700 text-white py-2 rounded-lg transition mt-4 ti-btn"
             >

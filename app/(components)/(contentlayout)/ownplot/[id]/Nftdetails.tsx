@@ -21,6 +21,7 @@ import {
 import { NFTMintCard } from "@coinbase/onchainkit/nft";
 import { ethers } from "ethers";
 import { nftInfo, SeaDropABIData, CONTRACT_ADDRESS_INFO, SEADROP_ADDRESS_INFO, SEADROP_CONDUIT_INFO } from "@/shared/data/tokens/data";
+import { usePrivy, useLogin } from '@privy-io/react-auth';
 
 type OrderData = {
     parameters: any;
@@ -36,6 +37,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const SEADROP_ADDRESS = SEADROP_ADDRESS_INFO;
     const SEADROP_CONDUIT = SEADROP_CONDUIT_INFO;
     const SeaDropABI = SeaDropABIData
+    const [baseMintPriceEth, setBaseMintPriceEth] = useState<number>(0);
+    const [ethToUsd, setEthToUsd] = useState<number>(0);
+    const { ready, authenticated } = usePrivy();
+    const { login } = useLogin();
 
     const [loading, setLoading] = useState(false);
     const [quantity, setQuantity] = useState(1);
@@ -51,6 +56,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [toastTitle, setToastTitle] = useState<string | null>(null);
+    const STATIC_MINT_PRICE_ETH = 0.00001; // adjust as needed
 
     const { isConnected } = useAccount();
     const [activeTab, setActiveTab] = useState("Standard 100m² Plot");
@@ -112,11 +118,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         try {
             setLoading(true);
 
-            if (!walletClient) {
-                alert("Wallet client not found.");
+            if (!walletClient || !ready || !authenticated) {
+                login();
                 return;
             }
-
             // ✅ Get address directly from walletClient
             const userAddress = walletClient.account.address;
 
@@ -235,43 +240,42 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
     };
 
+    const initPrices = async () => {
+        try {
+
+            const mintPriceEth = STATIC_MINT_PRICE_ETH;
+
+            setBaseMintPriceEth(mintPriceEth);
+
+            const usdRes = await axios.get(
+                `https://deep-index.moralis.io/api/v2.2/erc20/${EthInfo.address}/price?chain=eth&include=percent_change`,
+                {
+                    headers: {
+                        accept: "application/json",
+                        "X-API-Key": process.env.NEXT_PUBLIC_MORALIS_APY_KEY!,
+                    },
+                }
+            );
+            setEthToUsd(usdRes.data.usdPrice);
+        } catch (err) {
+            console.error("initPrices failed:", err);
+        }
+    };
+
     useEffect(() => {
-        const fetchPrices = async () => {
-            try {
-                // ✅ Use public RPC just for reading drop data (Seadrop is read-only)
-                const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+        if (walletClient) {
+            initPrices();
+        }
+    }, [walletClient]);
+    useEffect(() => {
+        if (baseMintPriceEth > 0 && ethToUsd > 0) {
+            const totalEth = baseMintPriceEth * quantity;
+            setMintPriceEth(totalEth.toFixed(5));
+            setMintPriceUsd((totalEth * ethToUsd).toFixed(2));
+        }
+    }, [quantity, baseMintPriceEth, ethToUsd]);
 
-                const seaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, publicProvider);
-                const publicDrop = await seaDrop.getPublicDrop(CONTRACT_ADDRESS);
 
-                const mintPriceWei = publicDrop.mintPrice;
-                console.log("mintPriceWei", mintPriceWei)
-
-                const pricePerNFT = Number(ethers.formatEther(mintPriceWei));
-
-                const totalEth = pricePerNFT * quantity;
-
-                setMintPriceEth(totalEth.toFixed(5));
-
-                const usdPriceRes = await axios.get(
-                    `https://deep-index.moralis.io/api/v2.2/erc20/${EthInfo.address}/price?chain=eth&include=percent_change`,
-                    {
-                        headers: {
-                            accept: "application/json",
-                            "X-API-Key": process.env.NEXT_PUBLIC_MORALIS_APY_KEY!,
-                        },
-                    }
-                );
-
-                const ethToUsd = usdPriceRes.data.usdPrice;
-                setMintPriceUsd((totalEth * ethToUsd).toFixed(2));
-            } catch (err) {
-
-            }
-        };
-
-        fetchPrices();
-    }, [walletClient, quantity]);
 
 
     async function fetchAvailableNfts() {
@@ -308,18 +312,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 }
 
                 const data = await res.json();
-                console.log("data----------", data)
                 const nfts = data.listings || [];
-                console.log("nfts----------", nfts)
 
                 nextCursor = data.next || null;
 
                 // Categorize NFTs into legendary and premium
                 const newLegendary = nfts.flatMap((nft: any) => {
-                    console.log(nft)
 
-                    console.log(nft.protocol_data.parameters.offerer)
-                    console.log(nft.protocol_data.parameters.offer[0].identifierOrCriteria)
+
 
                     if (
                         nft.protocol_data.parameters.offerer === openseaAddress &&
@@ -780,56 +780,58 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
                                         <div className="xl:col-span-4 col-span-12">
                                             <div>
-                                                <NFTMintCard
-                                                    contractAddress='0xe2d29582718057c9e3f69400ea0d2bb415908370'
-                                                    className="mintNFT"
-                                                >
-                                                    <NFTCreator />
-                                                    <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                        <img
-                                                            src="/assets/images/apps/100m2v1.jpg"
-                                                            alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full"
-                                                        />
-                                                    </div>
-                                                    <div className="text-center my-2">
-                                                        <p className="text-lg font-semibold">{mintPriceEth} ETH</p>
-                                                        <p className="text-sm text-gray-500">~ ${mintPriceUsd} USD</p>
-                                                    </div>
-                                                    <div className="w-full h-full flex items-center justify-between" style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                                                            className="btn-qty"
-                                                        >
-                                                            −
-                                                        </button>
-                                                        <input
-                                                            type="number"
-                                                            value={quantity}
-                                                            min={1}
-                                                            onChange={(e) => {
-                                                                const val = Number(e.target.value);
-                                                                if (val >= 1) setQuantity(val);
-                                                            }}
-                                                            className="input-qty"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setQuantity((prev) => prev + 1)}
-                                                            className="btn-qty"
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
+                                                <div className="flex items-center font-semibold mb-2">
+                                                    <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
+                                                        <img src="/assets/images/brand-logos/favicon.ico" alt="" />
+                                                    </span>
+                                                    bitgrass.base.eth
+                                                </div>
+
+                                                <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
+                                                    <img
+                                                        src="/assets/images/apps/100m2v1.jpg"
+                                                        alt="Custom NFT Preview"
+                                                        className="object-cover w-full h-full animate-fade-in-img"
+                                                    />
+                                                </div>
+                                                <div className="text-center my-2">
+                                                    <p className="text-lg font-semibold">{mintPriceEth} ETH</p>
+                                                    <p className="text-sm text-gray-500">~ ${mintPriceUsd} USD</p>
+                                                </div>
+                                                <div className="w-full h-full flex items-center justify-between" style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
                                                     <button
-                                                        className="bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm"
-                                                        onClick={() => handleMintAbi(quantity)}
-                                                        disabled={loading}
+                                                        type="button"
+                                                        onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                                                        className="btn-qty"
                                                     >
-                                                        {loading ? "Minting..." : "Mint Plot"}
+                                                        −
                                                     </button>
-                                                </NFTMintCard>
+                                                    <input
+                                                        type="number"
+                                                        value={quantity}
+                                                        min={1}
+                                                        onChange={(e) => {
+                                                            const val = Number(e.target.value);
+                                                            if (val >= 1) setQuantity(val);
+                                                        }}
+                                                        className="input-qty"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setQuantity((prev) => prev + 1)}
+                                                        className="btn-qty"
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <button
+                                                    className=" w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    onClick={() => handleMintAbi(quantity)}
+                                                    disabled={loading}
+                                                >
+                                                    {loading ? "Minting..." : "Mint Plot"}
+                                                </button>
+
                                             </div>
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
@@ -942,26 +944,28 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
                                         <div className="xl:col-span-4 col-span-12">
                                             <div>
-                                                <NFTMintCard
-                                                    contractAddress='0x477ea15de5e4e9c884c1cc92da3198d333ea85fb'
-                                                    className="mintNFT"
+                                                <div className="flex items-center font-semibold mb-2">
+                                                    <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
+                                                        <img src="/assets/images/brand-logos/favicon.ico" alt="" />
+                                                    </span>
+                                                    bitgrass.base.eth
+                                                </div>
+
+                                                <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
+                                                    <img
+                                                        src="/assets/images/apps/500m2v1.jpg"
+                                                        alt="Custom NFT Preview"
+                                                        className="object-cover w-full h-full"
+                                                    />
+                                                </div>
+
+                                                <button
+                                                    onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
                                                 >
-                                                    <NFTCreator />
-                                                    <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                        <img
-                                                            src="/assets/images/apps/500m2v1.jpg"
-                                                            alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full"
-                                                        />
-                                                    </div>
-                                                    <NFTAssetCost />
-                                                    <button
-                                                        onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
-                                                        className="bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm"
-                                                    >
-                                                        Buy Now
-                                                    </button>
-                                                </NFTMintCard>
+                                                    Buy Now
+                                                </button>
+
                                             </div>
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
@@ -1074,26 +1078,29 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
                                         <div className="xl:col-span-4 col-span-12">
                                             <div>
-                                                <NFTMintCard
-                                                    contractAddress='0x477ea15de5e4e9c884c1cc92da3198d333ea85fb'
-                                                    className="mintNFT"
+
+                                                <div className="flex items-center font-semibold mb-2">
+                                                    <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
+                                                        <img src="/assets/images/brand-logos/favicon.ico" alt="" />
+                                                    </span>
+                                                    bitgrass.base.eth
+                                                </div>
+
+                                                <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
+                                                    <img
+                                                        src="/assets/images/apps/1000m2v1.jpg"
+                                                        alt="Custom NFT Preview"
+                                                        className="object-cover w-full h-full"
+                                                    />
+                                                </div>
+
+                                                <button
+                                                    onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
                                                 >
-                                                    <NFTCreator />
-                                                    <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                        <img
-                                                            src="/assets/images/apps/1000m2v1.jpg"
-                                                            alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full"
-                                                        />
-                                                    </div>
-                                                    <NFTAssetCost />
-                                                    <button
-                                                        onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
-                                                        className="bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm"
-                                                    >
-                                                        Buy Now
-                                                    </button>
-                                                </NFTMintCard>
+                                                    Buy Now
+                                                </button>
+
                                             </div>
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
