@@ -87,8 +87,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
         parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
     );
-    const [lastBoughtLegendaryId, setLastBoughtLegendaryId] = useState(0);
-    const [lastBoughtPremiumId, setLastBoughtPremiumId] = useState(0);
     const openseaAddress = process.env.NEXT_PUBLIC_OPENSEA_ADDRESS as string;
     const collection = process.env.NEXT_PUBLIC_OPENSEA_COLLECTION as string
 
@@ -523,9 +521,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     }, [walletClient, isConnected]);
 
     useEffect(() => {
-        if (!isModalOpen) return;
         fetchAvailableNfts();
-    }, [isModalOpen, lastBoughtLegendaryId, lastBoughtPremiumId]);
+    }, [isModalOpen , isFailureModalOpen]);
 
     async function handleBuy(order: any, tier: "Legendary" | "Premium") {
         if (!walletClient) return;
@@ -613,9 +610,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 value,
                 data: calldata as `0x${string}`,
             });
-            const boughtId = parseInt(order.protocol_data.parameters.offer[0].identifierOrCriteria);
-            if (tier === "Legendary") setLastBoughtLegendaryId(boughtId);
-            if (tier === "Premium") setLastBoughtPremiumId(boughtId);
 
             const txReceipt = await provider.waitForTransaction(txHash);
             if (txReceipt?.status === 1) {
@@ -632,6 +626,11 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
         } catch (error) {
             console.error("❌ Purchase failed:", error);
+            const modalDataFailed: any = await getModalData();
+                setFailureTxHash(txHash);
+                setFailureImage(modalDataFailed.image);
+                setActiveOrder(true)
+                setFailureModalOpen(true);
         }
     }
 
@@ -644,90 +643,90 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
     }, [showToast]);
 
-    useEffect(() => {
-        async function fetchOpenSeaOrder() {
-            if (!walletClient || !isConnected) {
-                console.log("Wallet client not ready, skipping fetch...");
-                return;
-            }
+    // useEffect(() => {
+    //     async function fetchOpenSeaOrder() {
+    //         if (!walletClient || !isConnected) {
+    //             console.log("Wallet client not ready, skipping fetch...");
+    //             return;
+    //         }
 
-            setIsFetchingOrder(true);
-            setOrderFetchError(null);
+    //         setIsFetchingOrder(true);
+    //         setOrderFetchError(null);
 
-            try {
-                const listingApiUrl = `https://api.opensea.io/api/v2/orders/base/seaport/listings?asset_contract_address=${OPENSEA_CONTRACT_ADDRESS}&token_ids=${TOKEN_ID}&limit=1`;
+    //         try {
+    //             const listingApiUrl = `https://api.opensea.io/api/v2/orders/base/seaport/listings?asset_contract_address=${OPENSEA_CONTRACT_ADDRESS}&token_ids=${TOKEN_ID}&limit=1`;
 
-                const listingRes = await fetch(listingApiUrl, {
-                    method: "GET",
-                    headers: {
-                        accept: "application/json",
-                        "x-api-key": `${apiKey}`,
-                    },
-                });
+    //             const listingRes = await fetch(listingApiUrl, {
+    //                 method: "GET",
+    //                 headers: {
+    //                     accept: "application/json",
+    //                     "x-api-key": `${apiKey}`,
+    //                 },
+    //             });
 
-                if (!listingRes.ok) {
-                    throw new Error(`OpenSea listing API error: ${listingRes.status}`);
-                }
+    //             if (!listingRes.ok) {
+    //                 throw new Error(`OpenSea listing API error: ${listingRes.status}`);
+    //             }
 
-                const listingData = await listingRes.json();
-                const sellOrder = listingData.orders?.[0];
-                if (!sellOrder) {
-                    setOrderFetchError("No sell order found on OpenSea for this NFT.");
-                    return;
-                }
+    //             const listingData = await listingRes.json();
+    //             const sellOrder = listingData.orders?.[0];
+    //             if (!sellOrder) {
+    //                 setOrderFetchError("No sell order found on OpenSea for this NFT.");
+    //                 return;
+    //             }
 
-                const { order_hash, protocol_address } = sellOrder;
+    //             const { order_hash, protocol_address } = sellOrder;
 
-                const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-                await provider.send("eth_requestAccounts", []);
-                const signer = await provider.getSigner(walletClient.account.address);
-                const fulfillerAddress = await signer.getAddress();
+    //             const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+    //             await provider.send("eth_requestAccounts", []);
+    //             const signer = await provider.getSigner(walletClient.account.address);
+    //             const fulfillerAddress = await signer.getAddress();
 
-                const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
-                    method: "POST",
-                    headers: {
-                        accept: "application/json",
-                        "content-type": "application/json",
-                        "x-api-key": `${apiKey}`,
-                    },
-                    body: JSON.stringify({
-                        listing: {
-                            hash: order_hash,
-                            chain: "base",
-                            protocol_address: protocol_address,
-                        },
-                        fulfiller: {
-                            address: fulfillerAddress,
-                        },
-                    }),
-                });
+    //             const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
+    //                 method: "POST",
+    //                 headers: {
+    //                     accept: "application/json",
+    //                     "content-type": "application/json",
+    //                     "x-api-key": `${apiKey}`,
+    //                 },
+    //                 body: JSON.stringify({
+    //                     listing: {
+    //                         hash: order_hash,
+    //                         chain: "base",
+    //                         protocol_address: protocol_address,
+    //                     },
+    //                     fulfiller: {
+    //                         address: fulfillerAddress,
+    //                     },
+    //                 }),
+    //             });
 
-                if (!fulfillmentRes.ok) {
-                    throw new Error(`OpenSea fulfillment API error: ${fulfillmentRes.status}`);
-                }
+    //             if (!fulfillmentRes.ok) {
+    //                 throw new Error(`OpenSea fulfillment API error: ${fulfillmentRes.status}`);
+    //             }
 
-                const fulfillmentDataJson = await fulfillmentRes.json();
-                const fulfillmentData = fulfillmentDataJson.fulfillment_data;
-                const fullOrder = fulfillmentData.orders?.[0];
+    //             const fulfillmentDataJson = await fulfillmentRes.json();
+    //             const fulfillmentData = fulfillmentDataJson.fulfillment_data;
+    //             const fullOrder = fulfillmentData.orders?.[0];
 
-                if (!fullOrder || !fullOrder.parameters || !fullOrder.signature) {
-                    throw new Error("Invalid fulfillment data: missing order parameters or signature.");
-                }
+    //             if (!fullOrder || !fullOrder.parameters || !fullOrder.signature) {
+    //                 throw new Error("Invalid fulfillment data: missing order parameters or signature.");
+    //             }
 
-                setOrderData({
-                    parameters: fullOrder.parameters,
-                    signature: fullOrder.signature,
-                });
-            } catch (err: any) {
-                console.error("Fetch OpenSea order failed:", err);
-                setOrderFetchError(err.message || "Unknown error");
-            } finally {
-                setIsFetchingOrder(false);
-            }
-        }
+    //             setOrderData({
+    //                 parameters: fullOrder.parameters,
+    //                 signature: fullOrder.signature,
+    //             });
+    //         } catch (err: any) {
+    //             console.error("Fetch OpenSea order failed:", err);
+    //             setOrderFetchError(err.message || "Unknown error");
+    //         } finally {
+    //             setIsFetchingOrder(false);
+    //         }
+    //     }
 
-        fetchOpenSeaOrder();
-    }, [walletClient, isConnected]);
+    //     fetchOpenSeaOrder();
+    // }, [walletClient, isConnected]);
 
     const getModalData = () => {
         let currentItem;
