@@ -90,6 +90,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [lastBoughtLegendaryId, setLastBoughtLegendaryId] = useState(0);
     const [lastBoughtPremiumId, setLastBoughtPremiumId] = useState(0);
     const openseaAddress = process.env.NEXT_PUBLIC_OPENSEA_ADDRESS as string;
+    const collection = process.env.NEXT_PUBLIC_OPENSEA_COLLECTION as string
+
     const apiKey = process.env.NEXT_PUBLIC_OPENSEA_API_KEY;
     const [isFailureModalOpen, setFailureModalOpen] = useState(false);
     const [activeOrder, setActiveOrder] = useState(false)
@@ -290,7 +292,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         let legendaryNftDispo: any = [];
         let primaryNftDispo: any = [];
         let nextCursor = null;
-        const collection = "grass-plot-test"
 
         // Keep fetching until both legendary and premium NFTs are found or no more pages
         do {
@@ -316,6 +317,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 const data = await res.json();
                 const nfts = data.listings || [];
 
+                console.log("nfts----------" , nfts)
+                console.log("openseaAddress----------" , openseaAddress)
+
+
                 nextCursor = data.next || null;
 
                 // Categorize NFTs into legendary and premium
@@ -324,7 +329,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
 
                     if (
-                        nft.protocol_data.parameters.offerer === openseaAddress &&
+                        nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
                         parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 1 &&
                         parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 400
                     ) {
@@ -336,7 +341,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
                 const newPremium = nfts.flatMap((nft: any) => {
                     if (
-                        nft.protocol_data.parameters.offerer === openseaAddress &&
+                        nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
                         parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 401 &&
                         parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 1200
                     ) {
@@ -405,7 +410,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             url.searchParams.set("limit", "50");
             url.searchParams.set("order_by", "created_date");
             url.searchParams.set("order_direction", "desc");
-            url.searchParams.set("maker", openseaAddress);
+            url.searchParams.set("maker", openseaAddress.toLowerCase());
             url.searchParams.append("token_ids", firstTokenId.toString());
 
             const res = await fetch(url.toString(), {
@@ -469,7 +474,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             url.searchParams.set("limit", "50");
             url.searchParams.set("order_by", "created_date");
             url.searchParams.set("order_direction", "desc");
-            url.searchParams.set("maker", openseaAddress);
+            url.searchParams.set("maker", openseaAddress.toLowerCase());
             url.searchParams.append("token_ids", firstTokenId.toString());
 
             const res = await fetch(url.toString(), {
@@ -524,6 +529,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
     async function handleBuy(order: any, tier: "Legendary" | "Premium") {
         if (!walletClient) return;
+        
+        console.log("order________" , order)
 
         if (!order) {
             const modalDataFailed: any = await getModalData();
