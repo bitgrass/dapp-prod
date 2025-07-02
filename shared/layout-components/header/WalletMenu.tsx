@@ -186,6 +186,12 @@ const WalletMenu: React.FC = () => {
     await linkWallet();
   };
 
+  const handlelLogout = async () => {
+    await logout();
+    setOpen(false);  
+    window.location.reload();
+  };
+
   if (!ready) {
     return <button disabled className="btn btn-sm btn-outline-primary opacity-50 cursor-not-allowed ti-btn">Connecting…</button>;
   }
@@ -283,7 +289,7 @@ const WalletMenu: React.FC = () => {
                       setTimeout(() => setShowTooltip(false), 1200);
                     }}
                     className="w-full flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                    style={{ color: "#666666", fontSize: "12px", padding: "6px" ,marginTop:"12px" }}
+                    style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
                   >
                     {shortAddress || email || 'User'}
                     <i className="bx bx-copy mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
@@ -302,7 +308,7 @@ const WalletMenu: React.FC = () => {
                 <button
                   onClick={() => window.open(`https://basescan.org/address/${address}`, '_blank')}
                   className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                  style={{ color: "#666666", fontSize: "12px",  padding: "6px" ,marginTop:"12px" }}
+                  style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
                 >
                   View on Basescan
                   <i className="bx bx-link-alt mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
@@ -312,7 +318,7 @@ const WalletMenu: React.FC = () => {
               {activePrivyWallet?.walletClientType === 'privy' && (
                 <button
                   className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                  style={{ color: "#666666", fontSize: "12px",  padding: "6px" ,marginTop:"12px" }}
+                  style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
                   onClick={exportWallet}
                 >
                   Export my wallet <i className="ri-export-fill mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
@@ -405,11 +411,7 @@ const WalletMenu: React.FC = () => {
 
             {/* Disconnect button */}
             <button
-              onClick={() => {
-                setOpen(false);
-                logout();
-                window.location.reload();
-              }}
+              onClick={handlelLogout}
               className="w-full flex items-center justify-center text-sm font-medium bg-[#00382B] hover:bg-red-700 text-white py-2 rounded-lg transition mt-4 ti-btn"
             >
               <i className="bx bx-log-out mr-2" />Disconnect
