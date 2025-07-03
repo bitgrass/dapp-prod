@@ -315,8 +315,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 const data = await res.json();
                 const nfts = data.listings || [];
 
-                console.log("nfts----------" , nfts)
-                console.log("openseaAddress----------" , openseaAddress)
+                console.log("nfts----------", nfts)
+                console.log("openseaAddress----------", openseaAddress)
 
 
                 nextCursor = data.next || null;
@@ -522,12 +522,15 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
     useEffect(() => {
         fetchAvailableNfts();
-    }, [isModalOpen , isFailureModalOpen]);
+    }, [isModalOpen, isFailureModalOpen]);
 
     async function handleBuy(order: any, tier: "Legendary" | "Premium") {
-        if (!walletClient) return;
-        
-        console.log("order________" , order)
+        if (!walletClient || !ready || !authenticated) {
+            login();
+            return;
+        }
+
+        console.log("order________", order)
 
         if (!order) {
             const modalDataFailed: any = await getModalData();
@@ -626,11 +629,21 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
         } catch (error) {
             console.error("❌ Purchase failed:", error);
+            const rejected =
+                (error as any)?.code === 4001 ||
+                (error as any)?.message?.toLowerCase().includes("user rejected");
+
+            if (rejected) {
+                setToastTitle("Transaction Rejected");
+                setToastMessage("You missed your plot.");
+                setShowToast(true);
+                return;
+            }
             const modalDataFailed: any = await getModalData();
-                setFailureTxHash(txHash);
-                setFailureImage(modalDataFailed.image);
-                setActiveOrder(true)
-                setFailureModalOpen(true);
+            setFailureTxHash(txHash);
+            setFailureImage(modalDataFailed.image);
+            setActiveOrder(true)
+            setFailureModalOpen(true);
         }
     }
 
