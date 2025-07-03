@@ -22,7 +22,6 @@ import { NFTMintCard } from "@coinbase/onchainkit/nft";
 import { ethers } from "ethers";
 import { nftInfo, SeaDropABIData, CONTRACT_ADDRESS_INFO, SEADROP_ADDRESS_INFO, SEADROP_CONDUIT_INFO } from "@/shared/data/tokens/data";
 import { usePrivy, useLogin } from '@privy-io/react-auth';
-import { motion } from "framer-motion";
 
 type OrderData = {
     parameters: any;
@@ -60,8 +59,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const STATIC_MINT_PRICE_ETH = 0.00001; // adjust as needed
 
     const { isConnected } = useAccount();
-    const [activeTab, setActiveTab] = useState("Standard 100m² Plot");
-    const [activeTabSeo, setActiveTabSeo] = useState("NFT Collection – Standard");
+    const [activeTab, setActiveTab] = useState("");
     const tabList = ["Standard 100m² Plot", "Premium 500m² Plot", "Legendary 1000m² Plot"];
     const [orderData, setOrderData] = useState<OrderData | null>(null);
     const [isFetchingOrder, setIsFetchingOrder] = useState(false);
@@ -71,7 +69,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [failureTxHash, setFailureTxHash] = useState("");
     const [failureImage, setFailureImage] = useState("");
     const OPENSEA_CONTRACT_ADDRESS = nftInfo.address;
-    const TOKEN_ID = "16";
     const [listedLegendaryItems, setListedLegendaryItems] = useState<any[]>([]);
     const [listedPremiumItems, setListedPremiumItems] = useState<any[]>([]);
     const [isLoadingFetchAvailable, setIsLoadingFetchAvailable] = useState<boolean>(false)
@@ -90,7 +87,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     );
     const openseaAddress = process.env.NEXT_PUBLIC_OPENSEA_ADDRESS as string;
     const collection = process.env.NEXT_PUBLIC_OPENSEA_COLLECTION as string
-
     const apiKey = process.env.NEXT_PUBLIC_OPENSEA_API_KEY;
     const [isFailureModalOpen, setFailureModalOpen] = useState(false);
     const [activeOrder, setActiveOrder] = useState(false)
@@ -102,19 +98,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         legendary: "Legendary 1000m² Plot",
     };
 
-    // Map tab IDs to SEO titles
-    const tabIdToSeo: Record<string, string> = {
-        standard: "NFT Collection – Standard",
-        premium: "Premium Collection",
-        legendary: "Legendary Collection",
-    };
-
     // Set initial tab based on initialTabId
     useEffect(() => {
         const tabName = tabIdToName[initialTabId] || "Standard 100m² Plot";
-        const seoName = tabIdToSeo[initialTabId] || "NFT Collection – Standard";
         setActiveTab(tabName);
-        setActiveTabSeo(seoName);
     }, [initialTabId]);
 
     const handleMintAbi = async (quantity: number) => {
@@ -234,8 +221,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     console.error("Could not parse contract error:", parseError);
                 }
             }
-
-
             setToastMessage("⚠️ Something went wrong. Please try again.");
             setShowToast(true);
         } finally {
@@ -245,11 +230,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
     const initPrices = async () => {
         try {
-
             const mintPriceEth = STATIC_MINT_PRICE_ETH;
-
             setBaseMintPriceEth(mintPriceEth);
-
             const usdRes = await axios.get(
                 `https://deep-index.moralis.io/api/v2.2/erc20/${EthInfo.address}/price?chain=eth&include=percent_change`,
                 {
@@ -277,9 +259,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             setMintPriceUsd((totalEth * ethToUsd).toFixed(2));
         }
     }, [quantity, baseMintPriceEth, ethToUsd]);
-
-
-
 
     async function fetchAvailableNfts() {
         setIsLoadingFetchAvailable(true)
@@ -338,7 +317,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     return [];
                 });
 
-                console.log("newLegendary-------" , newLegendary)
+                console.log("newLegendary-------", newLegendary)
 
 
                 const newPremium = nfts.flatMap((nft: any) => {
@@ -379,14 +358,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
         // Proceed to listings API for legendary NFTs if any
         if (legendaryNftDispo.length > 0) {
-            await fetchListedLegendaryItems(legendaryNftDispo.sort((a:any, b:any) => a - b));
+            await fetchListedLegendaryItems(legendaryNftDispo.sort((a: any, b: any) => a - b));
         } else {
             setListedLegendaryItems([]);
         }
 
         // Proceed to listings API for premium NFTs if any
         if (primaryNftDispo.length > 0) {
-            await fetchListedPremiumItems(primaryNftDispo.sort((a:any, b:any) => a - b));
+            await fetchListedPremiumItems(primaryNftDispo.sort((a: any, b: any) => a - b));
         } else {
             setListedPremiumItems([]);
         }
@@ -779,10 +758,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         if (tab === activeTab) return; // Prevent re-setting same tab
 
         const tabId = Object.keys(tabIdToName).find(key => tabIdToName[key] === tab) || "standard";
-        const seoTitle = tabIdToSeo[tabId];
 
         setActiveTab(tab);
-        setActiveTabSeo(seoTitle);
 
         // Only update URL if needed
         const newUrl = `/ownplot/${tabId}`;
@@ -832,18 +809,16 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: 30 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.5, ease: "easeOut" }}
-                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md"
+                                                    <div
+
+                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up "
                                                     >
                                                         <img
                                                             src="/assets/images/apps/100m2v1.jpg"
                                                             alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full animate-fade-in-img"
+                                                            className="object-cover w-full h-full"
                                                         />
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
                                                 <div className="text-center my-2">
                                                     <p className="text-lg font-semibold">{mintPriceEth} ETH</p>
@@ -1003,18 +978,16 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: 30 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.5, ease: "easeOut" }}
-                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md"
+                                                    <div
+
+                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up "
                                                     >
                                                         <img
                                                             src="/assets/images/apps/500m2v1.jpg"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
 
                                                 <button
@@ -1026,7 +999,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     }}
                                                     disabled={isLoadingFetchAvailable}
                                                 >
-                                                    {isLoadingFetchAvailable ? "Processing" : "Buy Now"}
+                                                    {isLoadingFetchAvailable ? "Processing..." : "Buy Now"}
                                                 </button>
 
                                             </div>
@@ -1148,20 +1121,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     </span>
                                                     bitgrass.base.eth
                                                 </div>
-
+                                                
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: 30 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.5, ease: "easeOut" }}
-                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md"
+                                                    <div
+
+                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up"
                                                     >
                                                         <img
                                                             src="/assets/images/apps/1000m2v1.jpg"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
 
                                                 <button
@@ -1173,7 +1144,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     }}
                                                     disabled={isLoadingFetchAvailable}
                                                 >
-                                                    {isLoadingFetchAvailable ? "Processing" : "Buy Now"}
+                                                    {isLoadingFetchAvailable ? "Processing..." : "Buy Now"}
 
                                                 </button>
 
