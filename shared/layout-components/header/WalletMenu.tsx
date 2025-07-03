@@ -321,7 +321,7 @@ const WalletMenu: React.FC = () => {
                   style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
                   onClick={exportWallet}
                 >
-                  Export my wallet <i className="ri-export-fill mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
+                  Export my wallet <i className='bx bx-export' style={{ color: "#666666", marginLeft: "3px" }}></i>
                 </button>
               )}
             </div>
