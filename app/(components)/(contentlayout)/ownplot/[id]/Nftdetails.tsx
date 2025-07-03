@@ -869,7 +869,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     <i className="ri-circle-fill text-success align-middle"></i>
                                                     <span className="font-semibold dark:text-white/50">
                                                         <Link className="text-[0.875rem] ms-2" href="#!" scroll={false}>
-                                                            Live on July 1, 2025
+                                                            Live on July 27, 2025
                                                         </Link>
                                                     </span>
                                                 </p>
@@ -880,7 +880,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
-                                                            0.05
+                                                            0.05 ETH
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
@@ -948,7 +948,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                             <tbody>
                                                                 <tr><th className="font-semibold text-start">Type</th><td>ERC-721</td></tr>
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Standard</td></tr>
-                                                                <tr><th className="font-semibold text-start">Total Supply</th><td>2000 NFTs</td></tr>
+                                                                <tr><th className="font-semibold text-start">Standard Supply</th><td>2000 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>100 m² (each NFT corresponds to a real land plot)</td></tr>
                                                                 <tr><th className="font-semibold text-start">Utility</th><td>Stake to earn carbon credits or $BTG / Burn to offset your carbon footprint</td></tr>
                                                                 <tr><th className="font-semibold text-start">Carbon removal Potential</th><td>up to 0.1 TCO2</td></tr>
@@ -1024,7 +1024,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
-                                                            0.2
+                                                            0.2 ETH
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
@@ -1092,7 +1092,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                             <tbody>
                                                                 <tr><th className="font-semibold text-start">Type</th><td>ERC-721</td></tr>
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Premium</td></tr>
-                                                                <tr><th className="font-semibold text-start">Total Supply</th><td>800 NFTs</td></tr>
+                                                                <tr><th className="font-semibold text-start">Premium Supply</th><td>800 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>500 m² (each NFT corresponds to a real land plot)</td></tr>
                                                                 <tr><th className="font-semibold text-start">Utility</th><td>Stake to earn carbon credits or $BTG / Burn to offset your carbon footprint</td></tr>
                                                                 <tr><th className="font-semibold text-start">Carbon removal Potential</th><td>up to 0.5 TCO2</td></tr>
@@ -1170,7 +1170,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                             <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/brand-logos/eth.png" alt="" />
                                                             </span>
-                                                            0.35
+                                                            0.35 ETH
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
@@ -1238,7 +1238,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                             <tbody>
                                                                 <tr><th className="font-semibold text-start">Type</th><td>ERC-721</td></tr>
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Legendary</td></tr>
-                                                                <tr><th className="font-semibold text-start">Total Supply</th><td>400 NFTs</td></tr>
+                                                                <tr><th className="font-semibold text-start">Legendary Supply</th><td>400 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>1000 m² (each NFT corresponds to a real land plot)</td></tr>
                                                                 <tr><th className="font-semibold text-start">Utility</th><td>Stake to earn carbon credits or $BTG / Burn to offset your carbon footprint</td></tr>
                                                                 <tr><th className="font-semibold text-start">Carbon removal Potential</th><td>up to 1.0 TCO2</td></tr>

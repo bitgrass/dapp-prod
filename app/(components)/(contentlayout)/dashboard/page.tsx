@@ -19,7 +19,7 @@ import {
 import type { Token } from '@coinbase/onchainkit/token';
 import Moralis from 'moralis';
 import axios from 'axios';
-import { btgToken, ETHToken , btgInfo } from "@/shared/data/tokens/data";
+import { btgToken, ETHToken, btgInfo } from "@/shared/data/tokens/data";
 
 
 async function initializeMoralis() {
@@ -39,19 +39,19 @@ const Dashboard = () => {
     const [showAlert, setShowAlert] = useState(false)
     const handleCloseAlert = () => setShowAlert(false)
 
-    const percentage = 80; // Percentage to display
+    const percentage = 70; // Percentage to display
     const radius = 100; // Radius of the circle
     const strokeWidth = 10; // Thickness of the stroke
     const normalizedRadius = radius - strokeWidth / 2;
     const circumference = 2 * Math.PI * normalizedRadius;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
-      const shortAddress = btgInfo && btgInfo.address ? `${btgInfo.address.slice(0, 6)}…${btgInfo.address.slice(-4)}` : '';
+    const shortAddress = btgInfo && btgInfo.address ? `${btgInfo.address.slice(0, 6)}…${btgInfo.address.slice(-4)}` : '';
 
 
 
 
     const [btgPrice, setBtgPrice] = useState(0);
-    const [btgPercentChange , setBtgPercentChange] = useState(0)
+    const [btgPercentChange, setBtgPercentChange] = useState(0)
     const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState('overview');
 
@@ -266,7 +266,7 @@ const Dashboard = () => {
                 const prices = response.data.usdPrice;
                 const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
 
-                
+
 
 
                 if (prices) {
@@ -290,7 +290,7 @@ const Dashboard = () => {
     }, []);
 
 
-    
+
     const formatLargeValue = (value: any) => {
         const totalValue = value;
         return totalValue >= 1000000
@@ -510,14 +510,14 @@ const Dashboard = () => {
                                                             <div className="mb-6">
                                                                 <p className="text-[.9375rem] mb-2 font-semibold">Description :</p>
                                                                 <p className="text-[0.75rem]">
-                                                                    Bitgrass will tokenize <b className="text-defaulttextcolor">100 hectares of farmland</b>  into a limited collection of <b className="text-defaulttextcolor"> 3,200 NFTs</b>, launching on <b className="text-defaulttextcolor">July 01, 2025.</b>
+                                                                    Bitgrass will tokenize <b className="text-defaulttextcolor">100 hectares of farmland</b>  into a limited collection of <b className="text-defaulttextcolor"> 3,200 NFTs</b>, launching on <b className="text-defaulttextcolor">July 27, 2025.</b>
 
                                                                 </p><br /> Each NFT represents a tokenized farmland plot with multiple use cases:<br />
                                                                 <ul className="text-[0.75rem] list-disc list-inside ml-4">
                                                                     <li>Grants the<b className="text-defaulttextcolor"> Right of Use for Carbon Credits</b> </li>
                                                                     <li>Allows early investors to<b className="text-defaulttextcolor"> earn $BTG through a vesting schedule</b></li>
                                                                     <li>Enables users to <b className="text-defaulttextcolor">boost APY on $BTG staking</b></li>
-                                                                    <li>Can be burned to <b className="text-defaulttextcolor">offset carbon footprint</b></li>
+                                                                    <li>Participate in decision making<b className="text-defaulttextcolor"> Governance Power.</b></li>
                                                                 </ul>
                                                                 <p className="text-[0.75rem] mt-4">
                                                                     This initiative is projected to<b className="text-defaulttextcolor"> absorb 60,000 tCO₂</b> while restoring degraded soils and supporting <b className="text-defaulttextcolor"> MENA farmers.</b>
@@ -873,30 +873,43 @@ const Dashboard = () => {
                                             <div className="box custom-box">
                                                 <div className="box-header justify-between flex">
                                                     <div className="box-title">
-                                                        About $BTG
+                                                        $BTG Token
                                                     </div>
                                                 </div>
                                                 <div className="box-body">
-                                                    <div className="text-[.9375rem] font-semibold mb-2">Project Description :</div>
-                                                    <p className="text-[#8c9097] dark:text-white/50 task-description">$BTG isn't just a token; it's the lifeblood of the Bitgrass ecosystem, fueling every aspect from NFT minting to carbon credit staking. Designed for maximum utility, $BTG powers all transactions, payments, and operations within our platform, ensuring a fluid and interconnected experience.</p>
-                                                    <div className="text-[.9375rem] font-semibold my-2">As the key to unlocking all of Bitgrass's services, $BTG provides:</div>
+                                                    <div className="text-[.9375rem] font-semibold mb-2">Utilities:</div>
                                                     <div className="mb-3">
                                                         <ul className="task-details-key-tasks ps-[2rem] mb-0">
-                                                            <li> <b className="text-defaulttextcolor">Access:</b> Use $BTG to engage with tokenized real-world land plots, participate in carbon removal initiatives, and access detailed environmental impact reports.</li>
-                                                            <li><b className="text-defaulttextcolor">Liquidity:</b> With listings on multiple exchanges, $BTG ensures your investment remains liquid and accessible, vital for both seasoned and new investors in the Web3 space.</li>
-                                                            <li><b className="text-defaulttextcolor">Incentives:</b> Stake $BTG for rewards, earn from verified carbon credits, and benefit from a system where your financial investment directly translates to environmental impact.</li>
+                                                            <li> <b className="text-defaulttextcolor">Staking:</b> Earn rewards, with boosted APY for NFT holders. </li>
+                                                            <li><b className="text-defaulttextcolor">Carbon Credits Purchase</b></li>
+                                                            <li><b className="text-defaulttextcolor">Access to Carbon Market Database, Knowledge Hub, Insights, and Reports.</b></li>
+                                                            <li><b className="text-defaulttextcolor">Vesting Rewards:</b> Early NFT investors receive $BTG over time.</li>
+                                                            <li><b className="text-defaulttextcolor">Governance:</b> Proposal/Vote.</li>
 
                                                         </ul>
-                                                    </div>
-                                                    <p className="text-[#8c9097] dark:text-white/50 task-description">With its multi-utility approach, $BTG is not just an asset; it's your gateway to a sustainable future, where every transaction helps rewild our planet. Embrace $BTG to be at the forefront of climate action and innovative investment."</p>
 
+                                                        <div className="text-[.9375rem] font-semibold mb-2 mt-4">Tokenomics:</div>
+
+                                                        <img
+                                                            src="/assets/images/apps/TokenomicsLight.png"
+                                                            alt="BTG Utilities Light"
+                                                            className="block dark:hidden w-full rounded-md"
+                                                        />
+
+                                                        {/* Dark mode image */}
+                                                        <img
+                                                            src="/assets/images/apps/TokenomicsDark.png"
+                                                            alt="BTG Utilities Dark"
+                                                            className="hidden dark:block w-full rounded-md"
+                                                        />
+                                                    </div>
                                                 </div>
                                                 <div className="box-footer">
                                                     <div className="flex items-center justify-between gap-2 flex-wrap mt-3">
 
                                                         <div>
                                                             <span className="block text-[#8c9097] dark:text-white/50 text-[0.75rem]">Launch Date</span>
-                                                            <span className="block text-[.875rem] font-semibold">July 01, 2025</span>
+                                                            <span className="block text-[.875rem] font-semibold">July 27, 2025</span>
                                                         </div>
                                                         <div>
                                                             <span className="block text-[#8c9097] dark:text-white/50 text-[0.75rem]">Live on</span>
@@ -978,7 +991,7 @@ const Dashboard = () => {
                                                                     Tokens Locked
                                                                 </span>
                                                                 <div>
-                                                                    <span className="text-[1rem] font-semibold">1,624</span>
+                                                                    <span className="text-[1rem] font-semibold">700 M</span>
                                                                 </div>
                                                             </div>
                                                         </div>
