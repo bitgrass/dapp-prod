@@ -896,9 +896,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <div className="mb-4">
                                                     <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
                                                     <p>
-                                                        <b>Discover the Bitgrass NFT </b>—a <b>Tokenized 100 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                        A <b>Tokenized 100 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        This NFT offers multiple utilities: Boost your $BTG APY, earn Carbon credits or $BTG by staking your Landplot, or choose to burn it to offset your carbon footprint. Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                      Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -950,8 +950,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Standard</td></tr>
                                                                 <tr><th className="font-semibold text-start">Standard Supply</th><td>2000 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>100 m² (each NFT corresponds to a real land plot)</td></tr>
-                                                                <tr><th className="font-semibold text-start">Utility</th><td>Stake to earn carbon credits or $BTG / Burn to offset your carbon footprint</td></tr>
-                                                                <tr><th className="font-semibold text-start">Carbon removal Potential</th><td>up to 0.1 TCO2</td></tr>
+                                                                <tr><th className="font-semibold text-start">Carbon Generation</th><td>Stake NFTs to earn TCO₂ starting in 2026.  </td></tr>
+                                                                <tr><th className="font-semibold text-start">$BTG Reward</th><td>Early invetors earn $BTG via Vesting.</td></tr>
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -1013,7 +1013,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     <i className="ri-circle-fill text-success align-middle"></i>
                                                     <span className="font-semibold dark:text-white/50">
                                                         <Link className="text-[0.875rem] ms-2" href="#!" scroll={false}>
-                                                            Live on July 1, 2025
+                                                            Live on July 27, 2025
                                                         </Link>
                                                     </span>
                                                 </p>
@@ -1040,9 +1040,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <div className="mb-4">
                                                     <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
                                                     <p>
-                                                        <b>Discover the Bitgrass NFT </b>—a <b>Tokenized 500 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                        A <b>Tokenized 500 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        This NFT offers multiple utilities: Boost your $BTG APY, earn Carbon credits or $BTG by staking your Landplot, or choose to burn it to offset your carbon footprint. Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                         Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -1094,8 +1094,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Premium</td></tr>
                                                                 <tr><th className="font-semibold text-start">Premium Supply</th><td>800 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>500 m² (each NFT corresponds to a real land plot)</td></tr>
-                                                                <tr><th className="font-semibold text-start">Utility</th><td>Stake to earn carbon credits or $BTG / Burn to offset your carbon footprint</td></tr>
-                                                                <tr><th className="font-semibold text-start">Carbon removal Potential</th><td>up to 0.5 TCO2</td></tr>
+                                                                <tr><th className="font-semibold text-start">Carbon Generation</th><td>Stake NFTs to earn TCO₂ starting in 2026.</td></tr>
+                                                                <tr><th className="font-semibold text-start">$BTG Reward</th><td>Early invetors earn $BTG via Vesting.</td></tr>
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -1159,7 +1159,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     <i className="ri-circle-fill text-success align-middle"></i>
                                                     <span className="font-semibold dark:text-white/50">
                                                         <Link className="text-[0.875rem] ms-2" href="#!" scroll={false}>
-                                                            Live on July 1, 2025
+                                                            Live on July 27, 2025
                                                         </Link>
                                                     </span>
                                                 </p>
@@ -1186,9 +1186,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <div className="mb-4">
                                                     <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
                                                     <p>
-                                                        <b>Discover the Bitgrass NFT </b>—a <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                       A <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        This NFT offers multiple utilities: Boost your $BTG APY, earn Carbon credits or $BTG by staking your Landplot, or choose to burn it to offset your carbon footprint. Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                       Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -1240,8 +1240,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Legendary</td></tr>
                                                                 <tr><th className="font-semibold text-start">Legendary Supply</th><td>400 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>1000 m² (each NFT corresponds to a real land plot)</td></tr>
-                                                                <tr><th className="font-semibold text-start">Utility</th><td>Stake to earn carbon credits or $BTG / Burn to offset your carbon footprint</td></tr>
-                                                                <tr><th className="font-semibold text-start">Carbon removal Potential</th><td>up to 1.0 TCO2</td></tr>
+                                                                <tr><th className="font-semibold text-start">Carbon Generation</th><td>Stake NFTs to earn TCO₂ starting in 2026.  </td></tr>
+                                                                <tr><th className="font-semibold text-start">$BTG Reward</th><td>Early invetors earn $BTG via Vesting.</td></tr>
                                                             </tbody>
                                                         </table>
                                                     </div>
