@@ -602,7 +602,7 @@ const Dashboard = () => {
                                                             </SwiperSlide>
                                                         </Swiper>
                                                         <div className="grid mt-8">
-                                                            <Link href="/mint/" className="ti-btn bg-secondary  text-white !font-medium !mb-2 !mt-4">Mint Plot</Link>
+                                                            <Link href="/ownplot/standard" className="ti-btn bg-secondary  text-white !font-medium !mb-2 !mt-4">Mint Plot</Link>
                                                             <Link href="https://opensea.io/collection/bitgrass-nft/overview" target="_blank" rel="noopener noreferrer" className="ti-btn bg-camel10  !font-medium">Discover</Link>
                                                         </div>
                                                     </div>
