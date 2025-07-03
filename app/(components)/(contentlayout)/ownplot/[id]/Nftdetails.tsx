@@ -74,6 +74,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const TOKEN_ID = "16";
     const [listedLegendaryItems, setListedLegendaryItems] = useState<any[]>([]);
     const [listedPremiumItems, setListedPremiumItems] = useState<any[]>([]);
+    const [isLoadingFetchAvailable, setIsLoadingFetchAvailable] = useState<boolean>(false)
     const [modalData, setModalData] = useState({
         id: "",
         image: "",
@@ -281,6 +282,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
 
     async function fetchAvailableNfts() {
+        setIsLoadingFetchAvailable(true)
         if (!walletClient || !isConnected || !apiKey) {
             console.log("Missing wallet client, connection, or API key, skipping fetch...");
             return;
@@ -336,6 +338,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     return [];
                 });
 
+                console.log("newLegendary-------" , newLegendary)
+
 
                 const newPremium = nfts.flatMap((nft: any) => {
                     if (
@@ -375,17 +379,19 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
         // Proceed to listings API for legendary NFTs if any
         if (legendaryNftDispo.length > 0) {
-            await fetchListedLegendaryItems(legendaryNftDispo);
+            await fetchListedLegendaryItems(legendaryNftDispo.sort((a:any, b:any) => a - b));
         } else {
             setListedLegendaryItems([]);
         }
 
         // Proceed to listings API for premium NFTs if any
         if (primaryNftDispo.length > 0) {
-            await fetchListedPremiumItems(primaryNftDispo);
+            await fetchListedPremiumItems(primaryNftDispo.sort((a:any, b:any) => a - b));
         } else {
             setListedPremiumItems([]);
         }
+
+        setIsLoadingFetchAvailable(false)
     }
 
     async function fetchListedLegendaryItems(tokenIds: any) {
@@ -1014,8 +1020,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <button
                                                     onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
                                                     className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    style={{
+                                                        cursor: isLoadingFetchAvailable ? "not-allowed" : "pointer",
+                                                        userSelect: isLoadingFetchAvailable ? "none" : "auto"
+                                                    }}
+                                                    disabled={isLoadingFetchAvailable}
                                                 >
-                                                    Buy Now
+                                                    {isLoadingFetchAvailable ? "Processing" : "Buy Now"}
                                                 </button>
 
                                             </div>
@@ -1156,8 +1167,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <button
                                                     onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
                                                     className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    style={{
+                                                        cursor: isLoadingFetchAvailable ? "not-allowed" : "pointer",
+                                                        userSelect: isLoadingFetchAvailable ? "none" : "auto"
+                                                    }}
+                                                    disabled={isLoadingFetchAvailable}
                                                 >
-                                                    Buy Now
+                                                    {isLoadingFetchAvailable ? "Processing" : "Buy Now"}
+
                                                 </button>
 
                                             </div>
@@ -1268,7 +1285,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 </div>
 
 
-                <button onClick={() => setFailureModalOpen(true)}>open</button>
 
 
                 <PurchaseCelebrationModal
