@@ -263,8 +263,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     async function fetchAvailableNfts() {
         setIsLoadingFetchAvailable(true)
         if (!walletClient || !isConnected || !apiKey) {
-            console.log("Missing wallet client, connection, or API key, skipping fetch...");
             setIsLoadingFetchAvailable(false)
+            console.log("Missing wallet client, connection, or API key, skipping fetch...");
             return;
         }
 
@@ -318,7 +318,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     return [];
                 });
 
-                console.log("newLegendary-------", newLegendary)
+                console.log("newLegendary-------", newLegendary.sort((a: any, b: any) => a - b))
 
 
                 const newPremium = nfts.flatMap((nft: any) => {
@@ -331,6 +331,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     }
                     return [];
                 });
+
+                console.log("newPremium-------", newPremium.sort((a: any, b: any) => a - b))
 
                 legendaryNftDispo = [...legendaryNftDispo, ...newLegendary];
                 primaryNftDispo = [...primaryNftDispo, ...newPremium];
@@ -374,7 +376,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         setIsLoadingFetchAvailable(false)
     }
 
-    async function fetchListedLegendaryItems(tokenIds : any) {
+    async function fetchListedLegendaryItems(tokenIds: any) {
         if (!walletClient || !isConnected || !apiKey) {
             console.log("Missing wallet client, connection, or API key, skipping fetch...");
             return;
@@ -386,65 +388,56 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return;
         }
 
-        for (const tokenId of tokenIds) {
-            try {
-                const url = new URL("https://api.opensea.io/api/v2/orders/base/seaport/listings");
-                url.searchParams.set("asset_contract_address", OPENSEA_CONTRACT_ADDRESS);
-                url.searchParams.set("limit", "50");
-                url.searchParams.set("order_by", "created_date");
-                url.searchParams.set("order_direction", "desc");
-                url.searchParams.set("maker", openseaAddress.toLowerCase());
-                url.searchParams.append("token_ids", tokenId.toString());
+        const firstTokenId = tokenIds[0]; // Use only the first token ID
 
-                const res = await fetch(url.toString(), {
-                    headers: {
-                        accept: "application/json",
-                        "x-api-key": apiKey,
-                    },
-                });
+        try {
+            const url = new URL("https://api.opensea.io/api/v2/orders/base/seaport/listings");
+            url.searchParams.set("asset_contract_address", OPENSEA_CONTRACT_ADDRESS);
+            url.searchParams.set("limit", "50");
+            url.searchParams.set("order_by", "created_date");
+            url.searchParams.set("order_direction", "desc");
+            url.searchParams.set("maker", openseaAddress.toLowerCase());
+            url.searchParams.append("token_ids", firstTokenId.toString());
 
-                if (!res.ok) {
-                    console.error(`OpenSea fetch failed for legendary listing (token ID ${tokenId}): ${res.status}`);
-                    continue; // Try the next token ID
-                }
+            const res = await fetch(url.toString(), {
+                headers: {
+                    accept: "application/json",
+                    "x-api-key": apiKey,
+                },
+            });
 
-                const data = await res.json();
-                const now = Math.floor(Date.now() / 1000);
-                const orders = (data.orders || []).filter((order : any) => {
-                    const isActive = !order.cancelled && !order.fulfilled && order.expiration_time > now;
-                    return isActive;
-                });
-
-                if (orders.length > 0) {
-                    const sorted = [...orders]
-                        .filter(item => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria)
-                        .sort(
-                            (a, b) =>
-                                parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
-                                parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
-                        );
-
-                    if (sorted[0]?.maker_asset_bundle?.assets?.[0]?.name != null) {
-                        console.log(`Legendary sorted (token ID ${tokenId}):`, sorted);
-                        setListedLegendaryItems(sorted);
-                        return; // Found a valid name, exit the function
-                    } else {
-                        console.log(`No valid name found for token ID ${tokenId}, trying next token...`);
-                        continue; // Try the next token ID
-                    }
-                } else {
-                    console.log(`No active legendary NFT listings found for token ID ${tokenId}`);
-                    continue; // Try the next token ID
-                }
-            } catch (err) {
-                console.error(`Failed to fetch legendary listing for token ID ${tokenId}:`, err);
-                continue; // Try the next token ID
+            if (!res.ok) {
+                console.error(`OpenSea fetch failed for legendary listing (token ID ${firstTokenId}): ${res.status}`);
+                setListedLegendaryItems([]);
+                return;
             }
-        }
 
-        // If no valid name is found for any token ID
-        console.log("No legendary NFT listings with a valid name found for any token ID");
-        setListedLegendaryItems([]);
+            const data = await res.json();
+            const now = Math.floor(Date.now() / 1000);
+            const orders = (data.orders || []).filter((order: any) => {
+                const isActive = !order.cancelled && !order.fulfilled && order.expiration_time > now;
+                return isActive;
+            });
+
+            if (orders.length > 0) {
+                const sorted = [...orders]
+                    .filter(item => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria)
+                    .sort(
+                        (a, b) =>
+                            parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+                            parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+                    );
+
+                console.log(`Legendary sorted (token ID ${firstTokenId}):`, sorted);
+                setListedLegendaryItems(sorted);
+            } else {
+                console.log(`No active legendary NFT listings found for token ID ${firstTokenId}`);
+                setListedLegendaryItems([]);
+            }
+        } catch (err) {
+            console.error(`Failed to fetch legendary listing for token ID ${firstTokenId}:`, err);
+            setListedLegendaryItems([]);
+        }
     }
 
     async function fetchListedPremiumItems(tokenIds: any) {
@@ -459,65 +452,56 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return;
         }
 
-        for (const tokenId of tokenIds) {
-            try {
-                const url = new URL("https://api.opensea.io/api/v2/orders/base/seaport/listings");
-                url.searchParams.set("asset_contract_address", OPENSEA_CONTRACT_ADDRESS);
-                url.searchParams.set("limit", "50");
-                url.searchParams.set("order_by", "created_date");
-                url.searchParams.set("order_direction", "desc");
-                url.searchParams.set("maker", openseaAddress.toLowerCase());
-                url.searchParams.append("token_ids", tokenId.toString());
+        const firstTokenId = tokenIds[0]; // Use only the first token ID
 
-                const res = await fetch(url.toString(), {
-                    headers: {
-                        accept: "application/json",
-                        "x-api-key": apiKey,
-                    },
-                });
+        try {
+            const url = new URL("https://api.opensea.io/api/v2/orders/base/seaport/listings");
+            url.searchParams.set("asset_contract_address", OPENSEA_CONTRACT_ADDRESS);
+            url.searchParams.set("limit", "50");
+            url.searchParams.set("order_by", "created_date");
+            url.searchParams.set("order_direction", "desc");
+            url.searchParams.set("maker", openseaAddress.toLowerCase());
+            url.searchParams.append("token_ids", firstTokenId.toString());
 
-                if (!res.ok) {
-                    console.error(`OpenSea fetch failed for premium listing (token ID ${tokenId}): ${res.status}`);
-                    continue; // Try the next token ID
-                }
+            const res = await fetch(url.toString(), {
+                headers: {
+                    accept: "application/json",
+                    "x-api-key": apiKey,
+                },
+            });
 
-                const data = await res.json();
-                const now = Math.floor(Date.now() / 1000);
-                const orders = (data.orders || []).filter((order: any) => {
-                    const isActive = !order.cancelled && !order.fulfilled && order.expiration_time > now;
-                    return isActive;
-                });
-
-                if (orders.length > 0) {
-                    const sorted = [...orders]
-                        .filter(item => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria)
-                        .sort(
-                            (a, b) =>
-                                parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
-                                parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
-                        );
-
-                    if (sorted[0]?.maker_asset_bundle?.assets?.[0]?.name != null) {
-                        console.log(`Premium sorted (token ID ${tokenId}):`, sorted);
-                        setListedPremiumItems(sorted);
-                        return; // Found a valid name, exit the function
-                    } else {
-                        console.log(`No valid name found for token ID ${tokenId}, trying next token...`);
-                        continue; // Try the next token ID
-                    }
-                } else {
-                    console.log(`No active premium NFT listings found for token ID ${tokenId}`);
-                    continue; // Try the next token ID
-                }
-            } catch (err) {
-                console.error(`Failed to fetch premium listing for token ID ${tokenId}:`, err);
-                continue; // Try the next token ID
+            if (!res.ok) {
+                console.error(`OpenSea fetch failed for premium listing (token ID ${firstTokenId}): ${res.status}`);
+                setListedPremiumItems([]);
+                return;
             }
-        }
 
-        // If no valid name is found for any token ID
-        console.log("No premium NFT listings with a valid name found for any token ID");
-        setListedPremiumItems([]);
+            const data = await res.json();
+            const now = Math.floor(Date.now() / 1000);
+            const orders = (data.orders || []).filter((order: any) => {
+                const isActive = !order.cancelled && !order.fulfilled && order.expiration_time > now;
+                return isActive;
+            });
+
+            if (orders.length > 0) {
+                const sorted = [...orders]
+                    .filter(item => item?.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria)
+                    .sort(
+                        (a, b) =>
+                            parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
+                            parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
+                    );
+
+                console.log(`Premium sorted (token ID ${firstTokenId}):`, sorted);
+                setListedPremiumItems(sorted);
+            } else {
+                console.log(`No active premium NFT listings found for token ID ${firstTokenId}`);
+                setListedPremiumItems([]);
+            }
+        } catch (err) {
+            console.error(`Failed to fetch premium listing for token ID ${firstTokenId}:`, err);
+            setListedPremiumItems([]);
+        }
     }
 
     useEffect(() => {
@@ -528,7 +512,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         fetchAvailableNfts();
     }, [isModalOpen, isFailureModalOpen]);
 
-    async function handleBuy(order: any, tier: "Legendary" | "Premium") {
+     async function handleBuy(order: any, tier: "Legendary" | "Premium") {
         if (!walletClient || !ready || !authenticated) {
             login();
             return;
@@ -650,6 +634,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             setFailureModalOpen(true);
         }
     }
+
 
     useEffect(() => {
         if (showToast) {
@@ -917,7 +902,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     <p>
                                                         A <b>Tokenized 100 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                      Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -1061,7 +1046,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     <p>
                                                         A <b>Tokenized 500 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                         Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -1140,7 +1125,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     </span>
                                                     bitgrass.base.eth
                                                 </div>
-
+                                                
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
                                                     <div
 
@@ -1205,9 +1190,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <div className="mb-4">
                                                     <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
                                                     <p>
-                                                        A <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                       A <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                       Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
