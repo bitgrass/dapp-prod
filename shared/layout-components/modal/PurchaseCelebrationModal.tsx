@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Confetti from 'react-confetti-boom';
+import ReactDOM from 'react-dom';
 import WarpcastIcon from '../images/WarpcastIcon';
 import XIcon from '../images/XIcon';
 
@@ -14,29 +15,79 @@ interface PurchaseCelebrationModalProps {
   onClose: () => void;
 }
 
-const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ image, name, token, id, isOpen, onClose }) => {
+// Portal for fullscreen confetti, with fade-out transition
+function ConfettiPortal({
+  children,
+  fadeOut,
+}: {
+  children: React.ReactNode;
+  fadeOut?: boolean;
+}) {
+  if (typeof window === 'undefined') return null;
+  return ReactDOM.createPortal(
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 51,
+        pointerEvents: 'none',
+        opacity: fadeOut ? 0 : 1,
+        transition: 'opacity 0.7s',
+      }}
+    >
+      {children}
+    </div>,
+    document.body
+  );
+}
+
+const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({
+  image,
+  name,
+  token,
+  id,
+  isOpen,
+  onClose,
+}) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const currentUrl = typeof window !== "undefined"
-    ? window.location.href.replace(/\/$/, "")
-    : "";
-  const shareTextTwitter = `Checkout $${name} on @bitgrass`;
-  const shareTextWarpcast = `Checkout $${name} on @bitgrass`;
-
-
-  const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
-  const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
-
-  const encodedLink = encodeURIComponent(currentUrl);
-
-
-
-  const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
-  const warpcastUrl = `https://farcaster.xyz/~/compose?text=${encodedTextWarpcast}&embeds[]=${encodedLink}`;
+  // --- Mobile detection
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsMobile(window.innerWidth < 640);
+    }
+  }, []);
+
+  // --- Show/hide and fade confetti
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [fadeConfetti, setFadeConfetti] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowConfetti(true);
+      setFadeConfetti(false);
+      // Fade out before unmounting
+      const fadeTimeout = setTimeout(() => setFadeConfetti(true), 8000);
+      const hideTimeout = setTimeout(() => setShowConfetti(false), 10000);
+      return () => {
+        clearTimeout(fadeTimeout);
+        clearTimeout(hideTimeout);
+      };
+    }
+  }, [isOpen]);
+
+  // --- Modal close logic
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     };
@@ -62,13 +113,39 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
     };
   }, [isOpen, onClose]);
 
+  // --- Social URLs
+  const currentUrl =
+    typeof window !== 'undefined'
+      ? window.location.href.replace(/\/$/, '')
+      : '';
+  const shareTextTwitter = `Checkout $${name} on @bitgrass`;
+  const shareTextWarpcast = `Checkout $${name} on @bitgrass`;
+  const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
+  const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
+  const encodedLink = encodeURIComponent(currentUrl);
+  const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
+  const warpcastUrl = `https://farcaster.xyz/~/compose?text=${encodedTextWarpcast}&embeds[]=${encodedLink}`;
 
   if (!isOpen) return null;
 
   return (
     <>
-      <Confetti style={{ zIndex: 51 }} mode="fall" particleCount={70} colors={['#0F382B', '#66CC33', '#7FC447', '#F5F3EB']} />
-      <Confetti style={{ zIndex: 51 }} mode="boom" effectInterval={10000} particleCount={80} colors={['#0F382B', '#66CC33', '#7FC447', '#F5F3EB']} effectCount={2} />
+      {showConfetti && (
+        <ConfettiPortal fadeOut={fadeConfetti}>
+          <Confetti
+            mode="fall"
+            particleCount={isMobile ? 15 : 50}
+            colors={['#0F382B', '#66CC33', '#7FC447', '#F5F3EB']}
+          />
+          <Confetti
+            mode="boom"
+            effectInterval={10000}
+            particleCount={isMobile ? 20 : 60}
+            colors={['#0F382B', '#66CC33', '#7FC447', '#F5F3EB']}
+            effectCount={2}
+          />
+        </ConfettiPortal>
+      )}
 
       <div
         className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 dark:bg-black/50"
@@ -80,7 +157,7 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
           className="w-[95%] z-[9999] max-w-md bg-camel rounded-lg shadow-2xl p-6 relative"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Bouton X en haut à droite */}
+          {/* Close Button */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-red-500 text-xl font-bold"
@@ -114,29 +191,30 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
           {/* Content */}
           <div className="flex flex-col items-center gap-4 text-center mb-6">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              You just purchased{' '} <span className="text-sm text-secondary">Plot #{id}.</span> <br />
-
-              from the {' '} {name}
-
-
+              You just purchased{' '}
+              <span className="text-sm text-secondary">Plot #{id}.</span> <br />
+              from the {name}
             </p>
           </div>
 
-          <div className="flex flex items-center mb-4" style={{ placeSelf: 'center' }}>
+          <div
+            className="flex flex items-center mb-4"
+            style={{ placeSelf: 'center' }}
+          >
             <span className="font-medium text-sm text-gray-900 dark:text-white text-center">
               Share to...
             </span>
 
             <div className="flex items-center gap-1 ms-2">
               <button
-                onClick={() => window.open(twitterUrl, "_blank")}
+                onClick={() => window.open(twitterUrl, '_blank')}
                 className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
               >
                 <XIcon size={14} color="#7FC447" />
               </button>
 
               <button
-                onClick={() => window.open(warpcastUrl, "_blank")}
+                onClick={() => window.open(warpcastUrl, '_blank')}
                 className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
               >
                 <WarpcastIcon size={14} color="#7FC447" />
@@ -159,7 +237,6 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({ ima
               View Item on Portfolio
             </Link>
           </div>
-
         </div>
       </div>
     </>

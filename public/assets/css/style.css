@@ -14909,6 +14909,24 @@ filter: blur(4px);
             animation: fadeInUp 1s ease-out forwards;
         }
 
+/* Spinner for button */
+.btn-spinner {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  border: 2px solid #fff;
+  border-top: 2px solid #b5b5b5; /* primary color, tweak as needed */
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-right: 0.5em;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
   
 

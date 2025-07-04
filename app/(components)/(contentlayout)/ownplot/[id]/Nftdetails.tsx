@@ -41,7 +41,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [ethToUsd, setEthToUsd] = useState<number>(0);
     const { ready, authenticated } = usePrivy();
     const { login } = useLogin();
-
+    const BASE_CHAIN_ID = 8453;
     const [loading, setLoading] = useState(false);
     const [quantity, setQuantity] = useState(1);
     const [txHash, setTxHash] = useState("");
@@ -57,6 +57,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [error, setError] = useState(false);
     const [toastTitle, setToastTitle] = useState<string | null>(null);
     const STATIC_MINT_PRICE_ETH = 0.00001; // adjust as needed
+    const [isBuying, setIsBuying] = useState(false);
 
     const { isConnected } = useAccount();
     const [activeTab, setActiveTab] = useState("");
@@ -98,6 +99,23 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         legendary: "Legendary 1000m² Plot",
     };
 
+    const ensureBaseChain = async () => {
+        if (!walletClient) throw new Error("No wallet client");
+        const chainId = await walletClient.getChainId();
+        if (chainId !== BASE_CHAIN_ID) {
+            // Try switching. This will prompt MetaMask/Phantom if not already on Base
+            try {
+                await switchChainAsync({ chainId: BASE_CHAIN_ID });
+                return true;
+            } catch (err) {
+                setToastTitle("Wrong Network");
+                setToastMessage("Please switch your wallet to Base before minting.");
+                setShowToast(true);
+                return false;
+            }
+        }
+        return true;
+    };
     // Set initial tab based on initialTabId
     useEffect(() => {
         const tabName = tabIdToName[initialTabId] || "Standard 100m² Plot";
@@ -108,43 +126,58 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         try {
             setLoading(true);
 
+            // Check wallet/connection status
             if (!walletClient || !ready || !authenticated) {
                 login();
                 return;
             }
-            // ✅ Get address directly from walletClient
+            const onBase = await ensureBaseChain();
+            if (!onBase) {
+                setLoading(false);
+                return;
+            }
             const userAddress = walletClient.account.address;
 
-            // ✅ Use public RPC to read mint price (fix for embedded wallets)
+            // Use a public provider just to read contract state (mint price)
             const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
             const readSeaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, publicProvider);
             const publicDrop = await readSeaDrop.getPublicDrop(CONTRACT_ADDRESS);
 
-            const mintPrice = publicDrop.mintPrice;
+            const mintPrice = publicDrop.mintPrice; // should be a BigInt
             const totalPrice = mintPrice * BigInt(quantity);
-            console.log("✅ tx", CONTRACT_ADDRESS, SEADROP_CONDUIT, userAddress, quantity, totalPrice);
 
-            // 🔐 Now create signer from the user's actual wallet to send the tx
-            const provider = new ethers.BrowserProvider(walletClient.transport);
-            const signer = await provider.getSigner();
-
-            const seaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, signer);
-            const tx = await seaDrop.mintPublic(
+            // Prepare calldata for mintPublic
+            const iface = new ethers.Interface(SeaDropABI);
+            const calldata = iface.encodeFunctionData("mintPublic", [
                 CONTRACT_ADDRESS,
                 SEADROP_CONDUIT,
                 userAddress,
                 quantity,
-                { value: totalPrice }
-            );
-            const receipt = await tx.wait();
-            console.log("✅ Mint successful!");
-            setTxHash(receipt.hash);
+            ]) as `0x${string}`;
 
-            // 3. Extract all Transfer events from your NFT contract
+            // Debug: Print info before sending
+            console.log("Wallet Address:", userAddress);
+            console.log("ChainId (walletClient):", await walletClient.getChainId());
+            console.log("Mint Price:", mintPrice.toString());
+            console.log("Total Price (Wei):", totalPrice.toString());
+
+            // Send the transaction using walletClient (supports embedded/email wallets)
+            const txHash = await walletClient.sendTransaction({
+                account: walletClient.account,
+                to: SEADROP_ADDRESS,
+                value: totalPrice,
+                data: calldata,
+            });
+
+            // Wait for confirmation using a public provider
+            const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+            const receipt = await provider.waitForTransaction(txHash);
+
+            // Extract all Transfer events from your NFT contract
             const transferTopic = id("Transfer(address,address,uint256)");
             const mintedTokenIds: string[] = [];
-
-            for (const log of receipt.logs) {
+            if (!receipt) return
+            for (const log of receipt?.logs) {
                 if (
                     log.address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() &&
                     log.topics[0] === transferTopic &&
@@ -155,7 +188,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 }
             }
 
-            // 4. Show modal with all token IDs
+            // Show modal with all token IDs
             if (mintedTokenIds.length > 0) {
                 setModalData({
                     id: mintedTokenIds.join(", "), // "1896, 1897, 1898"
@@ -166,9 +199,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
 
         } catch (error: any) {
-            // Case 1: User rejected in wallet
-            console.error("❌ Mint failed:", error);
-
+            // Handle user rejection
             const rejected =
                 error?.code === 4001 ||
                 error?.message?.toLowerCase().includes("user rejected");
@@ -179,25 +210,23 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 setShowToast(true);
                 return;
             }
+            // Handle insufficient funds
             const insufficientFunds =
                 error?.code === "INSUFFICIENT_FUNDS" ||
                 error?.message?.toLowerCase().includes("insufficient funds");
-
             if (insufficientFunds) {
                 setToastTitle("Insufficient Funds");
                 setToastMessage("You need more ETH in your wallet to complete your mint.");
                 setShowToast(true);
-
                 return;
             }
 
-            // Case 2: Smart contract custom error
+            // Contract custom errors
             if (error?.data) {
                 try {
                     const iface = new ethers.Interface(SeaDropABI);
                     const parsed = iface.parseError(error.data);
                     const errorName = parsed?.name;
-
                     switch (errorName) {
                         case "IncorrectPayment":
                             setToastMessage("Incorrect payment amount.");
@@ -210,19 +239,20 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                         case "NotActive":
                             setToastMessage("Mint is not active right now.");
                             break;
-
                         default:
                             setToastMessage(`⚠️ Mint failed: ${errorName}`);
                     }
-
                     setShowToast(true);
                     return;
                 } catch (parseError) {
                     console.error("Could not parse contract error:", parseError);
                 }
             }
+
             setToastMessage("⚠️ Something went wrong. Please try again.");
             setShowToast(true);
+            console.error("❌ Mint failed:", error);
+
         } finally {
             setLoading(false);
         }
@@ -512,7 +542,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         fetchAvailableNfts();
     }, [isModalOpen, isFailureModalOpen]);
 
-     async function handleBuy(order: any, tier: "Legendary" | "Premium") {
+    async function handleBuy(order: any, tier: "Legendary" | "Premium") {
         if (!walletClient || !ready || !authenticated) {
             login();
             return;
@@ -530,6 +560,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
 
         try {
+            setIsBuying(true); // <--- Start transaction loader
+
             const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
             const buyerAddress = walletClient.account.address;
 
@@ -632,6 +664,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             setFailureImage(modalDataFailed.image);
             setActiveOrder(true)
             setFailureModalOpen(true);
+        } finally {
+            setIsBuying(false); // <--- Always stop transaction loader
         }
     }
 
@@ -859,6 +893,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     onClick={() => handleMintAbi(quantity)}
                                                     disabled={loading}
                                                 >
+                                                    {loading && (
+                                                        <span className="btn-spinner"></span>
+                                                    )}
                                                     {loading ? "Minting..." : "Mint Plot"}
                                                 </button>
 
@@ -902,7 +939,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     <p>
                                                         A <b>Tokenized 100 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                      Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -998,13 +1035,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
                                                     className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
                                                     style={{
-                                                        cursor: isLoadingFetchAvailable ? "not-allowed" : "pointer",
-                                                        userSelect: isLoadingFetchAvailable ? "none" : "auto"
+                                                        cursor: isBuying ? "not-allowed" : "pointer",
+                                                        userSelect: isBuying ? "none" : "auto"
                                                     }}
                                                     disabled={isLoadingFetchAvailable}
                                                 >
-                                                    {isLoadingFetchAvailable ? "Processing..." : "Buy Now"}
+                                                    {isBuying && (
+                                                        <span className="btn-spinner"></span>
+                                                    )}
+                                                    {isBuying ? "Processing..." : "Buy Now"}
                                                 </button>
+
 
                                             </div>
                                         </div>
@@ -1046,7 +1087,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     <p>
                                                         A <b>Tokenized 500 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                         Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -1125,7 +1166,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     </span>
                                                     bitgrass.base.eth
                                                 </div>
-                                                
+
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
                                                     <div
 
@@ -1148,7 +1189,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     }}
                                                     disabled={isLoadingFetchAvailable}
                                                 >
-                                                    {isLoadingFetchAvailable ? "Processing..." : "Buy Now"}
+                                                    {isBuying && (
+                                                        <span className="btn-spinner"></span>
+                                                    )}
+                                                    {isBuying ? "Processing..." : "Buy Now"}
 
                                                 </button>
 
@@ -1190,9 +1234,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <div className="mb-4">
                                                     <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
                                                     <p>
-                                                       A <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                        A <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                       Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
