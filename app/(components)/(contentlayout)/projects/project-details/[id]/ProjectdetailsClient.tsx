@@ -46,7 +46,7 @@ export default function ProjectDetails({ params }: Params) {
   useEffect(() => {
     const calculateDaysLeft = (): number => {
       const today: Date = new Date();
-      const targetDate: Date = new Date(today.getFullYear(), 6, 1); // July = 6 (zero-based)
+      const targetDate: Date = new Date(today.getFullYear(), 7, 23); 
 
       if (today > targetDate) {
         targetDate.setFullYear(targetDate.getFullYear() + 1);
@@ -142,14 +142,14 @@ export default function ProjectDetails({ params }: Params) {
                     Mint Plot
                   </Link>
 
-                  <div
+                  {/* <div
                     aria-label="anchor"
                     className="ti-btn ti-btn-icon ti-btn-primary"
                     onClick={() => setModalOpen(true)}
                     style={{ cursor: "pointer" }}
                   >
                     <i className="ri-share-line"></i>
-                  </div>
+                  </div> */}
                 </div>
                 <p className="mb-0">
                   <i className="bi bi-info-circle text-danger"></i>{' '}

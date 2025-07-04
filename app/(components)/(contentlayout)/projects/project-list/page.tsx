@@ -89,14 +89,16 @@ const Projectslist = () => {
                                     <table className="table table-hover whitespace-nowrap min-w-full">
                                         <thead>
                                             <tr>
-                                                <th scope="col" className="text-start">Project Name</th>
+                                                <th scope="col" className="text-start">Project</th>
+                                                <th scope="col" className="text-start">Project Status</th>
+                                                <th scope="col" className="text-start">Area</th>
                                                 <th scope="col" className="text-start">Standard</th>
                                                 <th scope="col" className="text-start">Country</th>
                                                 <th scope="col" className="text-start">Category</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredData.map((idx : any) => (
+                                            {filteredData.map((idx: any) => (
                                                 <tr
                                                     className="border-t hover:bg-gray-200 dark:hover:bg-light cursor-pointer"
                                                     key={idx.id}
@@ -117,13 +119,27 @@ const Projectslist = () => {
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <div className="flex items-center">
-                                                            <Link href="#!" scroll={false} className="font-semibold mb-0">{idx.text1}</Link>
-                                                        </div>
+                                                        <span
+                                                            className="badge rounded-full"
+                                                            style={{
+                                                                backgroundColor: idx.statusBgColor,
+                                                                color: idx.statusFontColor,
+                                                            }}
+                                                        >
+                                                            {idx.status}
+                                                        </span>
                                                     </td>
-                                                    <td>{idx.text3}</td>
+                                                    <td>{idx.area}</td>
+                                                    <td>{idx.standard}</td>
+                                                    <td>{idx.location}</td>
                                                     <td>
-                                                        <span className={`badge !rounded-full bg-${idx.color1}/10 text-${idx.color1}`}>{idx.text}</span>
+                                                        <span className={`badge rounded-full gap-2`} style={{ background: "#F3F6F8", color: "#333335" }}>
+
+                                                            <img
+                                                                src="../../../assets/images/svg/removal.svg"
+                                                                alt="status icon"
+                                                                className="w-4 h-4"
+                                                            />Removal</span>
                                                     </td>
 
                                                 </tr>
