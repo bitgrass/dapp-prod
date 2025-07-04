@@ -277,7 +277,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         do {
             try {
                 const url = new URL(`https://api.opensea.io/api/v2/listings/collection/${collection}/all`);
-                url.searchParams.set("limit", "100");
+                url.searchParams.set("limit", "10");
                 if (nextCursor) {
                     url.searchParams.set("next", nextCursor);
                 }
