@@ -1,39 +1,48 @@
 import React, { useState, useRef, useEffect } from "react";
 import { usePrivy, useLogin, useLogout, useWallets, ConnectedWallet } from '@privy-io/react-auth';
-import { useAccount, useBalance, useSendTransaction, useSwitchChain } from 'wagmi';
+import { useBalance, useSendTransaction, useSwitchChain } from 'wagmi';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import { parseEther } from 'viem';
 import { base } from 'wagmi/chains';
 import { Fragment } from 'react';
 import { btgToken, ETHToken } from "@/shared/data/tokens/data";
 import { useSetActiveWallet } from '@privy-io/wagmi';
-import { disconnect } from 'wagmi/actions';
 
 const WalletMenu: React.FC = () => {
   const { ready, authenticated, user, linkWallet, exportWallet } = usePrivy();
   const { login } = useLogin();
   const { logout } = useLogout();
   const { wallets } = useWallets();
-  const { address } = useAccount();
-  const { data: ethBalance } = useBalance({ address, chainId: base.id });
-  const { data: tokenBalance } = useBalance({ address, token: btgToken.address as any, chainId: base.id });
   const { sendTransactionAsync } = useSendTransaction();
   const { switchChainAsync } = useSwitchChain();
   const { setActiveWallet } = useSetActiveWallet();
 
   const [activePrivyWallet, setActivePrivyWallet] = useState<ConnectedWallet | null>(null);
 
+  // 1. Only use activePrivyWallet for address and balances!
+  const address = activePrivyWallet?.address as `0x${string}` || "";
+  const { data: ethBalance } = useBalance({ address, chainId: base.id });
+  const { data: tokenBalance } = useBalance({ address, token: btgToken.address as any, chainId: base.id });
+
+  // --- Wallet selection logic ---
   useEffect(() => {
-    if (!wallets.length) return;
+    if (!wallets.length) {
+      setActivePrivyWallet(null);
+      return;
+    }
     const external = wallets.find(w => w.walletClientType !== 'privy');
     const embedded = wallets.find(w => w.walletClientType === 'privy');
-    const walletToUse = external || embedded;
-    if (walletToUse) {
-      setActiveWallet(walletToUse);
-      setActivePrivyWallet(walletToUse);
+    if (external) {
+      setActivePrivyWallet(external);
+    } else if (embedded) {
+      setActiveWallet(embedded); // For embedded, call setActiveWallet.
+      setActivePrivyWallet(embedded);
+    } else {
+      setActivePrivyWallet(null);
     }
   }, [wallets, setActiveWallet]);
 
+  // --- UI State ---
   const popupRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [openPanel, setOpenPanel] = useState<null | 'fund' | 'send'>(null);
@@ -106,6 +115,7 @@ const WalletMenu: React.FC = () => {
     }
   }, [sendSuccess]);
 
+  // --- Actions ---
   const handleFund = async () => {
     setFundError('');
     if (!fundAmount || isNaN(Number(fundAmount)) || Number(fundAmount) <= 0) {
@@ -160,7 +170,6 @@ const WalletMenu: React.FC = () => {
       } else if (chainMismatch) {
         await switchChainAsync({ chainId: base.id });
       }
-
       const tx = await sendTransactionAsync({
         to: sendToAddress as `0x${string}`,
         value: parseEther(sendAmount),
@@ -188,7 +197,7 @@ const WalletMenu: React.FC = () => {
 
   const handlelLogout = async () => {
     await logout();
-    setOpen(false);  
+    setOpen(false);
     window.location.reload();
   };
 
