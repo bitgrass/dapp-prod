@@ -9,8 +9,8 @@ import { Initialload } from "@/shared/contextapi";
 import dynamic from "next/dynamic";
 
 // Dynamically import OnchainProviders to handle blockchain-specific functionality
-const OnchainProviders = dynamic(
-  () => import("../app/(components)/OnchainProviders"),
+const MiniKitContextProvider = dynamic(
+  () => import("./(components)/MiniKitContextProvider"),
   {
     ssr: false,
   }
@@ -25,9 +25,9 @@ const RootLayout = ({ children }: any) => {
         <Provider store={store}>
           <Initialload.Provider value={{ pageloading, setpageloading }}>
             {/* Wrap blockchain-specific components with OnchainProviders */}
-            <OnchainProviders>
+            <MiniKitContextProvider >
               {children}
-            </OnchainProviders>
+            </MiniKitContextProvider >
           </Initialload.Provider>
         </Provider>
         <PrelineScript />

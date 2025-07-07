@@ -9,6 +9,7 @@ import { base } from 'viem/chains';
 
 import { NEXT_PUBLIC_CDP_API_KEY } from './config';
 import { useWagmiConfig } from './wagmi';
+import { MiniKitProvider } from '@coinbase/onchainkit/minikit';
 
 const queryClient = new QueryClient();
 
@@ -63,7 +64,7 @@ export default function OnchainProviders({ children }: Props) {
     >
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
-          <OnchainKitProvider
+          <MiniKitProvider
             apiKey={NEXT_PUBLIC_CDP_API_KEY}
             chain={base}
             projectId="55dd698a-0763-4455-9c13-3db125f81623"
@@ -71,7 +72,7 @@ export default function OnchainProviders({ children }: Props) {
             <RainbowKitProvider modalSize="compact">
               {children}
             </RainbowKitProvider>
-          </OnchainKitProvider>
+          </MiniKitProvider>
         </WagmiProvider>
       </QueryClientProvider>
     </PrivyProvider>
