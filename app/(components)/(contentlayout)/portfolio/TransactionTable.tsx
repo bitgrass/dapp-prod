@@ -99,7 +99,7 @@ const TransactionTable = ({
                                     </div>
                                   ) : (
                                     <img
-                                      src="../../assets/images/apps/100m2.png"
+                                      src="../../assets/images/faces/faviconDark1.png"
                                       alt={tx.type}
                                       className="avatar avatar-rounded ml-4"
                                     />
