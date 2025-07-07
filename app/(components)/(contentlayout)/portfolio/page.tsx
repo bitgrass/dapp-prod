@@ -33,6 +33,7 @@ const Crypto = () => {
   const [nftData, setNftData] = useState<any[]>([]);
   const [nftCursor, setNftCursor] = useState(null);
   const [activeTab, setActiveTab] = useState("crypto-tab-pane");
+  const [pageNumber, setPageNumber] = useState<number>(1)
 
   // Fetch ETH Data (unchanged)
   useEffect(() => {
@@ -130,7 +131,7 @@ const Crypto = () => {
   }, [address]);
 
   // Fetch Crypto Transactions (unchanged)
-  const fetchCryptoTransactions = async (cursor = null, limit = 5) => {
+  const fetchCryptoTransactions = async (cursor = null, limit = 10) => {
     if (!address) return;
     try {
       const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
@@ -173,7 +174,7 @@ const Crypto = () => {
   };
 
   // Fetch NFT Transactions (unchanged)
-  const fetchNftTransactions = async (cursor = null, limit = 5) => {
+  const fetchNftTransactions = async (cursor = null, limit = 10) => {
     if (!address) return;
     try {
       const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
@@ -197,15 +198,27 @@ const Crypto = () => {
 
       const nftTransactions = response.data.result
         .filter((tx: any) => tx.token_address.toLowerCase() === nftInfo.address.toLowerCase()) // Filter by token_address
-        .map((tx: any) => ({
-          type: "nft",
-          transaction: "NFT Minted",
-          value: `+${tx.amount || 1} NFT(s)`,
-          grayValue: `NFT ID: ${tx.token_id}`,
-          date: new Date(tx.block_timestamp).toLocaleString(),
-          timestamp: new Date(tx.block_timestamp).getTime(),
-          transactionHash: tx.transaction_hash,
-        }));
+        .map((tx: any) => {
+          const tokenId = parseInt(tx.token_id); // Assure que token_id est un nombre
+          let transactionType = "Standard 100m² NFT";
+
+          if (tokenId >= 1 && tokenId <= 400) {
+            transactionType = "Legendary 1000m² NFT";
+          } else if (tokenId >= 401 && tokenId <= 1200) {
+            transactionType = "Premium 500m² NFT";
+          }
+
+          return {
+            type: "nft",
+            transaction: transactionType,
+            value: `+${tx.amount || 1} NFT(s)`,
+            grayValue: `NFT ID: ${tx.token_id}`,
+            date: new Date(tx.block_timestamp).toLocaleString(),
+            timestamp: new Date(tx.block_timestamp).getTime(),
+            transactionHash: tx.transaction_hash,
+          };
+        });
+
 
       setTransactions((prev) => [...prev, ...nftTransactions]);
       setNftTransactionCursor(response.data.cursor || null);
@@ -265,18 +278,24 @@ const Crypto = () => {
     }
   };
 
-  // Load More based on Active Tab (updated)
   const loadMore = () => {
     if (activeTab === "transactions-tab-pane") {
-      // Load more crypto or NFT transactions only if their cursors are not null
       const promises = [];
+
       if (transactionCursor) {
-        promises.push(fetchCryptoTransactions(transactionCursor, 5));
+        promises.push(fetchCryptoTransactions(transactionCursor, 10));
       }
       if (nftTransactionCursor) {
-        promises.push(fetchNftTransactions(nftTransactionCursor, 5));
+        promises.push(fetchNftTransactions(nftTransactionCursor, 10));
       }
-      Promise.all(promises);
+
+      Promise.all(promises)
+        .then(() => {
+          setPageNumber(prev => prev + 1);
+        })
+        .catch(error => {
+          console.error("Error loading transactions:", error);
+        });
     } else if (activeTab === "nfts-tab-pane") {
       fetchNfts(nftCursor, 4);
     }
@@ -291,8 +310,8 @@ const Crypto = () => {
       setNftData([]);
       setNftCursor(null);
       Promise.all([
-        fetchCryptoTransactions(null, 5),
-        fetchNftTransactions(null, 5),
+        fetchCryptoTransactions(null, 10),
+        fetchNftTransactions(null, 10),
         fetchNfts(null, 4),
       ]);
     }
@@ -372,7 +391,13 @@ const Crypto = () => {
             <PortfolioTabs
               activeTab={activeTab}
               setActiveTab={setActiveTab}
-              transactions={transactions.sort((a, b) => b.timestamp - a.timestamp)}
+              transactions={
+                (transactionCursor || nftTransactionCursor)
+                  ? transactions
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .slice(0, pageNumber * 5)
+                  : transactions.sort((a, b) => b.timestamp - a.timestamp)
+              }
               transactionCursor={transactionCursor}
               nftTransactionCursor={nftTransactionCursor} // Pass the NFT transaction cursor
               nftData={nftData}

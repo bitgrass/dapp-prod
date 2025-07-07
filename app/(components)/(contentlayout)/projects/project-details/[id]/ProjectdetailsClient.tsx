@@ -127,7 +127,7 @@ export default function ProjectDetails({ params }: Params) {
                         scroll={false}
                         className="badge me-2 !rounded-full bg-secondary/10 text-secondary"
                       >
-                        <i className="bi bi-clock me-1"></i>Status {project.status}
+                        <i className="bi bi-clock me-1"></i>{project.status}
                       </Link>
                     </div>
                   </div>
