@@ -192,7 +192,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             if (mintedTokenIds.length > 0) {
                 setModalData({
                     id: mintedTokenIds.join(", "), // "1896, 1897, 1898"
-                    image: "/assets/images/apps/100m2.jpg",
+                    image: "/assets/images/apps/100m2.webp",
                     name: `Bitgrass - Standard Collection`,
                 });
                 setIsStandardMintModalOpen(true);
@@ -771,7 +771,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             currentItem = sortedPremiumItems[0];
             return {
                 id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
-                image: "/assets/images/apps/500m2.jpg",
+                image: "/assets/images/apps/500m2.webp",
                 name: "Bitgrass - Premium Collection"
             };
         }
@@ -780,14 +780,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             currentItem = sortedLegendaryItems[0];
             return {
                 id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
-                image: "/assets/images/apps/1000m2.jpg",
+                image: "/assets/images/apps/1000m2.webp",
                 name: "Bitgrass - Legendary Collection"
             };
         }
 
         return {
             id: "0",
-            image: activeTab === "Premium 500m² Plot" ? "/assets/images/apps/500m2.jpg" : activeTab === "Legendary 1000m² Plot" ? "/assets/images/apps/1000m2.jpg" : "/assets/images/apps/100m2.jpg",
+            image: activeTab === "Premium 500m² Plot" ? "/assets/images/apps/500m2.webp" : activeTab === "Legendary 1000m² Plot" ? "/assets/images/apps/1000m2.webp" : "/assets/images/apps/100m2.webp",
             name: activeTab === "Premium 500m² Plot" ? "Bitgrass - Premium Collection" : activeTab === "Legendary 1000m² Plot" ? "Bitgrass - Legendary Collection" : "Bitgrass NFT Collection – Standard",
         };
     };
