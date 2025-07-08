@@ -811,7 +811,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             <div className="container">
                 <div className="container">
                     {/* Tabs Header */}
-                    <div className="flex gap-4 mt-6 p-[1.25rem]">
+                    <div className="flex gap-[2rem] mt-6 p-[1.25rem]">
                         {tabList.map((tab) => (
                             <Link
                                 key={tab}
@@ -820,7 +820,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             >
                                 <button
                                     onClick={() => handleTabChange(tab)}
-                                    className={`text-sm px-4 py-2 font-semibold ${activeTab === tab
+                                    className={`text-sm py-2 font-semibold ${activeTab === tab
                                         ? "border-b-2 border-primary text-primary"
                                         : ""
                                         }`}
@@ -858,9 +858,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         />
                                                     </div>
                                                 </div>
-                                                <div className="text-center my-2">
+                                                <div className="flex items-center justify-center gap-2 my-4">
                                                     <p className="text-lg font-semibold">{mintPriceEth} ETH</p>
-                                                    <p className="text-sm text-gray-500">~ ${mintPriceUsd} USD</p>
+                                                    <span className="text-gray-400">|</span>
+                                                    <p className="text-[0.8rem] text-[#8C9097]">~ ${mintPriceUsd} USD</p>
                                                 </div>
                                                 <div className="w-full h-full flex items-center justify-between" style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
                                                     <button
@@ -903,39 +904,34 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
-                                                <p className="text-[1.125rem] font-semibold mb-0">
+                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0" style={{ fontSize: "22px" }}>
                                                     Bitgrass NFT Collection – Standard 100m² NFT
-                                                </p>
-                                                <p className="text-[1.125rem] mb-4">
-                                                    <i className="ri-circle-fill text-success align-middle"></i>
-                                                    <span className="font-semibold dark:text-white/50">
-                                                        <Link className="text-[0.875rem] ms-2" href="#!" scroll={false}>
-                                                            Live on July 27, 2025
-                                                        </Link>
-                                                    </span>
                                                 </p>
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Price</p>
-                                                        <div className="flex items-center font-semibold">
-                                                            <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="/assets/images/brand-logos/eth.png" alt="" />
+                                                        <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Price</p>
+                                                        <div className="flex items-center font-semibold" style={{ fontSize: "22px" }}>
+                                                            <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
+                                                                <img src="/assets/images/faces/eth.svg" alt="" />
                                                             </span>
                                                             0.05 ETH
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
+                                                        <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
-                                                            <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
+                                                            <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
-                                                            Up to 0.1 tCO2 /year
+                                                            Up to &nbsp;
+                                                            <span className="font-semibold" style={{ fontSize: "22px" }}>
+                                                                0.1 tCO2 /year
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div className="mb-4">
-                                                    <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
+                                                    <p className="text-[0.8rem] text-[#8C9097]  mb-1">Description :</p>
                                                     <p>
                                                         A <b>Tokenized 100 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
@@ -947,43 +943,46 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         <div className="xxl:col-span-4 col-span-12">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path>
-                                                                        <path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M29.9999 29.0502H1.99994C1.63994 29.0502 1.29994 28.8602 1.09994 28.5502C0.909944 28.2402 0.889944 27.8502 1.04994 27.5302L5.04994 19.5302C5.22994 19.1702 5.58994 18.9502 5.98994 18.9502H12.2899C12.8699 18.9502 13.3399 19.4202 13.3399 20.0002C13.3399 20.5802 12.8699 21.0502 12.2899 21.0502H6.63994L3.68994 26.9402H28.2799L25.0399 20.4602C24.7799 19.9402 24.9899 19.3102 25.5099 19.0502C26.0299 18.7902 26.6599 19.0002 26.9199 19.5202L30.9199 27.5202C31.0799 27.8502 31.0699 28.2302 30.8699 28.5402C30.6799 28.8502 30.3399 29.0402 29.9699 29.0402L29.9999 29.0502ZM19.4999 24.5502C19.2099 24.5502 18.9399 24.4302 18.7399 24.2202C18.4399 23.9102 11.5099 16.4802 11.5099 10.4502C11.5099 6.0402 15.0999 2.4502 19.5099 2.4502C23.9199 2.4502 27.5099 5.9602 27.5099 10.4502C27.5099 16.5902 20.5699 23.9202 20.2699 24.2302C20.0699 24.4402 19.7999 24.5602 19.5099 24.5602L19.4999 24.5502ZM19.4999 4.5502C16.2499 4.5502 13.6099 7.1902 13.6099 10.4402C13.6099 14.5702 17.7599 19.8602 19.5099 21.9102C21.2599 19.8802 25.3999 14.6402 25.3999 10.4402C25.3999 7.1302 22.8099 4.5502 19.5099 4.5502H19.4999ZM19.4999 14.0302C17.4699 14.0302 15.8199 12.3802 15.8199 10.3502C15.8199 8.3202 17.4699 6.6702 19.4999 6.6702C21.5299 6.6702 23.1799 8.3202 23.1799 10.3502C23.1799 12.3802 21.5299 14.0302 19.4999 14.0302ZM19.4999 8.7602C18.6299 8.7602 17.9199 9.4702 17.9199 10.3402C17.9199 11.2102 18.6299 11.9202 19.4999 11.9202C20.3699 11.9202 21.0799 11.2102 21.0799 10.3402C21.0799 9.4702 20.3699 8.7602 19.4999 8.7602Z" fill="rgb(var(--primary))" />
                                                                     </svg>
-                                                                </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Proof of Ownership</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
-                                                            <div className="ecommerce-assurance">
-                                                                <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="m20.26,14h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-4.5-6c-.38-.5-1.22-.5-1.6,0l-2.2,2.93-2.2-2.93c-.38-.5-1.22-.5-1.6,0l-4.5,6c-.23.3-.26.71-.09,1.05s.52.55.89.55l-1.8,2.4c-.23.3-.26.71-.09,1.05s.52.55.89.55h.2l-1.54,2.47c-.19.31-.2.7-.03,1.01.18.32.51.52.87.52h5v4h2v-4h4v4h2v-4h5c.37,0,.7-.2.88-.52.18-.32.16-.71-.04-1.02l-1.58-2.46Zm-15.46,2l1.54-2.47c.19-.31.2-.7.03-1.01-.18-.32-.51-.52-.87-.52l1.8-2.4c.23-.3.26-.71.09-1.05s-.52-.55-.89-.55l2.5-3.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46H4.8Zm10.74,0l-1.29-2h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.05-1.4,1.75-2.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46h-3.62Z"></path>
-                                                                    </svg>
+
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Backed by Real Land</p>
+                                                                <p>  Each NFT is tied to real land</p>
                                                             </div>
                                                         </div>
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path>
-                                                                        <path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path>
-                                                                        <path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path>
-                                                                        <path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path>
-                                                                        <path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path>
-                                                                        <path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M23 11.1962V10.5C23 7.365 18.2712 5 12 5C5.72875 5 1 7.365 1 10.5V15.5C1 18.1112 4.28125 20.1863 9 20.8075V21.5C9 24.635 13.7288 27 20 27C26.2712 27 31 24.635 31 21.5V16.5C31 13.9125 27.8225 11.835 23 11.1962ZM29 16.5C29 18.1525 25.1512 20 20 20C19.5337 20 19.0712 19.9838 18.615 19.9538C21.3112 18.9713 23 17.375 23 15.5V13.2175C26.7338 13.7737 29 15.2838 29 16.5ZM9 18.7812V15.8075C9.99472 15.9371 10.9969 16.0014 12 16C13.0031 16.0014 14.0053 15.9371 15 15.8075V18.7812C14.0068 18.928 13.004 19.0011 12 19C10.996 19.0011 9.99324 18.928 9 18.7812ZM21 13.7413V15.5C21 16.5488 19.4488 17.675 17 18.3587V15.4375C18.6137 15.0462 19.98 14.4638 21 13.7413ZM12 7C17.1512 7 21 8.8475 21 10.5C21 12.1525 17.1512 14 12 14C6.84875 14 3 12.1525 3 10.5C3 8.8475 6.84875 7 12 7ZM3 15.5V13.7413C4.02 14.4638 5.38625 15.0462 7 15.4375V18.3587C4.55125 17.675 3 16.5488 3 15.5ZM11 21.5V20.9788C11.3288 20.9913 11.6612 21 12 21C12.485 21 12.9587 20.9837 13.4237 20.9562C13.9403 21.1412 14.4665 21.2981 15 21.4263V24.3587C12.5512 23.675 11 22.5488 11 21.5ZM17 24.7812V21.8C17.9944 21.9337 18.9967 22.0005 20 22C21.0031 22.0014 22.0053 21.9371 23 21.8075V24.7812C21.0106 25.0729 18.9894 25.0729 17 24.7812ZM25 24.3587V21.4375C26.6137 21.0462 27.98 20.4637 29 19.7412V21.5C29 22.5488 27.4488 23.675 25 24.3587Z" fill="rgb(var(--primary))" />
                                                                     </svg>
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Community Governance</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0">$BTG Rewards</p>
+                                                                <p>Earn $BTG via Vesting</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
+                                                            <div className="ecommerce-assurance">
+                                                                <p className="mb-4 !inline-flex">
+
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M30.9536 5.98633C30.9393 5.74168 30.8357 5.5108 30.6624 5.33752C30.4891 5.16424 30.2583 5.06061 30.0136 5.04633C23.5436 4.67133 18.3486 6.63883 16.1161 10.3238C14.6411 12.7601 14.6436 15.7188 16.0961 18.5413C15.2694 19.5255 14.6652 20.6768 14.3249 21.9163L12.2911 19.8751C13.2686 17.8338 13.2311 15.7063 12.1661 13.9388C10.5161 11.2151 6.70737 9.75508 1.97862 10.0326C1.73398 10.0469 1.5031 10.1505 1.32982 10.3238C1.15653 10.4971 1.05291 10.7279 1.03862 10.9726C0.759874 15.7013 2.22112 19.5101 4.94487 21.1601C5.84371 21.7092 6.87656 21.9999 7.92987 22.0001C8.95225 21.9875 9.95872 21.7453 10.8749 21.2913L13.9999 24.4163V28.0001C13.9999 28.2653 14.1052 28.5196 14.2928 28.7072C14.4803 28.8947 14.7347 29.0001 14.9999 29.0001C15.2651 29.0001 15.5194 28.8947 15.707 28.7072C15.8945 28.5196 15.9999 28.2653 15.9999 28.0001V24.3138C15.9954 22.7229 16.5368 21.1787 17.5336 19.9388C18.8198 20.611 20.2463 20.9707 21.6974 20.9888C23.1003 20.9934 24.4773 20.6101 25.6761 19.8813C29.3611 17.6513 31.3336 12.4563 30.9536 5.98633ZM5.97612 19.4501C4.05862 18.2888 2.97362 15.5401 2.99987 12.0001C6.53987 11.9701 9.28862 13.0588 10.4499 14.9763C11.0561 15.9763 11.1549 17.1426 10.7574 18.3438L7.70612 15.2926C7.51706 15.113 7.26531 15.0143 7.00455 15.0176C6.74379 15.021 6.49465 15.126 6.31025 15.3104C6.12584 15.4948 6.02077 15.744 6.01744 16.0048C6.0141 16.2655 6.11275 16.5173 6.29237 16.7063L9.34362 19.7576C8.14237 20.1551 6.97738 20.0563 5.97612 19.4501ZM24.6399 18.1726C22.9649 19.1863 20.9961 19.2638 18.9961 18.4226L25.7074 11.7101C25.887 11.521 25.9857 11.2693 25.9823 11.0085C25.979 10.7477 25.8739 10.4986 25.6895 10.3142C25.5051 10.1298 25.256 10.0247 24.9952 10.0214C24.7344 10.018 24.4827 10.1167 24.2936 10.2963L17.5811 17.0001C16.7361 15.0001 16.8124 13.0301 17.8311 11.3563C19.5736 8.48133 23.7061 6.87883 28.9974 7.00258C29.1174 12.2926 27.5174 16.4301 24.6399 18.1726Z" fill="rgb(var(--primary))" />
+                                                                    </svg>
+
+                                                                </p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0">NFT staking</p>
+                                                                <p>Earn TCO₂ starting in 2026</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[.9375rem] font-semibold mb-2">NFT Details :</p>
+                                                    <p className="text-[0.8rem] text-[#8C9097]  mb-2">NFT Details :</p>
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered whitespace-nowrap min-w-full">
                                                             <tbody>
@@ -991,8 +990,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Standard</td></tr>
                                                                 <tr><th className="font-semibold text-start">Standard Supply</th><td>2000 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>100 m² (each NFT corresponds to a real land plot)</td></tr>
-                                                                <tr><th className="font-semibold text-start">Carbon Generation</th><td>Stake NFTs to earn TCO₂ starting in 2026.  </td></tr>
-                                                                <tr><th className="font-semibold text-start">$BTG Reward</th><td>Early invetors earn $BTG via Vesting.</td></tr>
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -1051,39 +1048,34 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
-                                                <p className="text-[1.125rem] font-semibold mb-0">
+                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0" style={{ fontSize: "22px" }}>
                                                     Bitgrass NFT Collection – Premium 500m² NFT
-                                                </p>
-                                                <p className="text-[1.125rem] mb-4">
-                                                    <i className="ri-circle-fill text-success align-middle"></i>
-                                                    <span className="font-semibold dark:text-white/50">
-                                                        <Link className="text-[0.875rem] ms-2" href="#!" scroll={false}>
-                                                            Live on July 27, 2025
-                                                        </Link>
-                                                    </span>
                                                 </p>
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Price</p>
-                                                        <div className="flex items-center font-semibold">
-                                                            <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="/assets/images/brand-logos/eth.png" alt="" />
+                                                        <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Price</p>
+                                                        <div className="flex items-center font-semibold" style={{ fontSize: "22px" }}>
+                                                            <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
+                                                                <img src="/assets/images/faces/eth.svg" alt="" />
                                                             </span>
                                                             0.2 ETH
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
+                                                        <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
-                                                            <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
+                                                            <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
-                                                            Up to 0.5 tCO2 /year
+                                                            Up to &nbsp;
+                                                            <span className="font-semibold" style={{ fontSize: "22px" }}>
+                                                                0.5 tCO2 /year
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div className="mb-4">
-                                                    <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
+                                                    <p className="text-[0.8rem] text-[#8C9097] mb-1">Description :</p>
                                                     <p>
                                                         A <b>Tokenized 500 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
@@ -1095,43 +1087,46 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         <div className="xxl:col-span-4 col-span-12">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path>
-                                                                        <path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M29.9999 29.0502H1.99994C1.63994 29.0502 1.29994 28.8602 1.09994 28.5502C0.909944 28.2402 0.889944 27.8502 1.04994 27.5302L5.04994 19.5302C5.22994 19.1702 5.58994 18.9502 5.98994 18.9502H12.2899C12.8699 18.9502 13.3399 19.4202 13.3399 20.0002C13.3399 20.5802 12.8699 21.0502 12.2899 21.0502H6.63994L3.68994 26.9402H28.2799L25.0399 20.4602C24.7799 19.9402 24.9899 19.3102 25.5099 19.0502C26.0299 18.7902 26.6599 19.0002 26.9199 19.5202L30.9199 27.5202C31.0799 27.8502 31.0699 28.2302 30.8699 28.5402C30.6799 28.8502 30.3399 29.0402 29.9699 29.0402L29.9999 29.0502ZM19.4999 24.5502C19.2099 24.5502 18.9399 24.4302 18.7399 24.2202C18.4399 23.9102 11.5099 16.4802 11.5099 10.4502C11.5099 6.0402 15.0999 2.4502 19.5099 2.4502C23.9199 2.4502 27.5099 5.9602 27.5099 10.4502C27.5099 16.5902 20.5699 23.9202 20.2699 24.2302C20.0699 24.4402 19.7999 24.5602 19.5099 24.5602L19.4999 24.5502ZM19.4999 4.5502C16.2499 4.5502 13.6099 7.1902 13.6099 10.4402C13.6099 14.5702 17.7599 19.8602 19.5099 21.9102C21.2599 19.8802 25.3999 14.6402 25.3999 10.4402C25.3999 7.1302 22.8099 4.5502 19.5099 4.5502H19.4999ZM19.4999 14.0302C17.4699 14.0302 15.8199 12.3802 15.8199 10.3502C15.8199 8.3202 17.4699 6.6702 19.4999 6.6702C21.5299 6.6702 23.1799 8.3202 23.1799 10.3502C23.1799 12.3802 21.5299 14.0302 19.4999 14.0302ZM19.4999 8.7602C18.6299 8.7602 17.9199 9.4702 17.9199 10.3402C17.9199 11.2102 18.6299 11.9202 19.4999 11.9202C20.3699 11.9202 21.0799 11.2102 21.0799 10.3402C21.0799 9.4702 20.3699 8.7602 19.4999 8.7602Z" fill="rgb(var(--primary))" />
                                                                     </svg>
-                                                                </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Proof of Ownership</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
-                                                            <div className="ecommerce-assurance">
-                                                                <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="m20.26,14h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-4.5-6c-.38-.5-1.22-.5-1.6,0l-2.2,2.93-2.2-2.93c-.38-.5-1.22-.5-1.6,0l-4.5,6c-.23.3-.26.71-.09,1.05s.52.55.89.55l-1.8,2.4c-.23.3-.26.71-.09,1.05s.52.55.89.55h.2l-1.54,2.47c-.19.31-.2.7-.03,1.01.18.32.51.52.87.52h5v4h2v-4h4v4h2v-4h5c.37,0,.7-.2.88-.52.18-.32.16-.71-.04-1.02l-1.58-2.46Zm-15.46,2l1.54-2.47c.19-.31.2-.7.03-1.01-.18-.32-.51-.52-.87-.52l1.8-2.4c.23-.3.26-.71.09-1.05s-.52-.55-.89-.55l2.5-3.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46H4.8Zm10.74,0l-1.29-2h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.05-1.4,1.75-2.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46h-3.62Z"></path>
-                                                                    </svg>
+
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Backed by Real Land</p>
+                                                                <p>  Each NFT is tied to real land</p>
                                                             </div>
                                                         </div>
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path>
-                                                                        <path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path>
-                                                                        <path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path>
-                                                                        <path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path>
-                                                                        <path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path>
-                                                                        <path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M23 11.1962V10.5C23 7.365 18.2712 5 12 5C5.72875 5 1 7.365 1 10.5V15.5C1 18.1112 4.28125 20.1863 9 20.8075V21.5C9 24.635 13.7288 27 20 27C26.2712 27 31 24.635 31 21.5V16.5C31 13.9125 27.8225 11.835 23 11.1962ZM29 16.5C29 18.1525 25.1512 20 20 20C19.5337 20 19.0712 19.9838 18.615 19.9538C21.3112 18.9713 23 17.375 23 15.5V13.2175C26.7338 13.7737 29 15.2838 29 16.5ZM9 18.7812V15.8075C9.99472 15.9371 10.9969 16.0014 12 16C13.0031 16.0014 14.0053 15.9371 15 15.8075V18.7812C14.0068 18.928 13.004 19.0011 12 19C10.996 19.0011 9.99324 18.928 9 18.7812ZM21 13.7413V15.5C21 16.5488 19.4488 17.675 17 18.3587V15.4375C18.6137 15.0462 19.98 14.4638 21 13.7413ZM12 7C17.1512 7 21 8.8475 21 10.5C21 12.1525 17.1512 14 12 14C6.84875 14 3 12.1525 3 10.5C3 8.8475 6.84875 7 12 7ZM3 15.5V13.7413C4.02 14.4638 5.38625 15.0462 7 15.4375V18.3587C4.55125 17.675 3 16.5488 3 15.5ZM11 21.5V20.9788C11.3288 20.9913 11.6612 21 12 21C12.485 21 12.9587 20.9837 13.4237 20.9562C13.9403 21.1412 14.4665 21.2981 15 21.4263V24.3587C12.5512 23.675 11 22.5488 11 21.5ZM17 24.7812V21.8C17.9944 21.9337 18.9967 22.0005 20 22C21.0031 22.0014 22.0053 21.9371 23 21.8075V24.7812C21.0106 25.0729 18.9894 25.0729 17 24.7812ZM25 24.3587V21.4375C26.6137 21.0462 27.98 20.4637 29 19.7412V21.5C29 22.5488 27.4488 23.675 25 24.3587Z" fill="rgb(var(--primary))" />
                                                                     </svg>
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Community Governance</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0">$BTG Rewards</p>
+                                                                <p>Earn $BTG via Vesting</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
+                                                            <div className="ecommerce-assurance">
+                                                                <p className="mb-4 !inline-flex">
+
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M30.9536 5.98633C30.9393 5.74168 30.8357 5.5108 30.6624 5.33752C30.4891 5.16424 30.2583 5.06061 30.0136 5.04633C23.5436 4.67133 18.3486 6.63883 16.1161 10.3238C14.6411 12.7601 14.6436 15.7188 16.0961 18.5413C15.2694 19.5255 14.6652 20.6768 14.3249 21.9163L12.2911 19.8751C13.2686 17.8338 13.2311 15.7063 12.1661 13.9388C10.5161 11.2151 6.70737 9.75508 1.97862 10.0326C1.73398 10.0469 1.5031 10.1505 1.32982 10.3238C1.15653 10.4971 1.05291 10.7279 1.03862 10.9726C0.759874 15.7013 2.22112 19.5101 4.94487 21.1601C5.84371 21.7092 6.87656 21.9999 7.92987 22.0001C8.95225 21.9875 9.95872 21.7453 10.8749 21.2913L13.9999 24.4163V28.0001C13.9999 28.2653 14.1052 28.5196 14.2928 28.7072C14.4803 28.8947 14.7347 29.0001 14.9999 29.0001C15.2651 29.0001 15.5194 28.8947 15.707 28.7072C15.8945 28.5196 15.9999 28.2653 15.9999 28.0001V24.3138C15.9954 22.7229 16.5368 21.1787 17.5336 19.9388C18.8198 20.611 20.2463 20.9707 21.6974 20.9888C23.1003 20.9934 24.4773 20.6101 25.6761 19.8813C29.3611 17.6513 31.3336 12.4563 30.9536 5.98633ZM5.97612 19.4501C4.05862 18.2888 2.97362 15.5401 2.99987 12.0001C6.53987 11.9701 9.28862 13.0588 10.4499 14.9763C11.0561 15.9763 11.1549 17.1426 10.7574 18.3438L7.70612 15.2926C7.51706 15.113 7.26531 15.0143 7.00455 15.0176C6.74379 15.021 6.49465 15.126 6.31025 15.3104C6.12584 15.4948 6.02077 15.744 6.01744 16.0048C6.0141 16.2655 6.11275 16.5173 6.29237 16.7063L9.34362 19.7576C8.14237 20.1551 6.97738 20.0563 5.97612 19.4501ZM24.6399 18.1726C22.9649 19.1863 20.9961 19.2638 18.9961 18.4226L25.7074 11.7101C25.887 11.521 25.9857 11.2693 25.9823 11.0085C25.979 10.7477 25.8739 10.4986 25.6895 10.3142C25.5051 10.1298 25.256 10.0247 24.9952 10.0214C24.7344 10.018 24.4827 10.1167 24.2936 10.2963L17.5811 17.0001C16.7361 15.0001 16.8124 13.0301 17.8311 11.3563C19.5736 8.48133 23.7061 6.87883 28.9974 7.00258C29.1174 12.2926 27.5174 16.4301 24.6399 18.1726Z" fill="rgb(var(--primary))" />
+                                                                    </svg>
+
+                                                                </p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0">NFT staking</p>
+                                                                <p>Earn TCO₂ starting in 2026</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[.9375rem] font-semibold mb-2">NFT Details :</p>
+                                                    <p className="text-[0.8rem] text-[#8C9097] mb-2">NFT Details :</p>
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered whitespace-nowrap min-w-full">
                                                             <tbody>
@@ -1139,8 +1134,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Premium</td></tr>
                                                                 <tr><th className="font-semibold text-start">Premium Supply</th><td>800 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>500 m² (each NFT corresponds to a real land plot)</td></tr>
-                                                                <tr><th className="font-semibold text-start">Carbon Generation</th><td>Stake NFTs to earn TCO₂ starting in 2026.</td></tr>
-                                                                <tr><th className="font-semibold text-start">$BTG Reward</th><td>Early invetors earn $BTG via Vesting.</td></tr>
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -1200,39 +1193,34 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
-                                                <p className="text-[1.125rem] font-semibold mb-0">
+                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0" style={{ fontSize: "22px" }}>
                                                     Bitgrass NFT Collection – Legendary 1000m² NFT
-                                                </p>
-                                                <p className="text-[1.125rem] mb-4">
-                                                    <i className="ri-circle-fill text-success align-middle"></i>
-                                                    <span className="font-semibold dark:text-white/50">
-                                                        <Link className="text-[0.875rem] ms-2" href="#!" scroll={false}>
-                                                            Live on July 27, 2025
-                                                        </Link>
-                                                    </span>
                                                 </p>
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Price</p>
-                                                        <div className="flex items-center font-semibold">
-                                                            <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
-                                                                <img src="/assets/images/brand-logos/eth.png" alt="" />
+                                                        <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Price</p>
+                                                        <div className="flex items-center font-semibold" style={{ fontSize: "22px" }}>
+                                                            <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
+                                                                <img src="/assets/images/faces/eth.svg" alt="" />
                                                             </span>
                                                             0.35 ETH
                                                         </div>
                                                     </div>
                                                     <div className="xxl:col-span-4 xl:col-span-6 col-span-12 xxl:mt-0 mt-4">
-                                                        <p className="mb-1 text-[.9375rem] font-semibold">Carbon Removal Potential</p>
+                                                        <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Carbon Removal Potential</p>
                                                         <div className="flex items-center font-semibold">
-                                                            <span className="avatar avatar-xs avatar-rounded leading-none me-1 mt-1">
+                                                            <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
-                                                            Up to 1.0 tCO2 /year
+                                                            Up to &nbsp;
+                                                            <span className="font-semibold" style={{ fontSize: "22px" }}>
+                                                                1.0 tCO2 /year
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div className="mb-4">
-                                                    <p className="text-[.9375rem] font-semibold mb-1">Description :</p>
+                                                    <p className="text-[0.8rem] text-[#8C9097] mb-1">Description :</p>
                                                     <p>
                                                         A <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
                                                         <br />
@@ -1244,43 +1232,46 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         <div className="xxl:col-span-4 col-span-12">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="M13.08 8.63 12 6.44 10.92 8.63 8.5 8.98 10.25 10.69 9.84 13.1 12 11.96 14.16 13.1 13.75 10.69 15.5 8.98 13.08 8.63z"></path>
-                                                                        <path d="m17.16,3.01c-.36-.62-1.02-1.01-1.74-1.01h-6.84c-.72,0-1.38.39-1.74,1.01l-3.43,6c-.35.61-.35,1.37,0,1.98l3.43,6c.04.08.1.14.16.2v3.8c0,.35.18.67.47.85.29.18.66.2.97.04l3.55-1.78,3.55,1.78c.14.07.29.11.45.11.18,0,.37-.05.53-.15.29-.18.47-.5.47-.85v-3.8c.05-.07.11-.13.16-.2l3.43-6c.35-.61.35-1.37,0-1.98l-3.43-6Zm-1.74,12.99h-6.84l-3.43-6,3.43-6v-1s0,1,0,1h6.84l3.43,6-3.43,6Z"></path>
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M29.9999 29.0502H1.99994C1.63994 29.0502 1.29994 28.8602 1.09994 28.5502C0.909944 28.2402 0.889944 27.8502 1.04994 27.5302L5.04994 19.5302C5.22994 19.1702 5.58994 18.9502 5.98994 18.9502H12.2899C12.8699 18.9502 13.3399 19.4202 13.3399 20.0002C13.3399 20.5802 12.8699 21.0502 12.2899 21.0502H6.63994L3.68994 26.9402H28.2799L25.0399 20.4602C24.7799 19.9402 24.9899 19.3102 25.5099 19.0502C26.0299 18.7902 26.6599 19.0002 26.9199 19.5202L30.9199 27.5202C31.0799 27.8502 31.0699 28.2302 30.8699 28.5402C30.6799 28.8502 30.3399 29.0402 29.9699 29.0402L29.9999 29.0502ZM19.4999 24.5502C19.2099 24.5502 18.9399 24.4302 18.7399 24.2202C18.4399 23.9102 11.5099 16.4802 11.5099 10.4502C11.5099 6.0402 15.0999 2.4502 19.5099 2.4502C23.9199 2.4502 27.5099 5.9602 27.5099 10.4502C27.5099 16.5902 20.5699 23.9202 20.2699 24.2302C20.0699 24.4402 19.7999 24.5602 19.5099 24.5602L19.4999 24.5502ZM19.4999 4.5502C16.2499 4.5502 13.6099 7.1902 13.6099 10.4402C13.6099 14.5702 17.7599 19.8602 19.5099 21.9102C21.2599 19.8802 25.3999 14.6402 25.3999 10.4402C25.3999 7.1302 22.8099 4.5502 19.5099 4.5502H19.4999ZM19.4999 14.0302C17.4699 14.0302 15.8199 12.3802 15.8199 10.3502C15.8199 8.3202 17.4699 6.6702 19.4999 6.6702C21.5299 6.6702 23.1799 8.3202 23.1799 10.3502C23.1799 12.3802 21.5299 14.0302 19.4999 14.0302ZM19.4999 8.7602C18.6299 8.7602 17.9199 9.4702 17.9199 10.3402C17.9199 11.2102 18.6299 11.9202 19.4999 11.9202C20.3699 11.9202 21.0799 11.2102 21.0799 10.3402C21.0799 9.4702 20.3699 8.7602 19.4999 8.7602Z" fill="rgb(var(--primary))" />
                                                                     </svg>
-                                                                </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Proof of Ownership</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
-                                                            <div className="ecommerce-assurance">
-                                                                <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="m20.26,14h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-4.5-6c-.38-.5-1.22-.5-1.6,0l-2.2,2.93-2.2-2.93c-.38-.5-1.22-.5-1.6,0l-4.5,6c-.23.3-.26.71-.09,1.05s.52.55.89.55l-1.8,2.4c-.23.3-.26.71-.09,1.05s.52.55.89.55h.2l-1.54,2.47c-.19.31-.2.7-.03,1.01.18.32.51.52.87.52h5v4h2v-4h4v4h2v-4h5c.37,0,.7-.2.88-.52.18-.32.16-.71-.04-1.02l-1.58-2.46Zm-15.46,2l1.54-2.47c.19-.31.2-.7.03-1.01-.18-.32-.51-.52-.87-.52l1.8-2.4c.23-.3.26-.71.09-1.05s-.52-.55-.89-.55l2.5-3.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46H4.8Zm10.74,0l-1.29-2h.24c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.8-2.4c.38,0,.73-.21.89-.55s.13-.74-.09-1.05l-1.05-1.4,1.75-2.33,2.5,3.33c-.38,0-.73.21-.89.55s-.13.74.09,1.05l1.8,2.4h-.07c-.37,0-.7.2-.88.52-.18.32-.16.71.04,1.02l1.58,2.46h-3.62Z"></path>
-                                                                    </svg>
+
                                                                 </p>
                                                                 <p className="text-[0.875rem] font-semibold mb-0">Backed by Real Land</p>
+                                                                <p>  Each NFT is tied to real land</p>
                                                             </div>
                                                         </div>
                                                         <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
                                                             <div className="ecommerce-assurance">
                                                                 <p className="mb-4 !inline-flex">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" style={{ fill: "rgb(var(--primary))" }} viewBox="0 0 24 24">
-                                                                        <path d="m12,11c1.71,0,3-1.29,3-3s-1.29-3-3-3-3,1.29-3,3,1.29,3,3,3Zm0-4c.6,0,1,.4,1,1s-.4,1-1,1-1-.4-1-1,.4-1,1-1Z"></path>
-                                                                        <path d="m13,12h-2c-2.76,0-5,2.24-5,5v.5c0,.83.67,1.5,1.5,1.5h9c.83,0,1.5-.67,1.5-1.5v-.5c0-2.76-2.24-5-5-5Zm-5,5c0-1.65,1.35-3,3-3h2c1.65,0,3,1.35,3,3h-8Z"></path>
-                                                                        <path d="m6.5,11c.47,0,.9-.12,1.27-.33-.48-.77-.77-1.68-.77-2.67,0-.66.13-1.28.35-1.85-.26-.09-.55-.15-.85-.15-1.44,0-2.5,1.06-2.5,2.5s1.06,2.5,2.5,2.5Z"></path>
-                                                                        <path d="m6.11,12h-.61c-1.93,0-3.5,1.57-3.5,3.5v1c0,.28.22.5.5.5h1.5c0-1.96.81-3.73,2.11-5Z"></path>
-                                                                        <path d="m17.5,11c1.44,0,2.5-1.06,2.5-2.5s-1.06-2.5-2.5-2.5c-.31,0-.59.06-.85.15.22.57.35,1.19.35,1.85,0,.99-.29,1.9-.77,2.67.37.21.79.33,1.27.33Z"></path>
-                                                                        <path d="m18.5,12h-.61c1.3,1.27,2.11,3.04,2.11,5h1.5c.28,0,.5-.22.5-.5v-1c0-1.93-1.57-3.5-3.5-3.5Z"></path>
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M23 11.1962V10.5C23 7.365 18.2712 5 12 5C5.72875 5 1 7.365 1 10.5V15.5C1 18.1112 4.28125 20.1863 9 20.8075V21.5C9 24.635 13.7288 27 20 27C26.2712 27 31 24.635 31 21.5V16.5C31 13.9125 27.8225 11.835 23 11.1962ZM29 16.5C29 18.1525 25.1512 20 20 20C19.5337 20 19.0712 19.9838 18.615 19.9538C21.3112 18.9713 23 17.375 23 15.5V13.2175C26.7338 13.7737 29 15.2838 29 16.5ZM9 18.7812V15.8075C9.99472 15.9371 10.9969 16.0014 12 16C13.0031 16.0014 14.0053 15.9371 15 15.8075V18.7812C14.0068 18.928 13.004 19.0011 12 19C10.996 19.0011 9.99324 18.928 9 18.7812ZM21 13.7413V15.5C21 16.5488 19.4488 17.675 17 18.3587V15.4375C18.6137 15.0462 19.98 14.4638 21 13.7413ZM12 7C17.1512 7 21 8.8475 21 10.5C21 12.1525 17.1512 14 12 14C6.84875 14 3 12.1525 3 10.5C3 8.8475 6.84875 7 12 7ZM3 15.5V13.7413C4.02 14.4638 5.38625 15.0462 7 15.4375V18.3587C4.55125 17.675 3 16.5488 3 15.5ZM11 21.5V20.9788C11.3288 20.9913 11.6612 21 12 21C12.485 21 12.9587 20.9837 13.4237 20.9562C13.9403 21.1412 14.4665 21.2981 15 21.4263V24.3587C12.5512 23.675 11 22.5488 11 21.5ZM17 24.7812V21.8C17.9944 21.9337 18.9967 22.0005 20 22C21.0031 22.0014 22.0053 21.9371 23 21.8075V24.7812C21.0106 25.0729 18.9894 25.0729 17 24.7812ZM25 24.3587V21.4375C26.6137 21.0462 27.98 20.4637 29 19.7412V21.5C29 22.5488 27.4488 23.675 25 24.3587Z" fill="rgb(var(--primary))" />
                                                                     </svg>
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Community Governance</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0">$BTG Rewards</p>
+                                                                <p>Earn $BTG via Vesting</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="xxl:col-span-4 col-span-12 sm:mt-0 mt-4">
+                                                            <div className="ecommerce-assurance">
+                                                                <p className="mb-4 !inline-flex">
+
+
+                                                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M30.9536 5.98633C30.9393 5.74168 30.8357 5.5108 30.6624 5.33752C30.4891 5.16424 30.2583 5.06061 30.0136 5.04633C23.5436 4.67133 18.3486 6.63883 16.1161 10.3238C14.6411 12.7601 14.6436 15.7188 16.0961 18.5413C15.2694 19.5255 14.6652 20.6768 14.3249 21.9163L12.2911 19.8751C13.2686 17.8338 13.2311 15.7063 12.1661 13.9388C10.5161 11.2151 6.70737 9.75508 1.97862 10.0326C1.73398 10.0469 1.5031 10.1505 1.32982 10.3238C1.15653 10.4971 1.05291 10.7279 1.03862 10.9726C0.759874 15.7013 2.22112 19.5101 4.94487 21.1601C5.84371 21.7092 6.87656 21.9999 7.92987 22.0001C8.95225 21.9875 9.95872 21.7453 10.8749 21.2913L13.9999 24.4163V28.0001C13.9999 28.2653 14.1052 28.5196 14.2928 28.7072C14.4803 28.8947 14.7347 29.0001 14.9999 29.0001C15.2651 29.0001 15.5194 28.8947 15.707 28.7072C15.8945 28.5196 15.9999 28.2653 15.9999 28.0001V24.3138C15.9954 22.7229 16.5368 21.1787 17.5336 19.9388C18.8198 20.611 20.2463 20.9707 21.6974 20.9888C23.1003 20.9934 24.4773 20.6101 25.6761 19.8813C29.3611 17.6513 31.3336 12.4563 30.9536 5.98633ZM5.97612 19.4501C4.05862 18.2888 2.97362 15.5401 2.99987 12.0001C6.53987 11.9701 9.28862 13.0588 10.4499 14.9763C11.0561 15.9763 11.1549 17.1426 10.7574 18.3438L7.70612 15.2926C7.51706 15.113 7.26531 15.0143 7.00455 15.0176C6.74379 15.021 6.49465 15.126 6.31025 15.3104C6.12584 15.4948 6.02077 15.744 6.01744 16.0048C6.0141 16.2655 6.11275 16.5173 6.29237 16.7063L9.34362 19.7576C8.14237 20.1551 6.97738 20.0563 5.97612 19.4501ZM24.6399 18.1726C22.9649 19.1863 20.9961 19.2638 18.9961 18.4226L25.7074 11.7101C25.887 11.521 25.9857 11.2693 25.9823 11.0085C25.979 10.7477 25.8739 10.4986 25.6895 10.3142C25.5051 10.1298 25.256 10.0247 24.9952 10.0214C24.7344 10.018 24.4827 10.1167 24.2936 10.2963L17.5811 17.0001C16.7361 15.0001 16.8124 13.0301 17.8311 11.3563C19.5736 8.48133 23.7061 6.87883 28.9974 7.00258C29.1174 12.2926 27.5174 16.4301 24.6399 18.1726Z" fill="rgb(var(--primary))" />
+                                                                    </svg>
+
+                                                                </p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0">NFT staking</p>
+                                                                <p>Earn TCO₂ starting in 2026</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[.9375rem] font-semibold mb-2">NFT Details :</p>
+                                                    <p className="text-[0.8rem] text-[#8C9097] mb-2">NFT Details :</p>
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered whitespace-nowrap min-w-full">
                                                             <tbody>
@@ -1288,8 +1279,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Legendary</td></tr>
                                                                 <tr><th className="font-semibold text-start">Legendary Supply</th><td>400 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>1000 m² (each NFT corresponds to a real land plot)</td></tr>
-                                                                <tr><th className="font-semibold text-start">Carbon Generation</th><td>Stake NFTs to earn TCO₂ starting in 2026.  </td></tr>
-                                                                <tr><th className="font-semibold text-start">$BTG Reward</th><td>Early invetors earn $BTG via Vesting.</td></tr>
                                                             </tbody>
                                                         </table>
                                                     </div>

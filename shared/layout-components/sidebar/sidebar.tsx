@@ -327,9 +327,10 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 			}
 		}
 	};
-	if (typeof window !== 'undefined') {
-		window.addEventListener("scroll", Topup);
-	}
+	useEffect(() => {
+		window.addEventListener('scroll', Topup);
+		return () => window.removeEventListener('scroll', Topup);
+	}, []);
 
 
 	const level = 0;

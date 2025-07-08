@@ -3086,10 +3086,10 @@ label {
 }
 
 .ecommerce-assurance {
-  @apply border border-dashed border-success rounded-md text-center py-4 px-6;
+  @apply bg-camel rounded-md text-center py-4 px-6;
 }
 .ecommerce-assurance svg {
-  @apply w-[3rem] h-[3rem];
+  @apply w-[2.2rem] h-[2.2rem];
 }
 
 .product-images {
