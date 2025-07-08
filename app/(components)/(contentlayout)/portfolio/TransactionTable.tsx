@@ -4,7 +4,7 @@ interface Transaction {
   transactionHash: string;
   type: string;
   transaction?: string;
-  NftType:string;
+  NftType: string;
   grayValue?: string;
   value: string;
   date: string;
@@ -100,9 +100,11 @@ const TransactionTable = ({
                                     </div>
                                   ) : (
                                     <img
-                                      src="../../assets/images/faces/faviconDark1.png"
+                                      src="../../assets/images/faces/NFTTransaction.svg"
                                       alt={tx.type}
-                                      className="avatar avatar-rounded ml-4"
+                                      className="avatar avatar-md avatar-rounded ml-4"
+                                      width={40}
+                                      height={40}
                                     />
                                   )}
                                 </span>
@@ -143,7 +145,7 @@ const TransactionTable = ({
                               href={`https://basescan.org/tx/${tx.transactionHash}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="font-medium bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition ti-btn"
+                              className="text-secondary text-[0.75em] rounded-sm !py-[0.25rem] !px-[0.45rem] badge !bg-secondary/10 ms-1"
                             >
                               View Transaction
                             </Link>
