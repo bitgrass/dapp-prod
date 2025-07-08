@@ -200,17 +200,21 @@ const Crypto = () => {
         .filter((tx: any) => tx.token_address.toLowerCase() === nftInfo.address.toLowerCase()) // Filter by token_address
         .map((tx: any) => {
           const tokenId = parseInt(tx.token_id); // Assure que token_id est un nombre
-          let transactionType = "Standard 100m² NFT";
+          let NftType = "Standard 100m²";
+          let transactionType = "NFT Mint"
 
           if (tokenId >= 1 && tokenId <= 400) {
-            transactionType = "Legendary 1000m² NFT";
+            NftType = "Legendary 1000m²";
+            transactionType = "NFT Sale"
           } else if (tokenId >= 401 && tokenId <= 1200) {
-            transactionType = "Premium 500m² NFT";
+            NftType = "Premium 500m²";
+            transactionType = "NFT Sale"
           }
 
           return {
             type: "nft",
             transaction: transactionType,
+            NftType:NftType,
             value: `+${tx.amount || 1} NFT(s)`,
             grayValue: `NFT ID: ${tx.token_id}`,
             date: new Date(tx.block_timestamp).toLocaleString(),

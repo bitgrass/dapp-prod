@@ -4,6 +4,7 @@ interface Transaction {
   transactionHash: string;
   type: string;
   transaction?: string;
+  NftType:string;
   grayValue?: string;
   value: string;
   date: string;
@@ -119,7 +120,16 @@ const TransactionTable = ({
                           </td>
                           <td>
                             <div className="items-center">
-                              <span className="text-secondary font-semibold">{tx.value}</span>
+                              <div className="flex flex-col">
+                                <span className="text-secondary font-semibold">{tx.value}</span>
+                                {tx.type === "nft" ?
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {tx.NftType}
+                                  </span>
+                                  : <></>}
+
+                              </div>
+
                               <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {tx.type === "crypto" ? tx.grayValue : ""}
                               </p>
