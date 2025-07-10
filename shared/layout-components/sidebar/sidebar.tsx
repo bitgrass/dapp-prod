@@ -31,19 +31,21 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 		setMenuitems((arr: any) => [...arr]);
 	}
 
+
+
 	useEffect(() => {
 
 		window.addEventListener('resize', menuResizeFn);
 		window.addEventListener('resize', checkHoriMenu);
 		const mainContent = document.querySelector(".main-content");
 		if (window.innerWidth <= 992) {
-			if (mainContent) {
-				const theme = store.getState();
-				ThemeChanger({ ...theme, dataToggled: "close" });
-			}
-			else if (document.documentElement.getAttribute('data-nav-layout') == 'horizontal') {
+			if (document.documentElement.getAttribute('data-nav-layout') == 'horizontal') {
 				closeMenu();
 			}
+		}
+		else {
+			const theme = store.getState();
+			ThemeChanger({ ...theme, dataToggled: "" });
 		}
 		mainContent!.addEventListener('click', menuClose);
 		return () => {
@@ -53,6 +55,13 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 	}, []);
 
 	const pathname = usePathname()
+
+		useEffect(() => {
+		if (window.innerWidth <= 992) {
+			const theme = store.getState();
+			ThemeChanger({ ...theme, dataToggled: "close" });
+		}
+	}, [pathname])
 
 	function Onhover() {
 

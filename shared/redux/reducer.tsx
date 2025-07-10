@@ -6,7 +6,7 @@ let initialState = {
     dataNavLayout: "vertical",
     dataHeaderStyles: "light",
     dataVerticalStyle: "overlay",
-    dataToggled: isMobileUserAgent() ? "close" : "",
+    dataToggled:  "close",
     dataNavStyle: "",
     horStyle: "",
     dataPageStyle: "regular",
@@ -26,9 +26,6 @@ let initialState = {
     body: "",
 };
 
-function isMobileUserAgent() {
-    return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
 
 export default function reducer(state = initialState, action:any) {
     let { type, payload } = action;

@@ -4,139 +4,25 @@ import React, {
   Fragment,
   useEffect,
   useState,
-  MouseEvent,
-  ReactNode, useRef
 } from 'react';
 import { ThemeChanger } from "../../redux/action";
 import { connect } from 'react-redux';
 import store from '@/shared/redux/store';
 import Modalsearch from '../modal-search/modalsearch';
 import { basePath } from '@/next.config';
-import {
-  ConnectWallet,
-  Wallet,
-  WalletDropdown,
-  WalletDropdownBasename,
-  WalletDropdownFundLink,
-  WalletDropdownLink,
-  WalletDropdownDisconnect,
-} from '@coinbase/onchainkit/wallet';
-import { usePrivy, useLogin, useLogout, useWallets } from '@privy-io/react-auth';
-
-import { base } from 'wagmi/chains';
-
-
-import {
-  useAccount,
-  useBalance,
-  useEstimateGas,
-  useSendTransaction,
-} from 'wagmi';
-import { parseEther } from 'viem';
-import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
-import type { Address } from 'viem';
-import LoginButton from '../wallet/LoginButton';
-const PRIVY_APP_ID = "cmbqbbsqm00kljy0n1yzjeij7"!;
+import { usePrivy } from '@privy-io/react-auth';
 import dynamic from 'next/dynamic';
 
 
-const WalletMenu = dynamic(() => import('./WalletMenu'), { ssr: false });
+const WalletMenu = dynamic(() => import('./WalletMenu'), {
+  ssr: false,
+});
 
 
 const Header = ({ local_varaiable, ThemeChanger }: any) => {
 
-  const { address, isConnected } = useAccount();
-
-
-  const data = <span className="font-[600] py-[0.25rem] px-[0.45rem] rounded-[0.25rem] bg-pinkmain/10 text-pinkmain text-[0.625rem]">Free shipping</span>
-
-  const cartProduct = [
-    {
-      id: 1,
-      src: "/assets/images/ecommerce/jpg/1.jpg",
-      name: 'SomeThing Phone',
-      price: '$1,299.00',
-      color: 'Metallic Blue',
-      text: '6gb Ram',
-      class: '',
-    },
-    {
-      id: 2,
-      src: "/assets/images/ecommerce/jpg/3.jpg",
-      name: 'Stop Watch',
-      price: '$179.29',
-      color: 'Analog',
-      text: data,
-      class: '',
-    },
-    {
-      id: 3,
-      src: "/assets/images/ecommerce/jpg/5.jpg",
-      name: 'Photo Frame',
-      price: '$29.00',
-      color: 'Decorative',
-      text: '',
-      class: '',
-    },
-    {
-      id: 4,
-      src: "/assets/images/ecommerce/jpg/4.jpg",
-      name: 'Kikon Camera',
-      price: '$4,999.00',
-      color: 'Black',
-      text: '50MM',
-      class: '',
-    },
-    {
-      id: 5,
-      src: "/assets/images/ecommerce/jpg/6.jpg",
-      name: 'Canvas Shoes',
-      price: '$129.00',
-      color: 'Gray',
-      text: 'Sports',
-      class: 'border-b-0',
-    },
-  ];
-
-  const [cartItems, setCartItems] = useState([...cartProduct]);
-  const [cartItemCount, setCartItemCount] = useState(cartProduct.length);
-  const handleRemove = (itemId: number, event: { stopPropagation: () => void; }) => {
-    event.stopPropagation();
-    const updatedCart = cartItems.filter((item) => item.id !== itemId);
-    setCartItems(updatedCart);
-    setCartItemCount(updatedCart.length);
-  };
-
-  //Notifications
-
-  const span1 = <span className="text-warning">ID: #1116773</span>
-  const span2 = <span className="text-success">ID: 7731116</span>
-
-  const span3 = <span className="font-[600] py-[0.25rem] px-[0.45rem] rounded-[0.25rem] bg-pinkmain/10 text-pinkmain text-[0.625rem]">Free shipping</span>
-
-  const notifydata = [
-    { id: 1, class: "Your Order Has Been Shipped", data: "Order No: 123456 Has Shipped To Your Delivery Address", icon: "gift", class2: "", color: "!bg-primary/10", color2: "primary" },
-    { id: 2, class: "Discount Available", data: "Discount Available On Selected Products", icon: "discount-2", class2: "", color: "!bg-secondary/10", color2: "secondary" },
-    { id: 3, class: "Account Has Been Verified", data: "Your Account Has Been Verified Sucessfully", icon: "user-check", class2: "", color: "!bg-pinkmain/10", color2: "pink" },
-    { id: 4, class: "Order Placed", data: "Order Placed Successfully", icon: "circle-check", class2: span1, color: "!bg-warning/10", color2: "warning" },
-    { id: 5, class: "Order Delayed", data: "Order Delayed Unfortunately", icon: "clock", class2: span2, color: "!bg-success/10", color2: "success" },
-  ]
-
-  const [notifications, setNotifications] = useState([...notifydata]);
-
-  const handleNotificationClose = (index: number, event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    if (event) {
-      event.stopPropagation();
-    }
-    const updatedNotifications = [...notifications];
-    updatedNotifications.splice(index, 1);
-    setNotifications(updatedNotifications);
-  };
-
-
   //full screen
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isDisplayedDropdown, setIsDisplayedDropdown] = useState(false);
 
   const toggleFullscreen = () => {
     if (!isFullscreen) {
@@ -184,9 +70,7 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
     }
   }
 
-  const displayDropdownWallet = () => {
-    setIsDisplayedDropdown(!isDisplayedDropdown)
-  }
+
 
   const toggleSidebar = () => {
     const theme = store.getState();
@@ -372,9 +256,7 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
   };
 
   const { ready, authenticated } = usePrivy();
-  const { login } = useLogin();
   // Disable login when Privy is not ready or the user is already authenticated
-  const disableLogin = !ready || (ready && authenticated);
 
   useEffect(() => {
     const navbar = document?.querySelector(".header");
