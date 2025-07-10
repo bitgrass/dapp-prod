@@ -24,6 +24,7 @@
     "@cloudflare/next-on-pages": "^1.13.7",
     "@coinbase/onchainkit": "^0.38.14",
     "@emotion/styled": "^11.11.5",
+    "@farcaster/miniapp-sdk": "^0.1.6",
     "@fullcalendar/daygrid": "^6.1.11",
     "@fullcalendar/interaction": "^6.1.11",
     "@fullcalendar/react": "^6.1.11",
