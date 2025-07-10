@@ -55,13 +55,16 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 	}, []);
 
 	const pathname = usePathname()
-
-		useEffect(() => {
-		if (window.innerWidth <= 992) {
+	function isMobileUserAgent() {
+		return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	}
+	useEffect(() => {
+		if (window.innerWidth <= 992 || isMobileUserAgent()) {
 			const theme = store.getState();
 			ThemeChanger({ ...theme, dataToggled: "close" });
 		}
 	}, [pathname])
+
 
 	function Onhover() {
 
