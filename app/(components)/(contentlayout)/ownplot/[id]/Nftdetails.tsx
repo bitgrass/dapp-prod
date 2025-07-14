@@ -156,10 +156,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             ]) as `0x${string}`;
 
             // Debug: Print info before sending
-            console.log("Wallet Address:", userAddress);
-            console.log("ChainId (walletClient):", await walletClient.getChainId());
-            console.log("Mint Price:", mintPrice.toString());
-            console.log("Total Price (Wei):", totalPrice.toString());
+
 
             // Send the transaction using walletClient (supports embedded/email wallets)
             const txHash = await walletClient.sendTransaction({
@@ -282,13 +279,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             initPrices();
         }
     }, [walletClient]);
-    useEffect(() => {
-        if (baseMintPriceEth > 0 && ethToUsd > 0) {
-            const totalEth = baseMintPriceEth * quantity;
-            setMintPriceEth(totalEth.toFixed(5));
-            setMintPriceUsd((totalEth * ethToUsd).toFixed(2));
-        }
-    }, [quantity, baseMintPriceEth, ethToUsd]);
+
 
     async function fetchAvailableNfts() {
         setIsLoadingFetchAvailable(true)
@@ -327,8 +318,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 const data = await res.json();
                 const nfts = data.listings || [];
 
-                console.log("nfts----------", nfts)
-                console.log("openseaAddress----------", openseaAddress)
 
 
                 nextCursor = data.next || null;
@@ -348,9 +337,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     return [];
                 });
 
-                console.log("newLegendary-------", newLegendary.sort((a: any, b: any) => a - b))
-
-
                 const newPremium = nfts.flatMap((nft: any) => {
                     if (
                         nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
@@ -362,12 +348,11 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     return [];
                 });
 
-                console.log("newPremium-------", newPremium.sort((a: any, b: any) => a - b))
-
+   
                 legendaryNftDispo = [...legendaryNftDispo, ...newLegendary];
                 primaryNftDispo = [...primaryNftDispo, ...newPremium];
 
-                console.log(`Fetched NFTs: Legendary (${legendaryNftDispo.length}), Premium (${primaryNftDispo.length})`);
+
 
                 // Stop if both arrays have data
                 if (legendaryNftDispo.length > 0 && primaryNftDispo.length > 0) {
@@ -458,7 +443,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
                     );
 
-                console.log(`Legendary sorted (token ID ${firstTokenId}):`, sorted);
+
                 setListedLegendaryItems(sorted);
             } else {
                 console.log(`No active legendary NFT listings found for token ID ${firstTokenId}`);
@@ -548,7 +533,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return;
         }
 
-        console.log("order________", order)
+
 
         if (!order) {
             const modalDataFailed: any = await getModalData();
@@ -636,7 +621,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
             const txReceipt = await provider.waitForTransaction(txHash);
             if (txReceipt?.status === 1) {
-                console.log("✅ Transaction confirmed");
+
                 const modalData: any = await getModalData();
                 setModalData(modalData);
                 setModalOpen(true);
