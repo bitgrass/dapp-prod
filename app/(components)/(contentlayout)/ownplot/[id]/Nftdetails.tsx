@@ -891,8 +891,11 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
                                                 <button
                                                     className=" w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
-                                                    onClick={() => handleMintAbi(quantity)}
-                                                    disabled={loading}
+                                                    disabled={true}
+                                                    style={{
+                                                        cursor: "not-allowed",
+                                                        userSelect: "none"
+                                                    }}
                                                 >
                                                     {loading && (
                                                         <span className="btn-spinner"></span>
@@ -1029,13 +1032,12 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
                                                     className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
                                                     style={{
-                                                        cursor: isBuying ? "not-allowed" : "pointer",
-                                                        userSelect: isBuying ? "none" : "auto"
+                                                        cursor: "not-allowed",
+                                                        userSelect: "none"
                                                     }}
-                                                    disabled={isLoadingFetchAvailable}
+                                                    disabled={true}
                                                 >
                                                     {isBuying && (
                                                         <span className="btn-spinner"></span>
@@ -1174,13 +1176,12 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
                                                     className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
                                                     style={{
-                                                        cursor: isLoadingFetchAvailable ? "not-allowed" : "pointer",
-                                                        userSelect: isLoadingFetchAvailable ? "none" : "auto"
+                                                        cursor: "not-allowed",
+                                                        userSelect: "none"
                                                     }}
-                                                    disabled={isLoadingFetchAvailable}
+                                                    disabled={true}
                                                 >
                                                     {isBuying && (
                                                         <span className="btn-spinner"></span>
