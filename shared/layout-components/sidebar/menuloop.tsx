@@ -1,19 +1,30 @@
 import { ThemeChanger } from "@/shared/redux/action";
+import store from "@/shared/redux/store";
 import Link from "next/link";
 import { Fragment } from "react";
 import { connect } from "react-redux";
 
-function Menuloop({ local_varaiable, MenuItems, toggleSidemenu, level, HoverToggleInnerMenuFn , activeTab }: any) {
+function Menuloop({ local_varaiable, MenuItems, toggleSidemenu, level, HoverToggleInnerMenuFn, activeTab ,ThemeChanger }: any) {
   const handleClick = (event: any) => {
     event.preventDefault();
     // Add your logic here
   };
 
+  function isMobileUserAgent() {
+    return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Warpcast|Farcaster/i.test(navigator.userAgent);
+  }
+const closeMenu = () => {
+  if (window.innerWidth <= 992 || isMobileUserAgent()) {
+    const theme = store.getState();
+    ThemeChanger({ ...theme, dataToggled: "close" });
+  }
+};
+
   return (
     <Fragment>
       {/* Top-level Menu Item */}
-      <Link 
-        href="#!" 
+      <Link
+        href="#!"
         scroll={false}
         className={`side-menu__item ${MenuItems?.selected ? "active" : ""}`}
         onClick={(event) => {
@@ -22,10 +33,9 @@ function Menuloop({ local_varaiable, MenuItems, toggleSidemenu, level, HoverTogg
         }}
         onMouseEnter={(event) => HoverToggleInnerMenuFn(event, MenuItems)}
       >
-        <span 
-          className={`hs-tooltip inline-block [--placement:right] leading-none ${
-            local_varaiable?.dataVerticalStyle === "doublemenu" ? "" : "hidden"
-          }`}
+        <span
+          className={`hs-tooltip inline-block [--placement:right] leading-none ${local_varaiable?.dataVerticalStyle === "doublemenu" ? "" : "hidden"
+            }`}
         >
           <button
             type="button"
@@ -52,9 +62,8 @@ function Menuloop({ local_varaiable, MenuItems, toggleSidemenu, level, HoverTogg
 
       {/* Submenu */}
       <ul
-        className={`slide-menu child${level} ${
-          MenuItems.active ? "double-menu-active" : ""
-        } ${MenuItems?.dirchange ? "force-left" : ""}`}
+        className={`slide-menu child${level} ${MenuItems.active ? "double-menu-active" : ""
+          } ${MenuItems?.dirchange ? "force-left" : ""}`}
         style={{ display: MenuItems.active ? "block" : "none" }}
       >
         {level <= 1 && (
@@ -65,18 +74,18 @@ function Menuloop({ local_varaiable, MenuItems, toggleSidemenu, level, HoverTogg
         {MenuItems.children.map((firstlevel: any, index: any) => (
           <li
             key={index}
-            className={`${firstlevel.menutitle ? "slide__category" : ""} ${
-              firstlevel?.type === "empty" ? "slide" : ""
-            } ${firstlevel?.type === "link" ? "slide" : ""} ${
-              firstlevel?.type === "sub" ? "slide has-sub" : ""
-            } ${firstlevel?.active ? "open" : ""} ${
-              firstlevel?.selected ? "active" : ""
-            }`}
+            className={`${firstlevel.menutitle ? "slide__category" : ""} ${firstlevel?.type === "empty" ? "slide" : ""
+              } ${firstlevel?.type === "link" ? "slide" : ""} ${firstlevel?.type === "sub" ? "slide has-sub" : ""
+              } ${firstlevel?.active ? "open" : ""} ${firstlevel?.selected ? "active" : ""
+              }`}
           >
             {firstlevel.type === "link" && (
               <Link
                 href={firstlevel.path || "#!"}
                 className={`side-menu__item ${firstlevel.title.toLowerCase() == activeTab.toLowerCase() ? "active" : ""}`}
+                onClick={(event) => {
+                  closeMenu();
+                }}
               >
                 {firstlevel.icon}
                 <span>

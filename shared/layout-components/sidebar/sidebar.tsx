@@ -59,7 +59,7 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 		return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Warpcast|Farcaster/i.test(navigator.userAgent);
 	}
 	useEffect(() => {
-		if (window.innerWidth <= 992 || isMobileUserAgent()) {
+		if ((window.innerWidth <= 992 || isMobileUserAgent()) && pathname != "/dashboard") {
 			const theme = store.getState();
 			ThemeChanger({ ...theme, dataToggled: "close" });
 		}
@@ -82,7 +82,6 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 	}
 
 	function menuClose() {
-		;
 		const theme = store.getState();
 		if (window.innerWidth <= 992) {
 			ThemeChanger({ ...theme, dataToggled: "close" });
