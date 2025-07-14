@@ -56,7 +56,7 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 
 	const pathname = usePathname()
 	function isMobileUserAgent() {
-		return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+		return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Warpcast|Farcaster/i.test(navigator.userAgent);
 	}
 	useEffect(() => {
 		if (window.innerWidth <= 992 || isMobileUserAgent()) {
