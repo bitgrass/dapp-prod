@@ -14928,7 +14928,43 @@ filter: blur(4px);
   }
 }
 
-  
-
-
+.carousel-container {
+  position: relative;
+  width: 100%;
+  max-width: 352px; /* Or whatever max you want */
+  aspect-ratio: 1/1; /* Makes it always square */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f9f8f7;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px #0001;
+  overflow: hidden;
+}
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 0;
+  transition: transform 0.4s cubic-bezier(0.77,0,0.18,1);
+  display: block;
+}
+.carousel-nav {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin: 14px 0 0 0;
+}
+.carousel-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #d0d0d0;
+  cursor: pointer;
+  transition: background .3s;
+}
+.carousel-dot.active {
+  background: #84c13c;
+}
 
