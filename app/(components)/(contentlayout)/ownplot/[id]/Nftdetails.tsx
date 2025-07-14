@@ -820,7 +820,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             >
                                 <button
                                     onClick={() => handleTabChange(tab)}
-                                    className={`text-sm py-2 font-semibold ${activeTab === tab
+                                    className={`text-sm max-[380px]:text-xs py-2 font-semibold ${activeTab === tab
                                         ? "border-b-2 border-primary text-primary"
                                         : ""
                                         }`}

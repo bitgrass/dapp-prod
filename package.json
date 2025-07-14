@@ -15,7 +15,7 @@
     "lint": "next lint",
     "postcss": "sass ./public/assets/scss/style.scss ./public/assets/css/style.css && postcss ./public/assets/css/style.css -o ./public/assets/css/style.css",
     "sass": "sass ./public/assets/scss/:./public/assets/css/",
-    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:build": "rm -rf .next/cache && npx @cloudflare/next-on-pages",
     "preview": "npm run pages:build && wrangler pages dev",
     "deploy": "npm run pages:build && wrangler pages deploy --branch=main",
     "sass-min": "sass .remi/public/assets/scss/:./public/assets/css/ --style compressed"

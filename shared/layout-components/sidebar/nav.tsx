@@ -7,7 +7,13 @@ const PagesIcon = <i className="ti ti-wallet side-menu__icon"></i>;
 const TaskIcon = <i className="bx bx-transfer-alt side-menu__icon"></i>;
 
 const AuthenticationIcon = (
-  <i className="bx bx-images side-menu__icon"></i>
+
+  <img
+    src="../../assets/images/apps/Ownplot.svg"
+    className="side-menu__icon"
+
+  />
+
 );
 
 const ErrorIcon = <i className="bx bx-sort-down side-menu__icon"></i>;
@@ -142,7 +148,7 @@ export const MenuItems: any = [
     active: false,
     selected: false,
     dirchange: false,
-    target: "_blank", 
+    target: "_blank",
 
 
 

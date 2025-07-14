@@ -136,7 +136,7 @@ export default function ProjectDetails({ params }: Params) {
               <div>
                 <div className="btn-list md:flex items-center mb-2 project-header">
                   <Link
-                    href="/mint/"
+                    href="/ownplot/standard"
                     className="ti-btn bg-secondary text-white !font-medium m-0 !me-[0.375rem]"
                   >
                     Mint Plot
@@ -219,7 +219,7 @@ export default function ProjectDetails({ params }: Params) {
                     <h5 className="font-semibold mb-0">🖐 Looking for Passive Income?</h5>
                   </div>
                   <div className="lg:col-span-6 lg:col-span-12 col-span-12 mt-4 lg:mt-0 lg:flex lg:justify-end">
-                    <a className="ti-btn bg-secondary text-white !font-medium" href="/mint/">Secure Your Plot</a>
+                    <a className="ti-btn bg-secondary text-white !font-medium" href="/ownplot/standard">Secure Your Plot</a>
                   </div>
                 </div>
 

@@ -20,7 +20,7 @@ import type { Token } from '@coinbase/onchainkit/token';
 import Moralis from 'moralis';
 import axios from 'axios';
 import { btgToken, ETHToken, btgInfo } from "@/shared/data/tokens/data";
-
+import TokenizedLandCube from './TokenizedLandCarousel';
 
 async function initializeMoralis() {
     try {
@@ -579,29 +579,8 @@ const Dashboard = () => {
                                                         </div>
                                                     </div>
                                                     <div className="box-body">
-                                                        <Swiper
-                                                            effect={'cube'}
-                                                            grabCursor={true}
-                                                            cubeEffect={{ shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94 }}
-                                                            speed={1000}
-                                                            autoplay={{ delay: 3000, disableOnInteraction: false }}
-                                                            pagination={{ clickable: true }}
-                                                            modules={[EffectCube, Pagination, Autoplay]}
-                                                            className="mySwiper swiper swiper-effect-cube"
-                                                            style={{ height: "352px", minHeight: "300px" }} // Fix the height
-                                                        >
-
-                                                            <SwiperSlide>
-                                                                <img src="../../assets/images/apps/100m2F.jpg" alt="img" />
-                                                            </SwiperSlide>
-                                                            <SwiperSlide>
-                                                                <img src="../../assets/images/apps/500m2F.jpg" alt="img" />
-                                                            </SwiperSlide>
-                                                            <SwiperSlide>
-                                                                <img src="../../assets/images/apps/1000m2F.jpg" alt="img" />
-                                                            </SwiperSlide>
-                                                        </Swiper>
-                                                        <div className="grid mt-8">
+                                                            <TokenizedLandCube />
+                                                        <div className="grid">
                                                             <Link href="/ownplot/standard" className="ti-btn bg-secondary  text-white !font-medium !mb-2 !mt-4">Mint Plot</Link>
                                                             <Link href="https://opensea.io/collection/bitgrass-nft/overview" target="_blank" rel="noopener noreferrer" className="ti-btn bg-camel10  !font-medium">Discover</Link>
                                                         </div>
@@ -609,6 +588,7 @@ const Dashboard = () => {
                                                 </div>
                                             </div>
                                         </div>
+
                                     </div>
                                 </div>
 
