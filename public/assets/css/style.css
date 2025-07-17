@@ -14968,3 +14968,6 @@ filter: blur(4px);
   background: #84c13c;
 }
 
+div.leaflet-bottom.leaflet-right {
+  display: "none";
+}

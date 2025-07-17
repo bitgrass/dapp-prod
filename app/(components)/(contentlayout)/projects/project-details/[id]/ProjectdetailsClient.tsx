@@ -46,7 +46,7 @@ export default function ProjectDetails({ params }: Params) {
   useEffect(() => {
     const calculateDaysLeft = (): number => {
       const today: Date = new Date();
-      const targetDate: Date = new Date(today.getFullYear(), 7, 23); 
+      const targetDate: Date = new Date(today.getFullYear(), 7, 23);
 
       if (today > targetDate) {
         targetDate.setFullYear(targetDate.getFullYear() + 1);
@@ -202,12 +202,11 @@ export default function ProjectDetails({ params }: Params) {
             <div className="xl:col-span-6 col-span-12">
               <div className="box custom-box">
                 <div className="box-header">
-                  <div className="box-title">Bitgrass NFT Activity</div>
+                  <div className="box-title">Location</div>
                 </div>
                 <div className="box-body">
-                  <div id="heatmap-colorrange">
-                    <ReactApexChart options={Heatdata.Colorrange.options} series={Heatdata.Colorrange.series} type="heatmap" width={"100%"} height={350} />
-                  </div>
+                  <div id="map-popup">
+                    <iframe width="100%" height="100%" src="https://www.openstreetmap.org/export/embed.html?bbox=-22.8076171875%2C16.55591901290599%2C33.70605468750001%2C45.12296586750037&amp;layer=cyclemap"></iframe><br /><small></small></div>
                 </div>
               </div>
             </div>
@@ -231,7 +230,6 @@ export default function ProjectDetails({ params }: Params) {
             <div className="box">
               <div className="box-header justify-between">
                 <div className="box-title">Total NFT Landplots: {project.nftStats.totalLandplots}</div>
-                <button type="button" className="ti-btn ti-btn-light !py-1 !px-2 !text-[0.75rem]">View All</button>
               </div>
               <div className="box-body">
                 <ul className="list-none personal-goals-list mb-0">
@@ -273,47 +271,6 @@ export default function ProjectDetails({ params }: Params) {
               </div>
             </div>
 
-            <div className="box custom-box">
-              <div className="box-header">
-                <div className="box-title">Location</div>
-              </div>
-              <div className="box-body">
-                <div id="map-popup">
-                  <iframe width="100%" height="100%" src="https://www.openstreetmap.org/export/embed.html?bbox=9.84855651855469%2C34.178861487501464%2C10.16990661621094%2C34.397561658436466&amp;layer=cyclemap"></iframe><br /><small></small></div>
-              </div>
-            </div>
-            <div className="box custom-box border dark:border-defaultborder/10">
-              <div className="box-header">
-                <div className="box-title">Documents</div>
-              </div>
-              <div className="box-body !p-0">
-                <ul className="list-group list-group-flush">
-                  {documents.map((doc, index) => (
-                    <li
-                      key={index}
-                      className="list-group-item !border-s-0 !border-e-0 mb-2"
-                    >
-                      <div className="sm:flex items-center cursor-pointer">
-                        <a href={doc.link} download target="_blank"
-                          rel="noopener noreferrer" className="flex items-center w-full">
-                          {/* PDF Icon */}
-                          <span className="avatar avatar-md dark:border-defaultborder/10 me-2">
-                            <i className="bx bxs-file-pdf !text-[#5ea9cc] text-[2.125rem]"></i>
-                          </span>
-                          {/* File Name */}
-                          <p className="font-semibold text-[.875rem] mb-0 ">
-                            {doc.name}
-                          </p>
-                        </a>
-                      </div>
-
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-            </div>
-
           </div>
 
 
@@ -334,7 +291,7 @@ export default function ProjectDetails({ params }: Params) {
         project={project}
       />
 
-       {/* <PurchaseCelebrationModal
+      {/* <PurchaseCelebrationModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         name='bitgrass'

@@ -376,28 +376,28 @@ const WalletMenu: React.FC = () => {
             {/* Deposit/Send buttons */}
             <div className="flex flex-row gap-2 mt-6 mb-6">
               {activePrivyWallet?.walletClientType === 'privy' && (
-                <div style={{ backgroundColor: '#F5F3EB' }} className="flex-1 p-1 rounded-lg">
+                <div className="flex-1 bg-secondary rounded-sm">
                   <button
                     onClick={handleFundPanel}
                     style={{ placeContent: 'center' }}
-                    className="flex items-center justify-between text-sm font-medium text-[#333335] w-full px-4 py-2 rounded-lg hover:opacity-90 transition ti-btn"
+                    className="flex items-center justify-between text-sm font-medium text-white w-full py-3 px-3 rounded-sm hover:opacity-90 transition ti-btn"
                   >
-                    <span className="flex items-center">
-                      <i className="bx bx-credit-card mr-2" style={{ color: '#333335' }} />
+                    <span className="flex text-white items-center">
+                      <i className="bx bx-credit-card mr-2 text-white"  />
                       Deposit
                     </span>
                   </button>
                 </div>
               )}
 
-              <div style={{ backgroundColor: '#F5F3EB' }} className="flex-1 p-1 rounded-lg">
+              <div  className="flex-1 bg-secondary rounded-sm">
                 <button
                   onClick={handleSendPanel}
                   style={{ placeContent: 'center' }}
-                  className="flex items-center justify-between text-sm font-medium text-[#333335] w-full px-4 py-2 rounded-lg hover:opacity-90 transition ti-btn"
+                  className="flex items-center justify-between text-sm font-medium text-wihte w-full py-3 px-3 rounded-sm hover:opacity-90 transition "
                 >
-                  <span className="flex items-center">
-                    <i className="bx bx-send mr-2" style={{ color: '#333335' }} />
+                  <span className="flex text-white items-center">
+                    <i className="bx bx-send mr-2 text-white"  />
                     Send
                   </span>
                 </button>
@@ -411,7 +411,7 @@ const WalletMenu: React.FC = () => {
               <div className="flex gap-4">
                 <button
                   onClick={handleLinkWallet}
-                  className="flex-1 flex items-center text-sm justify-between font-medium bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition ti-btn"
+                  className="flex-1 flex items-center text-sm justify-between font-medium bg-secondary dark:bg-[#FFFFFF0D] text-white py-3 px-3 rounded-sm  hover:bg-primary/90 transition"
                 >
                   <span className="text-white"><i className="bx bx-plug mr-2" />Connect External Wallet</span>
                 </button>
@@ -421,7 +421,7 @@ const WalletMenu: React.FC = () => {
             {/* Disconnect button */}
             <button
               onClick={handlelLogout}
-              className="w-full flex items-center justify-center text-sm font-medium bg-[#00382B] hover:bg-red-700 text-white py-2 rounded-lg transition mt-4 ti-btn"
+              className="w-full flex items-center justify-center text-sm font-medium bg-camel10 dark:bg-[#FFFFFF0D] text-primary hover:bg-red-700 py-3 px-3 rounded-sm transition mt-4 "
             >
               <i className="bx bx-log-out mr-2" />Disconnect
             </button>

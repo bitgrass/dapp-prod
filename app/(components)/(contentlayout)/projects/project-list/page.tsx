@@ -119,7 +119,6 @@ const Projectslist = () => {
                                                                     <Link href={`/projects/project-details/${idx.id}`}>{idx.class}</Link>
 
                                                                 </p>
-                                                                <p className="text-[0.75rem] text-muted mb-0">{idx.class1}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -138,9 +137,9 @@ const Projectslist = () => {
                                                     <td>{idx.standard}</td>
                                                     <td>{idx.location}</td>
                                                     <td>
-                                                        <div className={`badge rounded-full gap-2`} style={{ background: "#F3F6F8", color: "#333335" , paddingTop:"0.25rem" , paddingBottom:"0.25rem" }}>
+                                                        <div className={`badge bg-camel rounded-full gap-2`} style={{ paddingTop:"0.25rem" , paddingBottom:"0.25rem" }}>
                                                             <span
-                                                                className="w-4"
+                                                                className="w-4 text-primary"
                                                                 dangerouslySetInnerHTML={{ __html: svgRemoval }}
                                                             />
                                                             Removal</div>
