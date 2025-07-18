@@ -9970,7 +9970,7 @@ input.gridjs-input {
 /* Image alerts */
 /* Start Avatar Styles */
 .avatar {
-  @apply relative h-[2.625rem] w-[2.625rem] inline-flex items-center justify-center rounded-md font-medium mb-1;
+  @apply relative h-[2.625rem] w-[2.625rem] inline-flex items-center justify-center rounded-md font-medium;
 }
 .avatar a.badge:hover {
   @apply text-white;
@@ -14399,6 +14399,7 @@ margin-top: 10px;
     border-radius: 0.25rem;
     background-color: rgb(var(--swap));
     border: none;
+    padding: 0;
 
 
   } 

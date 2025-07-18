@@ -53,8 +53,8 @@ const NFTTable = ({ nftData, nftCursor, fetchMore }: NFTTableProps) => {
                     {nft.description || "No description available."}
                   </p>
                   <div className="grid">
-                    <button   onClick={() => window.open('https://staking.bitgrass.com', '_blank')}
-type="button" className="ti-btn ti-btn-primary w-full">
+                    <button onClick={() => window.open('https://staking.bitgrass.com', '_blank')}
+                      type="button" className="ti-btn ti-btn-primary w-full">
                       Claim rewarded $BTG
                     </button>
                   </div>

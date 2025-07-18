@@ -8,7 +8,7 @@ import axios from "axios";
 import { Token } from "@coinbase/onchainkit/token";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { btgToken, nftInfo, EthInfo } from "@/shared/data/tokens/data";
-
+import CarbonAssetsCard from "./CarbonAssetsCard";
 const getInitialWalletState = () => {
   if (typeof window !== "undefined") {
     return localStorage.getItem("walletConnected") === "true";
@@ -214,7 +214,7 @@ const Crypto = () => {
           return {
             type: "nft",
             transaction: transactionType,
-            NftType:NftType,
+            NftType: NftType,
             value: `+${tx.amount || 1} NFT(s)`,
             grayValue: `NFT ID: ${tx.token_id}`,
             date: new Date(tx.block_timestamp).toLocaleString(),
@@ -412,6 +412,8 @@ const Crypto = () => {
               btgPrice={btgPrice}
               btgBalance={btgBalance}
               btgToken={btgToken}
+            />
+            <CarbonAssetsCard
             />
           </>
         );

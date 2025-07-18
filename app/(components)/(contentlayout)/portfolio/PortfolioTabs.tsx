@@ -58,7 +58,7 @@ const PortfolioTabs = ({
                   aria-controls="crypto-tab-pane"
                   onClick={() => handleTabChange("crypto-tab-pane")}
                 >
-                  Crypto
+                  Overview
                 </Link>
                 <Link
                   className={`w-full sm:w-auto flex active ${
