@@ -8,11 +8,19 @@ const TaskIcon = <i className="bx bx-transfer-alt side-menu__icon"></i>;
 
 const AuthenticationIcon = (
 
+<>
   <img
-    src="../../assets/images/apps/Ownplot.svg"
-    className="side-menu__icon"
-
+    src="../../assets/images/apps/OwnPlotL.svg"
+    className="side-menu__icon block dark:hidden"
+    alt="Ownplot"
   />
+  <img
+    src="../../assets/images/apps/OwnPlotD.svg"
+    className="side-menu__icon hidden dark:block"
+    alt="Ownplot Dark"
+  />
+</>
+
 
 );
 
