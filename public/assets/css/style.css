@@ -14399,7 +14399,7 @@ margin-top: 10px;
     border-radius: 0.25rem;
     background-color: rgb(var(--swap));
     border: none;
-    padding: 0;
+    padding: 0 0 1 0;
 
 
   } 
@@ -14971,4 +14971,46 @@ filter: blur(4px);
 
 div.leaflet-bottom.leaflet-right {
   display: "none";
+}
+
+/* Custom scrollbar (works for both light and dark, uses Tailwind's dark mode class) */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #a3a3a3 #f3f3f3;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #a3a3a3;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f3f3f3;
+}
+
+/* Dark mode overrides for Tailwind's .dark class */
+.dark .custom-scrollbar {
+  scrollbar-color: #444 #202125;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #444;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #202125;
+}
+
+/* Fade-in animation for tooltip */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in {
+  animation: fade-in 0.7s;
+}
+
+/* Optional: smooth transition for Load More button */
+.btn-loading {
+  opacity: 0.7;
+  pointer-events: none;
 }

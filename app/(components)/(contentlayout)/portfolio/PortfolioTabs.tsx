@@ -17,6 +17,7 @@ interface PortfolioTabsProps {
   btgPrice: number;
   btgBalance: string;
   btgToken: any;
+  ethSupply:any;
 }
 
 const PortfolioTabs = ({
@@ -32,6 +33,7 @@ const PortfolioTabs = ({
   ethPrice,
   btgPrice,
   btgBalance,
+  ethSupply
 }: PortfolioTabsProps) => {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -105,6 +107,7 @@ const PortfolioTabs = ({
                     ethPrice={ethPrice}
                     btgBalance={btgBalance}
                     btgPrice={btgPrice}
+                    ethSupply={ethSupply}
                   />
                 </div>
                 <div

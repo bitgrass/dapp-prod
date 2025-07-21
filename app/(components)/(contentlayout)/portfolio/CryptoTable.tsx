@@ -5,9 +5,25 @@ interface CryptoTableProps {
   ethPrice: number;
   btgBalance: string;
   btgPrice: number;
+  ethSupply: number;
 }
 
-const CryptoTable = ({ ethBalance, ethPrice, btgBalance, btgPrice }: CryptoTableProps) => {
+const CryptoTable = ({ ethBalance, ethPrice, btgBalance, btgPrice, ethSupply }: CryptoTableProps) => {
+  const supplyNum = Number((ethSupply + "").replace(/,/g, ""));
+  const priceNum = Number((ethPrice + "").replace(/,/g, ""));
+
+  const formatLargeValue = (value: number) => {
+    if (value >= 1_000_000_000) {
+      return `$${(Math.round(value / 100_000_000) / 10).toFixed(1)}B`;
+    } else if (value >= 1_000_000) {
+      return `$${(Math.round(value / 100_000) / 10).toFixed(1)}M`;
+    } else if (value >= 1_000) {
+      return `$${(Math.round(value / 100) / 10).toFixed(1)}K`;
+    } else {
+      return `$${value}`;
+    }
+  };
+
   return (
     <div className="grid grid-cols-12 gap-x-6">
       <div className="xl:col-span-12 col-span-12">
@@ -92,7 +108,10 @@ const CryptoTable = ({ ethBalance, ethPrice, btgBalance, btgPrice }: CryptoTable
                       <span className="text-secondary font-semibold">
                         1.52%<i className="ri-arrow-up-s-line align-middle ms-1 me-2"></i>
                       </span>
-                      <p className="mb-0 font-semibold">${ethPrice} USD</p>
+                      <p className="mb-0 font-semibold">
+                        {formatLargeValue(supplyNum * priceNum)}
+
+                      </p>
                     </div>
                   </td>
                 </tr>
@@ -131,7 +150,10 @@ const CryptoTable = ({ ethBalance, ethPrice, btgBalance, btgPrice }: CryptoTable
                       <span className="text-secondary font-semibold">
                         1.52%<i className="ri-arrow-up-s-line align-middle ms-1 me-2"></i>
                       </span>
-                      <p className="mb-0 font-semibold">${ethPrice} USD</p>
+                                      <p className="mb-0 font-semibold">
+                        {formatLargeValue(1000000000 * btgPrice)}
+
+                      </p>
                     </div>
                   </td>
                 </tr>

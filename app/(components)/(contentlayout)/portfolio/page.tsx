@@ -34,6 +34,7 @@ const Crypto = () => {
   const [nftCursor, setNftCursor] = useState(null);
   const [activeTab, setActiveTab] = useState("crypto-tab-pane");
   const [pageNumber, setPageNumber] = useState<number>(1)
+const [ethSupply, setEthSupply] = useState("0");
 
   // Fetch ETH Data (unchanged)
   useEffect(() => {
@@ -83,6 +84,27 @@ const Crypto = () => {
     }
     fetchEthData();
   }, [address]);
+
+  useEffect(() => {
+  async function fetchEthSupply() {
+    try {
+      const res = await axios.get(
+        "https://api.etherscan.io/api?module=stats&action=ethsupply2&apikey=Z816H8MXCPSYM93P9E7Q3J4HJWS3KHGG43"
+      );
+      // EthSupply is in wei, convert to ETH (divide by 1e18)
+      const rawSupply = res.data.result.EthSupply;
+      console.log("heeere",rawSupply)
+      const supplyEth = (parseFloat(rawSupply) / 1e18).toLocaleString(undefined, { maximumFractionDigits: 2 });
+            console.log("heeere2222",supplyEth)
+
+      setEthSupply(supplyEth);
+    } catch (err) {
+      console.error("Error fetching ETH supply:", err);
+      setEthSupply("Error");
+    }
+  }
+  fetchEthSupply();
+}, []);
 
   // Fetch BTG Data (unchanged)
   useEffect(() => {
@@ -412,6 +434,7 @@ const Crypto = () => {
               btgPrice={btgPrice}
               btgBalance={btgBalance}
               btgToken={btgToken}
+              ethSupply={ethSupply}
             />
             <CarbonAssetsCard
             />
