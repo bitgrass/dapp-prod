@@ -606,10 +606,10 @@ const Dashboard = () => {
                                                 <div className="box-body">
 
                                                     <div className="flex align-items-center">
-                                                        <span className="avatar avatar-xxl !rounded-full">
-                                                            <img src="../../../assets/images/brand-logos/coin-bitgrass.svg" className="!rounded-full img-fluid" alt="Avatar" />
+                                                        <span className="avatar avatar-xl !rounded-full">
+                                                            <img src="../../../assets/images/brand-logos/logo-btg.svg" className="!rounded-full img-fluid" alt="Avatar" />
                                                         </span>
-                                                        <div className="ms-3 mt-3">
+                                                        <div className="ms-3 mt-1">
                                                             <h5 className="font-bold mb-0 sm:flex items-center">
                                                                 <Link href="#!" scroll={false}>Bitgrass - <span className='font-normal text-[#8c9097] dark:text-white/50'>BTG</span></Link>
                                                             </h5>

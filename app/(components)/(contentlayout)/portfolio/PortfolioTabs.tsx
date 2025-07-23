@@ -4,6 +4,7 @@ import CryptoTable from "./CryptoTable";
 import NFTTable from "./NFTTable";
 
 interface PortfolioTabsProps {
+  address: any;
   activeTab: string;
   setActiveTab: (tab: string) => void;
   transactions: any[];
@@ -17,10 +18,11 @@ interface PortfolioTabsProps {
   btgPrice: number;
   btgBalance: string;
   btgToken: any;
-  ethSupply:any;
+  ethSupply: any;
 }
 
 const PortfolioTabs = ({
+  address,
   activeTab,
   setActiveTab,
   transactions,
@@ -48,11 +50,10 @@ const PortfolioTabs = ({
             <div className="!p-4 border-b dark:border-defaultborder/10 border-dashed md:flex items-center justify-between nav-div">
               <nav className="-mb-0.5 flex md:space-x-4 rtl:space-x-reverse pb-2 gap-3" role="tablist">
                 <Link
-                  className={`w-full sm:w-auto flex active ${
-                    activeTab === "crypto-tab-pane"
+                  className={`w-full sm:w-auto flex active ${activeTab === "crypto-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
                       : ""
-                  } py-2 px-4 text-primary text-sm`}
+                    } py-2 px-4 text-primary text-sm`}
                   href="#crypto-tab-pane"
                   scroll={false}
                   id="crypto-tab"
@@ -63,11 +64,10 @@ const PortfolioTabs = ({
                   Overview
                 </Link>
                 <Link
-                  className={`w-full sm:w-auto flex active ${
-                    activeTab === "nfts-tab-pane"
+                  className={`w-full sm:w-auto flex active ${activeTab === "nfts-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
                       : ""
-                  } py-2 px-4 text-primary text-sm`}
+                    } py-2 px-4 text-primary text-sm`}
                   href="#nfts-tab-pane"
                   scroll={false}
                   id="nfts-tab"
@@ -78,11 +78,10 @@ const PortfolioTabs = ({
                   NFTs
                 </Link>
                 <Link
-                  className={`w-full sm:w-auto flex active ${
-                    activeTab === "transactions-tab-pane"
+                  className={`w-full sm:w-auto flex active ${activeTab === "transactions-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
                       : ""
-                  } py-2 px-4 text-primary text-sm`}
+                    } py-2 px-4 text-primary text-sm`}
                   href="#transactions-tab-pane"
                   scroll={false}
                   id="transactions-tab"
@@ -103,6 +102,7 @@ const PortfolioTabs = ({
                   aria-labelledby="crypto-tab"
                 >
                   <CryptoTable
+                    address={address}
                     ethBalance={ethBalance}
                     ethPrice={ethPrice}
                     btgBalance={btgBalance}

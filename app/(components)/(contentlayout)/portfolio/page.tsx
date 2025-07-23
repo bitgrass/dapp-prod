@@ -415,6 +415,7 @@ const [ethSupply, setEthSupply] = useState("0");
               btgToken={btgToken}
             />
             <PortfolioTabs
+            address={address}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               transactions={

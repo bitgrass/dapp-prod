@@ -2,10 +2,10 @@ import type { Token } from '@coinbase/onchainkit/token';
 
 export const btgToken : Token = {
   name: "BTG",
-  address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  address: "0x20429F731096e359910921994A267d32ef576720",
   symbol: "BTG",
-  decimals: 6,
-  image: "/assets/images/faces/btg.png", // or use `import` if using static import
+  decimals: 18,
+  image: "/assets/images/brand-logos/logo-btg.svg", // or use `import` if using static import
   chainId: 8453,
 };
 
