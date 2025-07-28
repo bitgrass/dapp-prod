@@ -237,7 +237,7 @@ const [ethSupply, setEthSupply] = useState("0");
             type: "nft",
             transaction: transactionType,
             NftType: NftType,
-            value: `+${tx.amount || 1} NFT(s)`,
+            value: `+${tx.amount || 1} NFT`,
             grayValue: `NFT ID: ${tx.token_id}`,
             date: new Date(tx.block_timestamp).toLocaleString(),
             timestamp: new Date(tx.block_timestamp).getTime(),
@@ -281,7 +281,7 @@ const [ethSupply, setEthSupply] = useState("0");
       const nfts = response.data.result.map((nft: any) => ({
         type: "nft",
         transaction: "NFT Minted",
-        value: `+${nft.amount || 1} NFT(s)`,
+        value: `+${nft.amount || 1} NFT`,
         grayValue: `NFT ID: ${nft.token_id}`,
         date: new Date(nft.last_token_uri_sync || nft.last_metadata_sync).toLocaleString(),
         timestamp: new Date(nft.last_token_uri_sync || nft.last_metadata_sync).getTime(),

@@ -113,8 +113,7 @@ export const MenuItems: any = [
   {
     title: "Leaderboard",
     icon: UiElementsIcon,
-    badgetxt: badge4,
-    path: "",
+    path: "/leaderboard",
     type: "link",
     active: false,
     selected: false,
