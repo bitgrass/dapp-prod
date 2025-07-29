@@ -190,9 +190,8 @@ export const MenuItems: any = [
   {
     title: "Calculator",
     icon: Utilities,
-    badgetxt: badge4,
 
-    path: "",
+    path: "/calculator",
     type: "link",
     active: false,
     selected: false,
