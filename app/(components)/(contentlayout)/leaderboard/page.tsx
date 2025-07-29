@@ -1,16 +1,115 @@
 "use client";
-import { ProjectListdata } from '@/shared/data/apps/jobs/ProjectListdata';
+import { useNFTLeaderboard } from '@/shared/data/ranking/useNFTLeaderboard';
 import Pageheader from '@/shared/layout-components/page-header/pageheader';
 import Seo from '@/shared/layout-components/seo/seo';
 import Link from 'next/link';
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { usePrivy } from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
+import { nftInfo } from "@/shared/data/tokens/data";
+import axios from "axios";
+
 
 const Select = dynamic(() => import("react-select"), { ssr: false });
 
 const leaderboard = () => {
+    const { address, isConnected } = useAccount();
+    const [userNFTData, setUserNFTData] = useState<any[]>([]);
+    const [userBTG, setUserBTG] = useState(0);
+    const [userLegendary, setUserLegendary] = useState(0);
+    const [userPremium, setUserPremium] = useState(0);
+    const [userStandard, setUserStandard] = useState(0);
+
     const { authenticated, login } = usePrivy();
+    const { ranked, loading } = useNFTLeaderboard();
+    const ITEMS_PER_PAGE = 10;
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const totalPages = Math.ceil(ranked.length / ITEMS_PER_PAGE);
+    const currentData = ranked.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    const handlePrev = () => currentPage > 1 && setCurrentPage(p => p - 1);
+    const handleNext = () => currentPage < totalPages && setCurrentPage(p => p + 1);
+
+    useEffect(() => {
+        if (!address) return;
+
+        const fetchUserNFTs = async () => {
+            let allNFTs: any[] = [];
+            let cursor: string | null = null;
+
+            try {
+                do {
+                    const params = new URLSearchParams({
+                        chain: "base",
+                        format: "decimal",
+                        "token_addresses[0]": nftInfo.address,
+                        normalizeMetadata: "true",
+                        limit: "100",
+                        media_items: "false",
+                        include_prices: "false",
+                    });
+                    if (cursor) params.append("cursor", cursor);
+
+                    const res = await axios.get(
+                        `https://deep-index.moralis.io/api/v2.2/${address}/nft?${params.toString()}`,
+                        {
+                            headers: {
+                                accept: "application/json",
+                                "X-API-Key": process.env.NEXT_PUBLIC_MORALIS_APY_KEY!,
+                            },
+                        }
+                    );
+
+                    allNFTs = [...allNFTs, ...(res.data.result || [])];
+                    cursor = res.data.cursor || null;
+                } while (cursor);
+            } catch (e) {
+                console.error("Error fetching NFTs", e);
+            }
+
+            setUserNFTData(allNFTs);
+
+            let legendary = 0,
+                premium = 0,
+                standard = 0,
+                totalBTG = 0;
+
+            allNFTs.forEach((nft) => {
+                const id = Number(nft.token_id || nft.tokenId);
+                if (id >= 1 && id <= 400) {
+                    legendary++;
+                    totalBTG += 1000;
+                } else if (id >= 401 && id <= 1200) {
+                    premium++;
+                    totalBTG += 500;
+                } else if (id >= 1201 && id <= 3200) {
+                    standard++;
+                    totalBTG += 100;
+                }
+            });
+
+            setUserLegendary(legendary);
+            setUserPremium(premium);
+            setUserStandard(standard);
+            setUserBTG(totalBTG);
+        };
+
+        fetchUserNFTs();
+    }, [address]);
+
+    const { user } = usePrivy();
+    const allWallets = user?.linkedAccounts?.filter((acc) => acc.type === 'wallet');
+    const walletAddresses = allWallets?.map((wallet) => wallet.address.toLowerCase()) || [];
+    const userRank = ranked.findIndex((item) =>
+        walletAddresses.includes(item.address.toLowerCase())
+    );
+
+    const displayRank = userRank >= 0 ? `#${String(userRank + 1).padStart(4, '0')}` : "#0000";
 
     const RankIcon = (
         <svg width="21" height="21" viewBox="0 0 21 21" fill="rgb(var(--primary))" xmlns="http://www.w3.org/2000/svg">
@@ -76,36 +175,7 @@ const leaderboard = () => {
         </svg>
     );
 
-    const [searchTerm, setSearchTerm] = useState(""); // State for search input
-    const [filteredData, setFilteredData] = useState(ProjectListdata); // State for filtered data
-    const svgRemoval = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="24" style="fill: none; stroke: rgb(var(--primary));" viewBox="0 0 24 24">
-                                                                <path d="M8 17L12 21L16 17" stroke:rgb(var(--primary));" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                                                <path d="M12 12V21" stroke-width="2" stroke:rgb(var(--primary));" stroke-linecap="round" stroke-linejoin="round"/>
-                                                                <path d="M20.8802 18.0899C21.7496 17.4786 22.4015 16.6061 22.7415 15.5991C23.0814 14.5921 23.0916 13.503 22.7706 12.4898C22.4496 11.4766 21.814 10.592 20.9562 9.9645C20.0985 9.33697 19.063 8.9991 18.0002 8.99993H16.7402C16.4394 7.82781 15.8767 6.73918 15.0943 5.81601C14.3119 4.89285 13.3303 4.15919 12.2234 3.67029C11.1164 3.18138 9.91302 2.94996 8.7037 2.99345C7.49439 3.03694 6.31069 3.3542 5.24173 3.92136C4.17277 4.48852 3.2464 5.29078 2.53236 6.26776C1.81833 7.24474 1.33523 8.37098 1.11944 9.56168C0.903647 10.7524 0.960787 11.9765 1.28656 13.142C1.61233 14.3074 2.19824 15.3837 3.00018 16.2899" stroke:rgb(var(--primary));" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                                            </svg>`
 
-    // Handle search input changes
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const term = e.target.value.toLowerCase();
-        setSearchTerm(term);
-
-        // Filter the ProjectListdata based on the search term
-        const filtered = ProjectListdata.filter((item) =>
-            item.class.toLowerCase().includes(term) // Match project name
-        );
-        setFilteredData(filtered);
-    };
-
-    const Data = [
-        { value: 'All Categories', label: 'All Categories' },
-        { value: 'Biomass Removal', label: 'Biomass Removal' },
-
-    ];
-    const Data2 = [
-        { value: 'All countries', label: 'All countries' },
-        { value: 'Tunisia', label: 'Tunisia' },
-
-    ];
 
     return (
         <Fragment>
@@ -123,7 +193,7 @@ const leaderboard = () => {
                         </div>
                     </div>
                     {/* Right: Card */}
-                    <div className="col-span-12 md:col-span-6 flex items-center justify-end mt-4 sm:mt-0">
+                    <div className="col-span-12 md:col-span-6 flex items-center justify-end mt-6 sm:mt-0">
                         <div className="box w-full h-full flex flex-col justify-center shadow-none" style={{ minHeight: 220 }}>
 
                             <div className="box-body pb-0 " style={{ paddingBottom: 0 }}>
@@ -131,8 +201,7 @@ const leaderboard = () => {
                                 <div className="flex sm:hidden items-center justify-start mb-3">
                                     <div className="flex items-center gap-2 bg-camel rounded-sm px-3 py-2 text-sm font-semibold text-primary">
                                         {RankIcon}
-                                        <span className="text-base">#00000</span>
-                                    </div>
+                                        <span className="text-base">{displayRank}</span>                                    </div>
                                 </div>
 
                                 {/* Title + Rank Badge (Desktop only) */}
@@ -140,8 +209,7 @@ const leaderboard = () => {
                                     <div className="text-lg font-bold">Your available $BTG for claim</div>
                                     <div className="flex items-center gap-2 bg-camel rounded-sm px-3 py-2 text-sm font-semibold text-primary">
                                         {RankIcon}
-                                        <span className="text-base">#00000</span>
-                                    </div>
+                                        <span className="text-base">{displayRank}</span>                                    </div>
                                 </div>
 
                                 {/* Title (Mobile) */}
@@ -157,7 +225,7 @@ const leaderboard = () => {
                                 {/* BTG Balance and NFT Counts */}
                                 {authenticated ? (
                                     <>
-                                        <div className="rounded-sm bg-camel flex flex-col items-center justify-center sm:flex-row sm:items-center sm:justify-between px-4 py-3 mb-5 gap-4 sm:gap-0 text-center sm:text-left">
+                                        <div className="rounded-sm bg-camel flex flex-col justify-center sm:flex-row sm:items-center sm:justify-between px-4 py-3 mb-5 gap-4 sm:gap-0 text-center sm:text-left">
                                             {/* BTG Icon + Balance */}
                                             <div className="flex items-center gap-1">
                                                 <span className="inline-flex items-center justify-center rounded-full bg-[#d0f5a0] w-8 h-8 mr-2">
@@ -166,10 +234,10 @@ const leaderboard = () => {
                                                         <path d="M30.4755 18.9549V22.4378L30.443 23.1466L30.4095 23.5266L30.3589 23.9125C30.3269 24.1593 30.2743 24.4045 30.2032 24.6428L30.1106 24.9507L29.9995 25.275L29.9319 25.4502L29.7552 25.8507L29.524 26.3122L29.2977 26.7137L28.9728 27.2112L28.9108 27.2938L28.6254 27.6367L28.3291 27.9601L28.21 28.0962L27.8476 28.4651L27.757 28.5472L27.3885 28.8481L27.0767 29.0763L26.8469 29.2345L26.5901 29.3992L26.1662 29.6405L25.9249 29.7606L25.5109 29.9423L25.13 30.087L24.5664 30.2602L24.2165 30.3433L23.7524 30.4284L23.5802 30.4504L22.4935 30.521H14.3338V28.2724H22.3784L23.1407 28.2159C23.3455 28.2008 23.5512 28.1703 23.7514 28.1258L23.8535 28.1032L24.4382 27.9295L24.5193 27.899L25.0189 27.6752L25.2611 27.5476L25.7642 27.2372L25.8478 27.1777L26.2703 26.8338L26.3924 26.7212L26.7453 26.3553L26.8589 26.2226L27.2088 25.7541L27.325 25.5749L27.6043 25.0728L27.7229 24.8235L27.9186 24.336L27.9957 24.1052C28.0713 23.8779 28.1279 23.6432 28.1644 23.4069L28.2 23.1066L28.227 22.7862V16.6683H22.4249C21.572 16.6868 20.7756 16.849 20.0623 17.1513C19.373 17.4562 18.7293 17.9087 18.2032 18.4583C17.8262 18.8458 17.4984 19.3313 17.1705 19.9866C16.9497 20.4826 16.8141 21.0227 16.7005 21.5333C16.6444 21.8962 16.6003 22.3527 16.5823 22.7567V23.3453H17.4063C17.5159 23.3453 17.627 23.3408 17.7366 23.3323L18.3523 23.2853C18.5195 23.2723 18.6877 23.2492 18.8519 23.2162L18.9595 23.1947C19.1117 23.1641 19.2639 23.1241 19.4115 23.0745L19.6077 23.009C19.7965 22.9464 19.9817 22.8673 20.1584 22.7752L20.3496 22.6746C20.5914 22.5484 20.8221 22.3988 21.0369 22.2301C21.184 22.115 21.3252 21.9893 21.4573 21.8572L21.7472 21.5673C21.8938 21.4207 22.0305 21.2615 22.1531 21.0938L22.2297 20.9902C22.3418 20.837 22.4455 20.6758 22.5386 20.5106L22.6587 20.3079C22.7868 20.0922 22.9015 19.8659 22.9991 19.6347L23.0642 19.4825C23.1047 19.4024 23.1427 19.3203 23.1778 19.2382L23.388 18.7411H25.5179L25.3287 19.48C25.2186 19.909 25.0819 20.3354 24.9223 20.7479C24.8452 20.9476 24.7556 21.1444 24.656 21.3336C24.4808 21.6659 24.283 21.9908 24.0673 22.2987C23.8991 22.5394 23.7124 22.7707 23.5137 22.9864L23.3159 23.1997L22.8995 23.6157L22.446 23.9861L21.8663 24.399L21.3757 24.6829L20.7766 24.9827L20.5123 25.0958L19.9101 25.3121L19.7905 25.3471L19.2228 25.4768L19.0081 25.5123L18.023 25.6339L16.6899 25.6745H15.5592L9.4873 25.6329V17.4862C9.49782 17.3621 9.50733 17.2264 9.51634 17.0878C9.53236 16.85 9.54887 16.6042 9.5724 16.3835C9.60043 16.1647 9.64999 15.919 9.69404 15.7017L9.71306 15.6086C9.95634 14.67 10.3067 13.8586 10.7542 13.1969C11.1427 12.6347 11.5441 12.1602 11.9826 11.7462C12.326 11.4169 12.723 11.133 13.0729 10.8828C13.9544 10.2801 14.984 9.8566 16.1368 9.62183C16.5653 9.53223 17.0063 9.52022 17.4328 9.50871C17.5845 9.5047 17.7411 9.5002 17.8923 9.49269H17.9013L25.5485 9.49219V11.7402L17.2471 11.7798L16.708 11.8208C16.2309 11.8934 15.882 11.9765 15.5767 12.0896C14.8208 12.3769 14.2192 12.7308 13.7902 13.1418L13.7822 13.1488C13.3151 13.5443 12.9477 13.9472 12.6914 14.3457C12.4201 14.7842 12.1889 15.2602 12.0242 15.7202C11.8745 16.1747 11.7899 16.5637 11.7679 16.9051C11.7534 17.1398 11.7378 17.4237 11.7233 17.6945C11.7133 17.8722 11.7043 18.0444 11.6953 18.194V23.3453H14.3048L14.3753 22.3267C14.3954 22.187 14.4154 22.0244 14.4374 21.8522C14.5285 21.1273 14.6416 20.2258 14.8464 19.6917C15.2183 18.6465 15.852 17.6664 16.7285 16.7824C17.3487 16.1212 18.0665 15.5806 18.8589 15.1791C19.9071 14.6485 20.9978 14.3792 22.1016 14.3792H30.4335L30.4755 18.9549Z" fill="#0F382B" />
                                                     </svg>
                                                 </span>
-                                                <span className="font-semibold text-xl">0.00 BTG</span>
+                                                <span className="font-semibold text-xl">{userBTG.toLocaleString()} BTG</span>
                                             </div>
                                             {/* Right: NFT Types */}
-                                            <div className="flex items-center justify-start sm:justify-end gap-6">                                        {/* Standard */}
+                                            <div className="flex items-center justify-start sm:justify-end gap-6" style={{ marginLeft: "5px" }}>                                        {/* Standard */}
                                                 <div className="flex items-center gap-2">
                                                     {/* Standard NFT icon */}
                                                     <span>
@@ -193,7 +261,7 @@ const leaderboard = () => {
                                                             </defs>
                                                         </svg>
                                                     </span>
-                                                    <span className="font-semibold text-sm text-primary">0</span>
+                                                    <span className="font-semibold text-sm text-primary">{userStandard}</span>
                                                 </div>
                                                 {/* Premium */}
                                                 <div className="flex items-center gap-2">
@@ -215,7 +283,7 @@ const leaderboard = () => {
                                                             </defs>
                                                         </svg>
                                                     </span>
-                                                    <span className="font-semibold text-sm text-[#0e7490]">0</span>
+                                                    <span className="font-semibold text-sm text-[#0e7490]">{userPremium}</span>
                                                 </div>
                                                 {/* Legendary */}
                                                 <div className="flex items-center gap-2">
@@ -242,7 +310,7 @@ const leaderboard = () => {
                                                             </defs>
                                                         </svg>
                                                     </span>
-                                                    <span className="font-semibold text-sm text-[#ca8a04]">0</span>
+                                                    <span className="font-semibold text-sm text-[#ca8a04]">{userLegendary}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -269,7 +337,7 @@ const leaderboard = () => {
                                 {/* Connect Wallet Button */}
                                 <div className="flex">
                                     <button
-                                        className="w-180 bg-secondary text-white !font-medium btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                        className="w-180 bg-secondary text-white !font-medium btn btn-primary px-8 py-2 rounded-sm mt-2"
                                         onClick={!authenticated ? login : undefined}
                                         disabled={authenticated ? true : false}
                                         style={{ userSelect: 'none', cursor: authenticated ? 'not-allowed' : 'pointer' }}
@@ -287,7 +355,7 @@ const leaderboard = () => {
                 {/* --------- TABLE SECTION --------- */}
                 <div className="grid grid-cols-12 mt-6">
                     <div className="xl:col-span-12 col-span-12">
-                        <div className="box overflow-hidden">
+                        <div className="box overflow-hidden " style={{ marginBottom: 0 }}>
                             <div className="box-header justify-between">
                                 <div className="box-title">NFT holders Ranking</div>
                             </div>
@@ -324,46 +392,77 @@ const leaderboard = () => {
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            {filteredData.map((idx: any, i: number) => (
-                                                <tr
-                                                    className="border-t hover:bg-gray-200 dark:hover:bg-light cursor-pointer"
-                                                    key={idx.id}
-                                                    onClick={() => window.location.href = `/projects/project-details/${idx.id}`}
-                                                >
-                                                    <td className="w-10 text-center font-bold">{i + 1}</td>
-                                                    <td>
-                                                        <span
-                                                            className="badge rounded-full"
-                                                            style={{
-                                                                backgroundColor: idx.statusBgColor,
-                                                                color: idx.statusFontColor,
-                                                            }}
-                                                        >
-                                                            {idx.status}
-                                                        </span>
-                                                    </td>
-                                                    <td>{idx.area}</td>
-                                                    <td>{idx.standard}</td>
-                                                    <td>{idx.location}</td>
-                                                    <td>
-                                                        <div className={`badge bg-camel rounded-full gap-2`} style={{ paddingTop: "0.25rem", paddingBottom: "0.25rem" }}>
-                                                            <span
-                                                                className="w-4 text-primary"
-                                                                dangerouslySetInnerHTML={{ __html: svgRemoval }}
-                                                            />
-                                                            Removal
+                                        <tbody style={{ height: "420px" }}>
+                                            {loading ? (
+                                                <tr>
+                                                    <td colSpan={6}>
+                                                        <div className="flex justify-center items-center h-[420px]">
+                                                            <div className="animate-spin rounded-full h-8 w-8 border-4 border-secondary border-t-transparent"></div>
                                                         </div>
                                                     </td>
                                                 </tr>
-                                            ))}
+                                            ) : (
+                                                [...Array(ITEMS_PER_PAGE)].map((_, i) => {
+                                                    const holder = currentData[i];
+                                                    return holder ? (
+                                                        <tr key={holder.address}>
+                                                            <td>{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
+                                                            <td>
+                                                                <span className="inline-block bg-camel10 rounded-sm text-primary text-xs px-2 py-1">
+                                                                    {holder.address.slice(0, 6)}...{holder.address.slice(-4)}
+                                                                </span>
+                                                            </td>
+
+                                                            <td>{holder.standard}</td>
+                                                            <td>{holder.premium}</td>
+                                                            <td>{holder.legendary}</td>
+                                                            <td className="font-black text-primary" style={{ fontWeight: 900 }}>
+                                                                {holder.btg_claim.toLocaleString()} BTG
+                                                            </td>
+                                                        </tr>
+                                                    ) : (
+                                                        <tr key={`empty-${i}`}>
+                                                            <td colSpan={6}>&nbsp;</td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            )}
                                         </tbody>
                                     </table>
+
+                                    {/* Pagination */}
+
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
+                <div className="my-6 px-2">
+                    {!loading && ranked.length > 0 && (
+                        <div className="flex flex-row justify-center sm:justify-end items-center gap-3">
+                            <button
+                                onClick={handlePrev}
+                                disabled={currentPage === 1}
+                                className="bg-camel10 text-primary rounded-sm px-4 py-1.5 text-sm font-medium disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-xs">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={handleNext}
+                                disabled={currentPage === totalPages}
+                                className="bg-camel10 text-primary rounded-sm px-4 py-1.5 text-sm font-medium disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+
             </div>
         </Fragment>
     )
