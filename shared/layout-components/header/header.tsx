@@ -44,6 +44,21 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
     };
   }, []);
 
+  useEffect(() => {
+    const isDark = local_varaiable?.class === 'dark';
+    const root = document.documentElement;
+
+    // Tailwind dark mode toggle
+    root.classList.toggle('dark', isDark);
+
+    // If your layout relies on these data-* attrs, keep them consistent
+    root.setAttribute('data-header-styles', isDark ? 'dark' : 'light');
+    root.setAttribute('data-menu-styles', isDark ? 'dark' : 'light');
+  }, [local_varaiable?.class]);
+
+
+
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -317,18 +332,21 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
                 </button>
               </div>
 
-              <div className="header-element header-theme-mode hidden !items-center sm:block !py-[1rem] md:!px-[0.65rem] px-2" onClick={() => ToggleDark()}>
-                <button aria-label="anchor"
-                  className="hs-dark-mode-active:hidden flex hs-dark-mode group flex-shrink-0 justify-center items-center gap-2  rounded-full font-medium transition-all text-xs dark:hover:bg-black/20 dark:text-[#8c9097] dark:text-white/50 dark:hover:text-white dark:focus:ring-white/10 dark:focus:ring-offset-white/10"
-                  data-hs-theme-click-value="dark">
-                  <i className="bx bx-moon header-link-icon"></i>
-                </button>
-                <button aria-label="anchor"
-                  className="hs-dark-mode-active:flex hidden hs-dark-mode group flex-shrink-0 justify-center items-center gap-2  rounded-full font-medium text-defaulttextcolor  transition-all text-xs  dark:hover:bg-black/20 dark:text-[#8c9097] dark:text-white/50 dark:hover:text-white dark:focus:ring-white/10 dark:focus:ring-offset-white/10"
-                  data-hs-theme-click-value="light">
-                  <i className="bx bx-sun header-link-icon"></i>
+              <div className="header-element header-theme-mode hidden !items-center sm:block !py-[1rem] md:!px-[0.65rem] px-2">
+                <button
+                  type="button"
+                  aria-label="Toggle theme"
+                  onClick={ToggleDark}
+                  className="flex flex-shrink-0 justify-center items-center gap-2 rounded-full font-medium text-xs dark:hover:bg-black/20 dark:text-[#8c9097] dark:text-white/50 dark:hover:text-white dark:focus:ring-white/10 dark:focus:ring-offset-white/10"
+                >
+                  {local_varaiable?.class === 'dark' ? (
+                    <i className="bx bx-sun header-link-icon" />
+                  ) : (
+                    <i className="bx bx-moon header-link-icon" />
+                  )}
                 </button>
               </div>
+
 
 
               <div className="header-element header-fullscreen py-[1rem] md:px-[0.65rem] px-2">
