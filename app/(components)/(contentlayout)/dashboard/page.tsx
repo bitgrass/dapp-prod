@@ -214,7 +214,6 @@ const Dashboard = () => {
                         },
                     }
                 )
-                console.log("teeeest",response)
                 const prices = response.data.usdPrice;
                 const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
 
@@ -228,11 +227,6 @@ const Dashboard = () => {
                 }
 
 
-                if (dayHrPercentChange) {
-                    setBtgPercentChange(dayHrPercentChange.toFixed(2))
-                } else {
-                    console.warn('24HrPercentChange price not found');
-                }
             } catch (error) {
                 console.error("Error fetching Degen price:", error);
             }
@@ -240,6 +234,33 @@ const Dashboard = () => {
 
         fetchPrice();
     }, []);
+
+   useEffect(() => {
+    async function fetchPrice24H() {
+        try {
+            const response = await axios.get(
+                `https://deep-index.moralis.io/api/v2.2/tokens/${btgToken.address}/analytics?chain=base`,
+                {
+                    headers: {
+                        accept: "application/json",
+                        "X-API-Key": API_KEY!,
+                    },
+                }
+            );
+
+            const volume24h =
+                (response.data?.totalBuyVolume?.["24h"] || 0) +
+                (response.data?.totalSellVolume?.["24h"] || 0);
+            setBtgPercentChange(volume24h.toFixed(2)); // You can create this state to store it
+
+        } catch (error) {
+            console.error("Error fetching BTG analytics:", error);
+        }
+    }
+
+    fetchPrice24H();
+}, []);
+
 
 
 
@@ -777,7 +798,7 @@ const Dashboard = () => {
                                                                         </svg>                                                                    </span>
                                                                 </div>
                                                                 <div className="flex-grow">
-                                                                    <h5 className="font-semibold ">{btgPercentChange || "TBA"} %</h5>
+                                                                    <h5 className="font-semibold ">{formatLargeValue(btgPercentChange)|| "TBA"} </h5>
                                                                     <p className="text-[#8c9097] dark:text-white/50 mb-0 text-[0.75rem]">24h Volume</p>
                                                                 </div>
 
