@@ -8,6 +8,17 @@ interface BalanceCardProps {
 }
 
 const BalanceCard = ({ totalBalance, btgBalance, btgToken }: BalanceCardProps) => {
+  const formatLargeValue = (value: number) => {
+    if (value >= 1_000_000_000) {
+      return `${(Math.round(value / 100_000_000) / 10).toFixed(1)}B`;
+    } else if (value >= 1_000_000) {
+      return `${(Math.round(value / 100_000) / 10).toFixed(1)}M`;
+    } else if (value >= 1_000) {
+      return `${(Math.round(value / 100) / 10).toFixed(1)}K`;
+    } else {
+      return `${value}`;
+    }
+  };
   return (
     <div className="grid grid-cols-12 gap-x-6">
       <div className="xxl:col-span-12 col-span-12">
@@ -20,8 +31,7 @@ const BalanceCard = ({ totalBalance, btgBalance, btgToken }: BalanceCardProps) =
                   <div>
                     <div className="">Balance</div>
                     <div className="text-[2.25rem] font-semibold">
-                      {btgBalance || "0.00"} BTG
-                    </div>
+                      {formatLargeValue(Number(btgBalance) || 0)} BTG                    </div>
                     <small className="text-[1rem] mt-0 text-[#8c9097] dark:text-white/50">
                       ~  ${totalBalance || "0.00"} USD
                     </small>

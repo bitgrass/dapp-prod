@@ -33,6 +33,7 @@ interface NftdetailsProps {
 }
 
 const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
+
     const CONTRACT_ADDRESS = CONTRACT_ADDRESS_INFO;
     const SEADROP_ADDRESS = SEADROP_ADDRESS_INFO;
     const SEADROP_CONDUIT = SEADROP_CONDUIT_INFO;
@@ -280,53 +281,59 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
     }, [walletClient]);
 
+    useEffect(() => {
+        if (baseMintPriceEth > 0 && ethToUsd > 0) {
+            const totalEth = baseMintPriceEth * quantity;
+            setMintPriceEth(totalEth.toFixed(5));
+            setMintPriceUsd((totalEth * ethToUsd).toFixed(2));
+        }
+    }, [quantity, baseMintPriceEth, ethToUsd]);
+
 
     async function fetchAvailableNfts() {
-        setIsLoadingFetchAvailable(true)
-        if (!walletClient || !isConnected || !apiKey) {
-            setIsLoadingFetchAvailable(false)
-            console.log("Missing wallet client, connection, or API key, skipping fetch...");
+        setIsLoadingFetchAvailable(true);
+
+        if (!walletClient || !isConnected) {
+            setIsLoadingFetchAvailable(false);
+            console.log("Missing wallet client or connection, skipping fetch...");
             return;
         }
 
-        const chain = "base";
-        let legendaryNftDispo: any = [];
-        let primaryNftDispo: any = [];
-        let nextCursor = null;
+        let legendaryNftDispo: number[] = [];
+        let primaryNftDispo: number[] = [];
+        let nextCursor: string | null = null;
 
-        // Keep fetching until both legendary and premium NFTs are found or no more pages
+        const getListings = async (cursor: string | null = null) => {
+            const params = new URLSearchParams({ collection });
+            if (cursor) params.set("next", cursor);
+            const res = await fetch(`https://muddy-forest-4e3a.bitgrass-crypto.workers.dev/api/opensea-listings?${params}`, {
+                headers: {
+                    'api-key': `${apiKey}`
+                }
+            });
+            const text = await res.text(); // <- read body no matter what
+
+            if (!res.ok) {
+                console.error('OpenSea proxy failed', {
+                    status: res.status,
+                    url: res.url,
+                    body: text.slice(0, 2000) // show real error in console
+                });
+                throw new Error(`API error ${res.status}`);
+            }
+
+            // upstream returns JSON on success
+            return JSON.parse(text);
+        };
+
         do {
             try {
-                const url = new URL(`https://api.opensea.io/api/v2/listings/collection/${collection}/all`);
-                url.searchParams.set("limit", "10");
-                if (nextCursor) {
-                    url.searchParams.set("next", nextCursor);
-                }
-
-                const res = await fetch(url.toString(), {
-                    headers: {
-                        accept: "application/json",
-                        "x-api-key": apiKey,
-                    },
-                });
-
-                if (!res.ok) {
-                    console.error(`Failed to fetch NFTs: ${res.status}`);
-                    break;
-                }
-
-                const data = await res.json();
+                const data = await getListings(nextCursor);
                 const nfts = data.listings || [];
-
-
-
                 nextCursor = data.next || null;
 
                 // Categorize NFTs into legendary and premium
-                const newLegendary = nfts.flatMap((nft: any) => {
-
-
-
+                const newLegendary: number[] = nfts.flatMap((nft: any) => {
                     if (
                         nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
                         parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 1 &&
@@ -337,7 +344,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     return [];
                 });
 
-                const newPremium = nfts.flatMap((nft: any) => {
+                const newPremium: number[] = nfts.flatMap((nft: any) => {
                     if (
                         nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
                         parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 401 &&
@@ -348,23 +355,19 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     return [];
                 });
 
-   
                 legendaryNftDispo = [...legendaryNftDispo, ...newLegendary];
                 primaryNftDispo = [...primaryNftDispo, ...newPremium];
 
-
-
                 // Stop if both arrays have data
                 if (legendaryNftDispo.length > 0 && primaryNftDispo.length > 0) {
-                    console.log("Found NFTs for both legendary and premium, stopping fetch.");
                     break;
                 }
-
             } catch (err) {
                 console.error("Failed to fetch NFTs:", err);
                 break;
             }
         } while (nextCursor);
+
 
         // Log final results
         if (legendaryNftDispo.length === 0) {
@@ -376,20 +379,21 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
         // Proceed to listings API for legendary NFTs if any
         if (legendaryNftDispo.length > 0) {
-            await fetchListedLegendaryItems(legendaryNftDispo.sort((a: any, b: any) => a - b));
+            await fetchListedLegendaryItems(legendaryNftDispo.sort((a, b) => a - b));
         } else {
             setListedLegendaryItems([]);
         }
 
         // Proceed to listings API for premium NFTs if any
         if (primaryNftDispo.length > 0) {
-            await fetchListedPremiumItems(primaryNftDispo.sort((a: any, b: any) => a - b));
+            await fetchListedPremiumItems(primaryNftDispo.sort((a, b) => a - b));
         } else {
             setListedPremiumItems([]);
         }
 
-        setIsLoadingFetchAvailable(false)
+        setIsLoadingFetchAvailable(false);
     }
+
 
     async function fetchListedLegendaryItems(tokenIds: any) {
         if (!walletClient || !isConnected || !apiKey) {
@@ -507,7 +511,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
                     );
 
-                console.log(`Premium sorted (token ID ${firstTokenId}):`, sorted);
                 setListedPremiumItems(sorted);
             } else {
                 console.log(`No active premium NFT listings found for token ID ${firstTokenId}`);
@@ -621,7 +624,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
             const txReceipt = await provider.waitForTransaction(txHash);
             if (txReceipt?.status === 1) {
-
+                console.log("listed items", txReceipt)
                 const modalData: any = await getModalData();
                 setModalData(modalData);
                 setModalOpen(true);
@@ -876,11 +879,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
                                                 <button
                                                     className=" w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
-                                                    disabled={true}
-                                                    style={{
-                                                        cursor: "not-allowed",
-                                                        userSelect: "none"
-                                                    }}
+                                                    onClick={() => handleMintAbi(quantity)}
+                                                    disabled={loading}
                                                 >
                                                     {loading && (
                                                         <span className="btn-spinner"></span>
@@ -1017,12 +1017,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <button
+                                                    onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
                                                     className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
                                                     style={{
-                                                        cursor: "not-allowed",
-                                                        userSelect: "none"
+                                                        cursor: isBuying ? "not-allowed" : "pointer",
+                                                        userSelect: isBuying ? "none" : "auto"
                                                     }}
-                                                    disabled={true}
+                                                    disabled={isLoadingFetchAvailable}
                                                 >
                                                     {isBuying && (
                                                         <span className="btn-spinner"></span>
@@ -1161,12 +1162,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <button
+                                                    onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
                                                     className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
                                                     style={{
-                                                        cursor: "not-allowed",
-                                                        userSelect: "none"
+                                                        cursor: isLoadingFetchAvailable ? "not-allowed" : "pointer",
+                                                        userSelect: isLoadingFetchAvailable ? "none" : "auto"
                                                     }}
-                                                    disabled={true}
+                                                    disabled={isLoadingFetchAvailable}
                                                 >
                                                     {isBuying && (
                                                         <span className="btn-spinner"></span>

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import {  nftInfo } from "@/shared/data/tokens/data";
+import { nftInfo } from "@/shared/data/tokens/data";
 
 const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
 const CONTRACT_ADDRESS = nftInfo.address;
 const CHAIN = "base";
+
+// Address to exclude (lowercased for safety)
+const EXCLUDED_ADDRESS = process.env.NEXT_PUBLIC_OPENSEA_ADDRESS?.toLowerCase();;
 
 export interface RankedHolder {
   address: string;
@@ -24,7 +27,7 @@ export function useNFTLeaderboard() {
 
       try {
         while (true) {
-          const url : any = `https://deep-index.moralis.io/api/v2.2/nft/${CONTRACT_ADDRESS}/owners?chain=${CHAIN}&format=decimal${cursor ? `&cursor=${cursor}` : ''}`;
+          const url: any = `https://deep-index.moralis.io/api/v2.2/nft/${CONTRACT_ADDRESS}/owners?chain=${CHAIN}&format=decimal${cursor ? `&cursor=${cursor}` : ''}`;
           const res = await fetch(url, {
             headers: {
               'accept': 'application/json',
@@ -42,7 +45,11 @@ export function useNFTLeaderboard() {
         const map: Record<string, RankedHolder> = {};
 
         for (const { owner_of, token_id } of owners) {
-          const addr = owner_of;
+          const addr = owner_of.toLowerCase();
+
+          // Skip excluded address
+          if (addr === EXCLUDED_ADDRESS) continue;
+
           const id = parseInt(token_id);
 
           if (!map[addr]) {

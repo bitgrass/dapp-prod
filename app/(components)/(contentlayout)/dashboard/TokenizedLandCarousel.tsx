@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 
 const IMAGES = [
-    { src: "/assets/images/apps/100m2F.jpg", alt: "100m² Plot" },
-    { src: "/assets/images/apps/500m2F.jpg", alt: "500m² Plot" },
-    { src: "/assets/images/apps/1000m2F.jpg", alt: "1000m² Plot" },
+    { src: "/assets/images/apps/100m2.webp", alt: "100m² Plot" },
+    { src: "/assets/images/apps/500m2.webp", alt: "500m² Plot" },
+    { src: "/assets/images/apps/1000m2.webp", alt: "1000m² Plot" },
 ];
 
 const AUTOSLIDE_INTERVAL = 5200; // ms

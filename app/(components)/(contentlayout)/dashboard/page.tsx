@@ -32,6 +32,30 @@ async function initializeMoralis() {
     }
 }
 
+declare global {
+    interface Window {
+        createMyWidget?: (
+            elementId: string,
+            options: {
+                autoSize?: boolean;
+                chainId?: string;
+                pairAddress?: string;
+                showHoldersChart?: boolean;
+                defaultInterval?: string;
+                timeZone?: string;
+                theme?: string;
+                locale?: string;
+                hideLeftToolbar?: boolean;
+                hideTopToolbar?: boolean;
+                hideBottomToolbar?: boolean;
+            }
+        ) => void;
+    }
+}
+const PRICE_CHART_ID = "my-price-chart";
+const SCRIPT_ID = "moralis-chart-widget";
+const WIDGET_SRC = "https://moralis.com/static/embed/chart.js";
+
 // Initialize Moralis only once in the app lifecycle
 initializeMoralis();
 import { ApexOptions } from "apexcharts";
@@ -64,6 +88,9 @@ const Dashboard = () => {
             setActiveTab(tab);
         }
     }, [searchParams, activeTab]);
+
+
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
 
 
@@ -99,147 +126,72 @@ const Dashboard = () => {
     }, []);
     const [loadingChart, setLoadingChart] = useState(true);
 
-
     useEffect(() => {
-        if (container.current) {
-            // Clear any existing TradingView widget
-            container.current.innerHTML = ""; // This removes any existing widget entirely.
+        if (typeof window === "undefined") return;
 
-            // Create and append the TradingView script
+        const tz =
+            Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC";
+
+        // Ensure container is empty before (re)mounting the widget
+        const clearContainer = () => {
+            if (containerRef.current) {
+                containerRef.current.innerHTML = "";
+            }
+        };
+
+        const loadWidget = () => {
+            if (typeof window.createMyWidget === "function") {
+                clearContainer();
+                window.createMyWidget(PRICE_CHART_ID, {
+                    autoSize: true,
+                    chainId: "0x2105", // Base chain
+                    pairAddress: "0x2a0F410422951F53CD2F3E9F6d0f29FccB1426E9",
+                    showHoldersChart: false,
+                    defaultInterval: "1D",
+                    timeZone: tz,
+                    theme: theme,
+                    locale: "en",
+                    hideLeftToolbar: true,
+                    hideTopToolbar: true,
+                    hideBottomToolbar: true,
+                });
+            } else {
+                console.error("createMyWidget function is not defined.");
+            }
+        };
+
+        // If script already present
+        const existing = document.getElementById(SCRIPT_ID) as
+            | HTMLScriptElement
+            | null;
+
+        if (existing) {
+            // If widget function is ready, load immediately; otherwise wait for load
+            if (typeof window.createMyWidget === "function") {
+                loadWidget();
+            } else {
+                existing.addEventListener("load", loadWidget, { once: true });
+            }
+        } else {
+            // Inject script
             const script = document.createElement("script");
-            script.src = "https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js";
+            script.id = SCRIPT_ID;
+            script.src = WIDGET_SRC;
             script.type = "text/javascript";
             script.async = true;
-            script.setAttribute("data-tradingview", "true");
-            script.innerHTML = `
-          {
-              "symbols": [
-                  [
-                      "COINBASE:DEGENUSD|1D"
-                  ]
-              ],
-              "chartOnly": true,
-              "width": "100%",
-              "height": "400",
-              "locale": "en",
-              "colorTheme": "${theme}",
-              "autosize": true,
-              "showVolume": false,
-              "showMA": false,
-              "hideDateRanges": false,
-              "hideMarketStatus": false,
-              "hideSymbolLogo": false,
-              "scalePosition": "right",
-              "scaleMode": "Normal",
-              "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-              "fontSize": "10",
-              "noTimeScale": false,
-              "valuesTracking": "1",
-              "changeMode": "price-and-percent",
-              "chartType": "area",
-              "maLineColor": "#2962FF",
-              "maLineWidth": 1,
-              "maLength": 9,
-              "headerFontSize": "medium",
-              "widgetFontColor": "rgba(76, 175, 80, 1)",
-              "lineWidth": 2,
-              "lineType": 0,
-              "dateRanges": [
-                  "5d|3",
-                  "1m|30",
-                  "3m|60",
-                  "12m|1D",
-                  "all|1M"
-              ],
-              "lineColor": "rgba(102, 187, 106, 1)",
-              "topColor": "rgba(200, 230, 201, 1)",
-              "bottomColor": "rgba(200, 230, 201, 0.28)",
-              "color": "rgba(76, 175, 80, 1)",
-              "range": "5D"
-          }`;
-            script.onload = () => setLoadingChart(false); // Remove loading state when script loads
-
-            container.current.appendChild(script);
+            script.onload = loadWidget;
+            script.onerror = () => {
+                console.error("Failed to load the chart widget script.");
+            };
+            document.body.appendChild(script);
         }
-    }, [theme]); // Re-run the effect whenever the theme changes.
 
-    const [chartOptions] = useState<ApexOptions>({
-        chart: {
-            type: "bar",
-            toolbar: {
-                show: false, // Hide chart toolbar
-            },
-            animations: {
-                enabled: true,
-            },
-            stacked: true, // Enable stacking for a single bar
-        },
-        plotOptions: {
-            bar: {
-                horizontal: true, // Horizontal bar chart
-                barHeight: "70%", // Adjust bar height
-                borderRadius: 4,
-            },
-        },
-        dataLabels: {
-            enabled: false, // Enable labels inside the chart
-        },
-        xaxis: {
-            labels: {
-                show: false, // Show x-axis labels
-            },
-            axisBorder: {
-                show: false, // Hide x-axis border
-            },
-            axisTicks: {
-                show: false, // Hide x-axis ticks
-            },
-
-        },
-        yaxis: {
-            labels: {
-                show: false, // Show y-axis labels
-                formatter: function () {
-                    return "Bitgrass NFT Collection"; // Label for the bar
-                },
-            },
-        },
-        grid: {
-            show: false, // Hide grid background
-        },
-        tooltip: {
-            enabled: true, // Enable tooltips
-            y: {
-                formatter: function (val) {
-                    return `${val}`; // Tooltip to show data values
-                },
-            },
-        },
-        fill: {
-            opacity: 1, // Fill bar with solid color
-        },
-        legend: {
-            show: false, // Explicitly hide the legend
-        },
-        colors: ["#084D08", "#66CC33", "#f9f8f7"], // Colors for each category
-
-    });
-
-    const [chartSeries] = useState([
-        {
-            name: "Standard",
-            data: [2000], // Quantity of Standard NFTs
-        },
-        {
-            name: "Premium",
-            data: [800], // Quantity of Rare NFTs
-        },
-        {
-            name: "Legendary",
-            data: [400], // Quantity of Legendary NFTs
-        },
-    ]);
-
+        // Cleanup: clear container on unmount to avoid duplicate embeds
+        return () => {
+            clearContainer();
+        };
+    }, [theme]);
+   
     const nftDataChart = [
         { name: "Standard", value: 2000, color: "#084D08", land: "100m²" },
         { name: "Premium", value: 800, color: "#66CC33", land: "500m²" },
@@ -262,7 +214,7 @@ const Dashboard = () => {
                         },
                     }
                 )
-
+                console.log("teeeest",response)
                 const prices = response.data.usdPrice;
                 const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
 
@@ -510,7 +462,7 @@ const Dashboard = () => {
                                                             <div className="mb-6">
                                                                 <p className="text-[.9375rem] mb-2 font-semibold">Description :</p>
                                                                 <p className="text-[0.75rem]">
-                                                                    Bitgrass will tokenize <b className="text-defaulttextcolor">100 hectares of farmland</b>  into a limited collection of <b className="text-defaulttextcolor"> 3,200 NFTs</b>, launching on <b className="text-defaulttextcolor">July 27, 2025.</b>
+                                                                    Bitgrass will tokenize <b className="text-defaulttextcolor">100 hectares of farmland</b>  into a limited collection of <b className="text-defaulttextcolor"> 3,200 NFTs</b>, launching on <b className="text-defaulttextcolor">September 1, 2025.</b>
 
                                                                 </p><br /> Each NFT represents a tokenized farmland plot with multiple use cases:<br />
                                                                 <ul className="text-[0.75rem] list-disc list-inside ml-4">
@@ -579,7 +531,7 @@ const Dashboard = () => {
                                                         </div>
                                                     </div>
                                                     <div className="box-body">
-                                                            <TokenizedLandCube />
+                                                        <TokenizedLandCube />
                                                         <div className="grid">
                                                             <Link href="/ownplot/standard" className="ti-btn bg-secondary  text-white !font-medium !mb-2 !mt-4">Mint Plot</Link>
                                                             <Link href="https://opensea.io/collection/bitgrass-nft/overview" target="_blank" rel="noopener noreferrer" className="ti-btn bg-camel10  !font-medium">Discover</Link>
@@ -730,9 +682,14 @@ const Dashboard = () => {
                                                 </div>
                                                 <div className="box-body !p-0">
                                                     <div id="crypto" className="p-4">
-                                                        <div className="tradingview-widget-container mb-1" ref={container}>
-                                                            <div className="tradingview-widget-container__widget"></div>
-                                                        </div>
+                                                        <div
+                                                            id={PRICE_CHART_ID}
+                                                            ref={containerRef}
+                                                            style={{
+                                                                width: "100%",
+                                                                height: "420px", // ensure visible height
+                                                            }}
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -804,7 +761,7 @@ const Dashboard = () => {
                                                                         </svg>                                                                    </span>
                                                                 </div>
                                                                 <div className="flex-grow">
-                                                                    <h5 className="font-semibold ">{formatLargeValue(btgPrice * 10000000)}</h5>
+                                                                    <h5 className="font-semibold ">{formatLargeValue(btgPrice * 1000000000)}</h5>
                                                                     <p className="text-[#8c9097] dark:text-white/50 mb-0 text-[0.75rem]">Market Cap</p>
                                                                 </div>
 
@@ -836,7 +793,7 @@ const Dashboard = () => {
                                                                         </svg>                                                                    </span>
                                                                 </div>
                                                                 <div className="flex-grow">
-                                                                    <h5 className="font-semibold ">10M BTG</h5>
+                                                                    <h5 className="font-semibold ">1B BTG</h5>
                                                                     <p className="text-[#8c9097] dark:text-white/50 mb-0 text-[0.75rem]">Circulating Supply</p>
                                                                 </div>
 
@@ -889,7 +846,7 @@ const Dashboard = () => {
 
                                                         <div>
                                                             <span className="block text-[#8c9097] dark:text-white/50 text-[0.75rem]">Launch Date</span>
-                                                            <span className="block text-[.875rem] font-semibold">July 27, 2025</span>
+                                                            <span className="block text-[.875rem] font-semibold">September 1, 2025</span>
                                                         </div>
                                                         <div>
                                                             <span className="block text-[#8c9097] dark:text-white/50 text-[0.75rem]">Live on</span>

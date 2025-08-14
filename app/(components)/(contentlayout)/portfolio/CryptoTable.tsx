@@ -170,7 +170,17 @@ const CryptoTable = ({
       return `$${value}`;
     }
   };
-
+ const formatLargeValueBTG = (value: number) => {
+    if (value >= 1_000_000_000) {
+      return `${(Math.round(value / 100_000_000) / 10).toFixed(1)}B`;
+    } else if (value >= 1_000_000) {
+      return `${(Math.round(value / 100_000) / 10).toFixed(1)}M`;
+    } else if (value >= 1_000) {
+      return `${(Math.round(value / 100) / 10).toFixed(1)}K`;
+    } else {
+      return `${value}`;
+    }
+  };
   return (
     <div className="grid grid-cols-12 gap-x-6">
       <div className="xl:col-span-12 col-span-12">
@@ -280,7 +290,7 @@ const CryptoTable = ({
                     </td>
                     <td>
                       <div className="items-center">
-                        <span className="text-[0.75rem] text-[#8c9097] dark:text-white/50">{btgBalance} BTG</span>
+                        <span className="text-[0.75rem] text-[#8c9097] dark:text-white/50">{formatLargeValueBTG(Number(btgBalance) || 0)} BTG</span>
                         <p className="mb-0 font-semibold">${(parseFloat(btgBalance) * btgPrice).toFixed(2)} USD</p>
                       </div>
                     </td>
