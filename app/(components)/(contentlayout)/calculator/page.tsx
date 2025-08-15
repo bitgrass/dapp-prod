@@ -331,14 +331,14 @@ const CarbonCalculator = () => {
 
             {/* Question 1 */}
             <div className="transition-all duration-300 mb-6">
-              <p className="text-lg font-bold text-primary mb-3">
+              <p className="text-base font-semibold text-primary mb-3">
                 {currentQuestions[0].text}
               </p>
 
               {/* If this question has predefined options -> dropdown; else keep input */}
               {questionOptions[currentQuestions[0].id] ? (
                 <select
-                  className="w-full px-4 py-3 bg-camel rounded-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none focus:ring-2 focus:ring-secondary"
                   value={answers[currentQuestions[0].id] || ""}
                   onChange={(e) => handleChange(currentQuestions[0].id, e.target.value)}
                 >
@@ -351,7 +351,7 @@ const CarbonCalculator = () => {
                 <input
                   type={currentQuestions[0].id === "num_flights" ? "number" : "text"}
                   min={0}
-                  className="w-full px-4 py-3 bg-camel rounded-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none focus:ring-2 focus:ring-secondary"
                   value={answers[currentQuestions[0].id] || ""}
                   onChange={(e) => handleChange(currentQuestions[0].id, e.target.value)}
                   placeholder="Type your answer..."
@@ -368,7 +368,7 @@ const CarbonCalculator = () => {
                   : "opacity-0 -translate-y-4 pointer-events-none"
               )}
             >
-              <p className="text-base font-bold text-primary mb-3">
+              <p className="text-base font-semibold text-primary mb-3">
                 {currentQuestions[1].text}
               </p>
 
