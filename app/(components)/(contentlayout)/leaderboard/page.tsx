@@ -83,13 +83,13 @@ const leaderboard = () => {
                 const id = Number(nft.token_id || nft.tokenId);
                 if (id >= 1 && id <= 400) {
                     legendary++;
-                    totalBTG += 1000;
+                    totalBTG += 35000;
                 } else if (id >= 401 && id <= 1200) {
                     premium++;
-                    totalBTG += 500;
+                    totalBTG += 20000;
                 } else if (id >= 1201 && id <= 3200) {
                     standard++;
-                    totalBTG += 100;
+                    totalBTG += 5000;
                 }
             });
 
