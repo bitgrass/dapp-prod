@@ -907,11 +907,11 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 											className="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-black text-xs font-medium text-white rounded shadow-sm dark:bg-neutral-700"
 											role="tooltip"
 										>
-											Whitepaper
+											Gitbook
 										</span>
 									</button>
 								</span>
-								<span className="side-menu__label">Whitepaper</span>
+								<span className="side-menu__label">Gitbook</span>
 							</Link>
 						</li>
 					</ul>
