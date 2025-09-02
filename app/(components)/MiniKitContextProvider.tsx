@@ -1,73 +1,75 @@
 'use client';
 
-import { PrivyProvider } from '@privy-io/react-auth';
-import { WagmiProvider } from '@privy-io/wagmi';      // ← use Privy’s provider
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { OnchainKitProvider } from '@coinbase/onchainkit';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { base } from 'viem/chains';
-
-import { NEXT_PUBLIC_CDP_API_KEY } from './config';
-import { useWagmiConfig } from './wagmi';
 import { MiniKitProvider } from '@coinbase/onchainkit/minikit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
+import { base } from 'viem/chains';
+import { NEXT_PUBLIC_CDP_API_KEY } from './config';
+import { WagmiProvider } from '@privy-io/wagmi';
+import { PrivyProvider } from '@privy-io/react-auth';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { useWagmiConfig } from './wagmi';
+
+type Props = { children: ReactNode };
 
 const queryClient = new QueryClient();
 
-type Props = { children: React.ReactNode };
-
-export default function OnchainProviders({ children }: Props) {
-  const wagmiConfig = useWagmiConfig();
-
+function PrivyWrapper({ children }: { children: ReactNode }) {
   return (
     <PrivyProvider
       appId="cmbqbbsqm00kljy0n1yzjeij7"
       config={{
-  "appearance": {
-    "accentColor": "#7fc447",
-    "theme": "#F5F3EB",
-    "showWalletLoginFirst": false,
-    "logo": "/assets/images/brand-logos/main-logo.svg",
-    "walletChainType": "ethereum-only",
-    "walletList": [
-      "coinbase_wallet",
-      "detected_wallets",
-      "metamask",
-      "phantom"
-
-
-    ]
-  },
-  "loginMethods": [
-    "email",
-    "wallet",
-    "twitter"
-  ],
-  "fundingMethodConfig": {
-    "moonpay": {
-      "useSandbox": true
-    }
-  },
-  "embeddedWallets": {
-    "requireUserPasswordOnCreate": false,
-    "showWalletUIs": true,
-    "ethereum": {
-      "createOnLogin": "users-without-wallets"
-    },
-    "solana": {
-      "createOnLogin": "users-without-wallets"
-    }
-  },
-  "mfa": {
-    "noPromptOnMfaRequired": false
-  },
-}}
+        appearance: {
+          accentColor: '#7fc447',
+          theme: '#F5F3EB',
+          logo: '/assets/images/brand-logos/main-logo.svg',
+          walletChainType: 'ethereum-only',
+          walletList: [
+            'coinbase_wallet',
+            'detected_wallets',
+            'metamask',
+            'phantom',
+          ],
+        },
+        loginMethods: [
+          'email',
+          'wallet',
+          'twitter',
+          'farcaster',
+        ],
+        fundingMethodConfig: {
+          moonpay: { useSandbox: true },
+        },
+        embeddedWallets: {
+          showWalletUIs: false,
+          ethereum: { createOnLogin: 'users-without-wallets' },
+        },
+      }}
     >
+      {children}
+    </PrivyProvider>
+  );
+}
+
+function OnchainProviders({ children }: Props) {
+  const wagmiConfig = useWagmiConfig();
+
+  return (
+    <PrivyWrapper>
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
           <MiniKitProvider
             apiKey={NEXT_PUBLIC_CDP_API_KEY}
-            chain={base}
+            chain={base as any}
             projectId="55dd698a-0763-4455-9c13-3db125f81623"
+            config={{
+              appearance: { theme: 'base', mode: 'light' },
+              wallet: {
+                display: 'modal',
+                termsUrl: '#',
+                privacyUrl: '#',
+              },
+            }}
           >
             <RainbowKitProvider modalSize="compact">
               {children}
@@ -75,6 +77,8 @@ export default function OnchainProviders({ children }: Props) {
           </MiniKitProvider>
         </WagmiProvider>
       </QueryClientProvider>
-    </PrivyProvider>
+    </PrivyWrapper>
   );
 }
+
+export default OnchainProviders;

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { usePrivy, useLogin, useLogout, useWallets, ConnectedWallet } from '@privy-io/react-auth';
 import { useBalance, useSendTransaction, useSwitchChain } from 'wagmi';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
@@ -8,39 +8,90 @@ import { Fragment } from 'react';
 import { btgToken, ETHToken } from "@/shared/data/tokens/data";
 import { useSetActiveWallet } from '@privy-io/wagmi';
 
+
 const WalletMenu: React.FC = () => {
-  const { ready, authenticated, user, linkWallet, exportWallet } = usePrivy();
+
+  const { ready, authenticated, user, linkWallet, exportWallet, createWallet } = usePrivy();
   const { login } = useLogin();
   const { logout } = useLogout();
   const { wallets } = useWallets();
   const { sendTransactionAsync } = useSendTransaction();
   const { switchChainAsync } = useSwitchChain();
   const { setActiveWallet } = useSetActiveWallet();
+  type ExternalWallet = {
+    address: string;
+    walletClientType: "external";
+  };
 
-  const [activePrivyWallet, setActivePrivyWallet] = useState<ConnectedWallet | null>(null);
+  type ActiveWallet = ConnectedWallet | ExternalWallet;
+  const [activePrivyWallet, setActivePrivyWallet] = useState<ActiveWallet | null>(null);
+  const farcaster = user?.farcaster as any
+  const farcasterName = farcaster?.username || farcaster?.displayName;
 
-  // 1. Only use activePrivyWallet for address and balances!
-  const address = activePrivyWallet?.address as `0x${string}` || "";
-  const { data: ethBalance } = useBalance({ address, chainId: base.id });
-  const { data: tokenBalance } = useBalance({ address, token: btgToken.address as any, chainId: base.id });
+  function isPrivyWallet(
+    w: ActiveWallet | null
+  ): w is ConnectedWallet {
+    return !!w && w.walletClientType === "privy";
+  }
+  function useFarcasterPrimaryWallet(fid?: number) {
+    const [address, setAddress] = useState<string | null>(null);
 
-  // --- Wallet selection logic ---
+    useEffect(() => {
+      if (!fid) return;
+
+      const fetchPrimary = async () => {
+        try {
+          const res = await fetch(
+            `https://api.farcaster.xyz/fc/primary-address?fid=${fid}&protocol=ethereum`
+          );
+          const data = await res.json();
+          setAddress(data?.result?.address?.address || null);
+        } catch (err) {
+          console.error("Failed to fetch Farcaster wallet:", err);
+          setAddress(null);
+        }
+      };
+
+      fetchPrimary();
+    }, [fid]);
+
+    return address;
+  }
+
+  const farcasterPrimary = useFarcasterPrimaryWallet(farcaster?.fid);
+
   useEffect(() => {
+    console.log("userrr--", user)
+    if (farcasterPrimary) {
+      // Force Farcaster primary as external
+      setActivePrivyWallet({
+        address: farcasterPrimary,
+        walletClientType: "external",
+      } as any);
+      return;
+    }
+
     if (!wallets.length) {
       setActivePrivyWallet(null);
       return;
     }
+
     const external = wallets.find(w => w.walletClientType !== 'privy');
     const embedded = wallets.find(w => w.walletClientType === 'privy');
+
     if (external) {
       setActivePrivyWallet(external);
     } else if (embedded) {
-      setActiveWallet(embedded); // For embedded, call setActiveWallet.
+      setActiveWallet(embedded);
       setActivePrivyWallet(embedded);
     } else {
       setActivePrivyWallet(null);
     }
-  }, [wallets, setActiveWallet]);
+  }, [wallets, user, setActiveWallet]);
+
+
+
+
 
   // --- UI State ---
   const popupRef = useRef<HTMLDivElement>(null);
@@ -56,10 +107,49 @@ const WalletMenu: React.FC = () => {
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
   const hasNonEmbeddedWallet = wallets.some(w => w.walletClientType !== 'privy');
-  const shortAddress = address ? `${address.slice(0, 6)}…${address.slice(-4)}` : '';
+
+  const connectedAddress =
+    (farcasterPrimary as `0x${string}`) ??
+    (activePrivyWallet?.address as `0x${string}`) ??
+    (wallets.find((w) => !!w.address)?.address as `0x${string}`) ??
+    (user as any)?.wallet?.address ??
+    undefined;
+  const shortConnected = useMemo(
+    () => (connectedAddress ? `${connectedAddress.slice(0, 6)}…${connectedAddress.slice(-4)}` : ""),
+    [connectedAddress]
+  );
+  const { data: ethBalance } = useBalance({
+    address: connectedAddress ? (connectedAddress as `0x${string}`) : undefined,
+    chainId: base.id,
+    query: {
+      enabled: !!connectedAddress,   // 👈 works in wagmi v2
+    },
+  });
+
+
+
+  const { data: tokenBalance } = useBalance({
+    address: connectedAddress ? (connectedAddress as `0x${string}`) : undefined,
+    token: btgToken.address as `0x${string}`,
+    chainId: base.id,
+    query: {
+      enabled: !!connectedAddress,
+    },
+  });
   const email = user?.email?.address;
-  const twitter = user?.twitter?.username || user?.twitter?.name;
-  const twitterImage = user?.twitter?.profilePictureUrl?.replace('_normal', '');
+  const twitterObj =
+    user?.twitter ??
+    // if Privy ever returns Twitter via linkedAccounts in your project:
+    (user as any)?.linkedAccounts?.find?.((a: any) =>
+      ['twitter_oauth', 'twitter', 'x'].includes(a?.type)
+    ) ?? null;
+
+  const twitterHandle = twitterObj?.username || twitterObj?.name || '';
+  const twitterImage = twitterObj?.profilePictureUrl
+    ? twitterObj.profilePictureUrl.replace('_normal', '')
+    : '';
+  const hasTwitter = !!twitterHandle;
+  const hasFarcasterName = !!(farcaster?.username || farcaster?.displayName);
 
   const handleModal = () => {
     setOpenPanel(null);
@@ -126,7 +216,14 @@ const WalletMenu: React.FC = () => {
       setFundError("No embedded wallet connected.");
       return;
     }
+
+    if (!isPrivyWallet(activePrivyWallet)) {
+      setFundError("No embedded wallet connected.");
+      return;
+    }
+
     try {
+
       const currentChain = activePrivyWallet.chainId;
       if (currentChain !== `eip155:${base.id}` && activePrivyWallet.switchChain) {
         await activePrivyWallet.switchChain(base.id);
@@ -151,7 +248,7 @@ const WalletMenu: React.FC = () => {
   const handleSend = async () => {
     setSendError('');
     setSendSuccess(null);
-    if (!address || !wallets.length) {
+    if (!connectedAddress || !wallets.length) {
       setSendError("No wallet connected. Please connect a wallet.");
       return;
     }
@@ -163,6 +260,11 @@ const WalletMenu: React.FC = () => {
       setSendError("Amount exceeds your ETH balance.");
       return;
     }
+    if (!isPrivyWallet(activePrivyWallet)) {
+      setFundError("No embedded wallet connected.");
+      return;
+    }
+
     try {
       const chainMismatch = activePrivyWallet?.chainId !== `eip155:${base.id}`;
       if (chainMismatch && activePrivyWallet?.walletClientType === 'privy' && activePrivyWallet.switchChain) {
@@ -215,6 +317,7 @@ const WalletMenu: React.FC = () => {
     );
   }
 
+
   return (
     <Fragment>
       <button
@@ -226,21 +329,34 @@ const WalletMenu: React.FC = () => {
           padding: '10px',
         }}
       >
-        {twitterImage ? (
+        {hasFarcasterName ? (
           <>
             <img
-              src={twitterImage}
+              src={farcaster?.pfp}
               className="w-6 h-6 rounded-full object-cover"
-              alt="Twitter"
+              alt={farcasterName}
             />
-            <span className="text-sm font-medium flex items-center gap-1 text-blue-500">
-              @{twitter}
+            <span className="text-sm font-medium flex items-center gap-1 text-purple-600">
+              @{farcasterName}
             </span>
           </>
-        ) : address ? (
+        ) : hasTwitter ? (
           <>
-            <Jazzicon diameter={20} seed={jsNumberForAddress(address)} />
-            <span className="text-sm font-medium">{shortAddress}</span>
+            {twitterImage ? (
+              <img src={twitterImage} className="w-6 h-6 rounded-full object-cover" alt="Twitter" />
+            ) : (
+              <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center text-xs">
+                {twitterHandle[0]?.toUpperCase()}
+              </div>
+            )}
+            <span className="text-sm font-medium flex items-center gap-1 text-blue-500">
+              @{twitterHandle}
+            </span>
+          </>
+        ) : connectedAddress ? (
+          <>
+            <Jazzicon diameter={20} seed={jsNumberForAddress(connectedAddress)} />
+            <span className="text-sm font-medium">{shortConnected}</span>
           </>
         ) : email ? (
           <>
@@ -266,10 +382,12 @@ const WalletMenu: React.FC = () => {
           >
             {/* Header */}
             <div className="flex items-center gap-4">
-              {twitterImage ? (
+              {hasFarcasterName ? (
+                <img src={farcaster.pfp} className="w-10 h-10 rounded-full" alt={farcasterName} />
+              ) : twitterImage ? (
                 <img src={twitterImage} className="w-10 h-10 rounded-full object-cover" alt="Twitter" />
-              ) : address ? (
-                <Jazzicon diameter={32} seed={jsNumberForAddress(address)} />
+              ) : connectedAddress ? (
+                <Jazzicon diameter={32} seed={jsNumberForAddress(connectedAddress)} />
               ) : (
                 <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-sm font-bold text-white">
                   {email?.[0].toUpperCase()}
@@ -277,30 +395,37 @@ const WalletMenu: React.FC = () => {
               )}
               <div className="flex flex-col">
                 <span className="font-semibold text-base">
-                  {shortAddress || email || 'User'}
+                  {farcasterName || twitterHandle || email || shortConnected || 'User'}
                 </span>
-                {twitter && (
+
+                {hasTwitter && (
                   <span className="flex items-center mt-1 text-blue-500 font-normal text-xs">
-                    @{twitter}
+                    @{twitterHandle}
                   </span>
                 )}
+                {hasFarcasterName && (
+                  <span className="flex items-center mt-1 text-blue-500 font-normal text-xs">
+                    {shortConnected}
+                  </span>
+                )}
+
               </div>
             </div>
 
             {/* View/Copy */}
             <div className="flex flex-row gap-2">
-              {address && (
+              {connectedAddress && (
                 <div className="relative flex-1">
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(address);
+                      navigator.clipboard.writeText(connectedAddress);
                       setShowTooltip(true);
                       setTimeout(() => setShowTooltip(false), 1200);
                     }}
                     className="w-full flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
                     style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
                   >
-                    {shortAddress || email || 'User'}
+                    {shortConnected || email || 'User'}
                     <i className="bx bx-copy mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
                   </button>
                   {showTooltip && (
@@ -313,9 +438,9 @@ const WalletMenu: React.FC = () => {
                   )}
                 </div>
               )}
-              {address && hasNonEmbeddedWallet && (
+              {connectedAddress && (hasNonEmbeddedWallet || farcasterPrimary) && (
                 <button
-                  onClick={() => window.open(`https://basescan.org/address/${address}`, '_blank')}
+                  onClick={() => window.open(`https://basescan.org/address/${connectedAddress}`, "_blank")}
                   className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
                   style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
                 >
@@ -383,21 +508,21 @@ const WalletMenu: React.FC = () => {
                     className="flex items-center justify-between text-sm font-medium text-white w-full py-3 px-3 rounded-sm hover:opacity-90 transition ti-btn"
                   >
                     <span className="flex text-white items-center">
-                      <i className="bx bx-credit-card mr-2 text-white"  />
+                      <i className="bx bx-credit-card mr-2 text-white" />
                       Deposit
                     </span>
                   </button>
                 </div>
               )}
 
-              <div  className="flex-1 bg-secondary rounded-sm">
+              <div className="flex-1 bg-secondary rounded-sm">
                 <button
                   onClick={handleSendPanel}
                   style={{ placeContent: 'center' }}
                   className="flex items-center justify-between text-sm font-medium text-wihte w-full py-3 px-3 rounded-sm hover:opacity-90 transition "
                 >
                   <span className="flex text-white items-center">
-                    <i className="bx bx-send mr-2 text-white"  />
+                    <i className="bx bx-send mr-2 text-white" />
                     Send
                   </span>
                 </button>
@@ -407,7 +532,7 @@ const WalletMenu: React.FC = () => {
             <hr style={{ borderColor: "#F2F2F2", borderWidth: "1px", marginTop: "1rem", marginBottom: "1rem" }} />
 
             {/* Connect wallet if needed */}
-            {!hasNonEmbeddedWallet && (
+            {!hasNonEmbeddedWallet && !farcasterPrimary &&  (
               <div className="flex gap-4">
                 <button
                   onClick={handleLinkWallet}
