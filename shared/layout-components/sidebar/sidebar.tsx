@@ -925,7 +925,7 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 								aria-label="Website"
 								className="ti-btn ti-btn-sm ti-btn-secondary avatar-rounded me-[.375rem]"
 							>
-								<i className="bx bx-globe font-semibold"></i>
+								<i className="bx bx-globe "></i>
 							</a>
 
 							<a
@@ -933,9 +933,9 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 								target="_blank"
 								rel="noopener noreferrer"
 								aria-label="Twitter"
-								className="ti-btn ti-btn-sm ti-btn-secondary avatar-rounded me-[.375rem]"
+								className="ti-btn ti-btn-sm ti-btn-secondary avatar-rounded me-[.475rem]"
 							>
-								<i className="ri-twitter-x-line font-semibold"></i>
+								<i className="ri-twitter-x-line "></i>
 							</a>
 
 							<a
@@ -943,9 +943,9 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 								target="_blank"
 								rel="noopener noreferrer"
 								aria-label="Telegram"
-								className="ti-btn ti-btn-sm ti-btn-secondary avatar-rounded me-[.375rem]"
+								className="ti-btn ti-btn-sm ti-btn-secondary avatar-rounded me-[.475rem]"
 							>
-								<i className="bx bxl-telegram font-semibold"></i>
+								<i className="bx bxl-telegram "></i>
 							</a>
 
 							<a
@@ -953,9 +953,9 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 								target="_blank"
 								rel="noopener noreferrer"
 								aria-label="GitHub"
-								className="ti-btn ti-btn-sm ti-btn-secondary avatar-rounded me-[.375rem]"
+								className="ti-btn ti-btn-sm ti-btn-secondary avatar-rounded me-[.475rem]"
 							>
-								<i className="ri-github-line font-semibold"></i>
+								<i className="ri-github-line "></i>
 							</a>
 						</div>
 					</div>

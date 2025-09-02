@@ -10129,7 +10129,7 @@ input.gridjs-input {
   @apply cursor-not-allowed opacity-[0.65];
 }
 .ti-btn.ti-btn-sm {
-  @apply w-[1.75rem] h-[1.75rem] text-[0.8rem];
+  @apply w-[1.85rem] h-[1.85rem] text-[0.9rem];
 }
 .ti-btn.ti-btn-lg {
   @apply py-[0.65rem] px-4 text-[0.95rem] rounded-md;
@@ -10208,8 +10208,10 @@ input.gridjs-input {
 }
 
 .ti-btn-secondary {
-  @apply bg-secondary/10 text-secondary hover:bg-secondary hover:text-white;
+  @apply bg-camel text-primary hover:z-[1] hover:-translate-y-[0.188rem];
 }
+
+
 
 .ti-btn-warning {
   @apply bg-warning/10 text-warning hover:bg-warning hover:text-white;

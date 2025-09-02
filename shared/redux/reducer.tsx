@@ -1,10 +1,10 @@
 let initialState = {
     lang: "en",
     dir: "ltr",
-    class: "light",
-    dataMenuStyles: "light",
+    class: "dark",
+    dataMenuStyles: "dark",
     dataNavLayout: "vertical",
-    dataHeaderStyles: "light",
+    dataHeaderStyles: "dark",
     dataVerticalStyle: "overlay",
     dataToggled:  "close",
     dataNavStyle: "",

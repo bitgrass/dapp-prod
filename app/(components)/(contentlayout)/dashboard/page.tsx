@@ -191,7 +191,7 @@ const Dashboard = () => {
             clearContainer();
         };
     }, [theme]);
-   
+
     const nftDataChart = [
         { name: "Standard", value: 2000, color: "#084D08", land: "100m²" },
         { name: "Premium", value: 800, color: "#66CC33", land: "500m²" },
@@ -235,31 +235,31 @@ const Dashboard = () => {
         fetchPrice();
     }, []);
 
-   useEffect(() => {
-    async function fetchPrice24H() {
-        try {
-            const response = await axios.get(
-                `https://deep-index.moralis.io/api/v2.2/tokens/${btgToken.address}/analytics?chain=base`,
-                {
-                    headers: {
-                        accept: "application/json",
-                        "X-API-Key": API_KEY!,
-                    },
-                }
-            );
+    useEffect(() => {
+        async function fetchPrice24H() {
+            try {
+                const response = await axios.get(
+                    `https://deep-index.moralis.io/api/v2.2/tokens/${btgToken.address}/analytics?chain=base`,
+                    {
+                        headers: {
+                            accept: "application/json",
+                            "X-API-Key": API_KEY!,
+                        },
+                    }
+                );
 
-            const volume24h =
-                (response.data?.totalBuyVolume?.["24h"] || 0) +
-                (response.data?.totalSellVolume?.["24h"] || 0);
-            setBtgPercentChange(volume24h.toFixed(2)); // You can create this state to store it
+                const volume24h =
+                    (response.data?.totalBuyVolume?.["24h"] || 0) +
+                    (response.data?.totalSellVolume?.["24h"] || 0);
+                setBtgPercentChange(volume24h.toFixed(2)); // You can create this state to store it
 
-        } catch (error) {
-            console.error("Error fetching BTG analytics:", error);
+            } catch (error) {
+                console.error("Error fetching BTG analytics:", error);
+            }
         }
-    }
 
-    fetchPrice24H();
-}, []);
+        fetchPrice24H();
+    }, []);
 
 
 
@@ -798,7 +798,7 @@ const Dashboard = () => {
                                                                         </svg>                                                                    </span>
                                                                 </div>
                                                                 <div className="flex-grow">
-                                                                    <h5 className="font-semibold ">{formatLargeValue(btgPercentChange)|| "TBA"} </h5>
+                                                                    <h5 className="font-semibold ">{formatLargeValue(btgPercentChange) || "TBA"} </h5>
                                                                     <p className="text-[#8c9097] dark:text-white/50 mb-0 text-[0.75rem]">24h Volume</p>
                                                                 </div>
 
@@ -845,21 +845,6 @@ const Dashboard = () => {
                                                             <li><b className="text-defaulttextcolor">Governance:</b> Proposal/Vote.</li>
 
                                                         </ul>
-
-                                                        <div className="text-[.9375rem] font-semibold mb-2 mt-4">Tokenomics:</div>
-
-                                                        <img
-                                                            src="/assets/images/apps/TokenomicsLight.png"
-                                                            alt="BTG Utilities Light"
-                                                            className="block dark:hidden w-full rounded-md"
-                                                        />
-
-                                                        {/* Dark mode image */}
-                                                        <img
-                                                            src="/assets/images/apps/TokenomicsDark.png"
-                                                            alt="BTG Utilities Dark"
-                                                            className="hidden dark:block w-full rounded-md"
-                                                        />
                                                     </div>
                                                 </div>
                                                 <div className="box-footer">
