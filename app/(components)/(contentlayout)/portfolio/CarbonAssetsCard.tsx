@@ -17,7 +17,7 @@ const CarbonAssetsCard = () => {
                   <span className="avatar avatar-md avatar-rounded me-2">
                     <img src="../../../assets/images/brand-logos/Soon.svg" alt="" />
                   </span>
-                  <p className="box-title font-semibold">Coming Soon</p>
+                  <p className="box-title font-semibold mb-2">Coming Soon</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Carbon credits from staked land plots will start generating in 2026. <br/>You’ll be able to track, retire, and earn from your carbon offset impact here.
                   </p>

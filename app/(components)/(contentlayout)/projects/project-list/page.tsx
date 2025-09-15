@@ -111,7 +111,7 @@ const Projectslist = () => {
                                                 >
                                                     <td>
                                                         <div className="flex items-center">
-                                                            <span className="avatar avatar-sm bg-light !rounded-full mt-1">
+                                                            <span className="avatar avatar-sm bg-light">
                                                                 <img src={idx.src} alt="" />
                                                             </span>
                                                             <div className="ms-2">

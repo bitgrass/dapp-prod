@@ -7,10 +7,9 @@ import { base } from 'wagmi/chains';
 import { Fragment } from 'react';
 import { btgToken, ETHToken } from "@/shared/data/tokens/data";
 import { useSetActiveWallet } from '@privy-io/wagmi';
-
+import { useConnectedAddress } from "./useConnectedAddress"; // Update this import path
 
 const WalletMenu: React.FC = () => {
-
   const { ready, authenticated, user, linkWallet, exportWallet, createWallet } = usePrivy();
   const { login } = useLogin();
   const { logout } = useLogout();
@@ -18,6 +17,16 @@ const WalletMenu: React.FC = () => {
   const { sendTransactionAsync } = useSendTransaction();
   const { switchChainAsync } = useSwitchChain();
   const { setActiveWallet } = useSetActiveWallet();
+
+  // Use your new hook instead of the old logic
+  const {
+    address: connectedAddress,
+    shortAddress: shortConnected,
+    farcasterWallet,
+    hasExternalWallet,
+    hasEmbeddedWallet
+  } = useConnectedAddress();
+
   type ExternalWallet = {
     address: string;
     walletClientType: "external";
@@ -33,39 +42,13 @@ const WalletMenu: React.FC = () => {
   ): w is ConnectedWallet {
     return !!w && w.walletClientType === "privy";
   }
-  function useFarcasterPrimaryWallet(fid?: number) {
-    const [address, setAddress] = useState<string | null>(null);
-
-    useEffect(() => {
-      if (!fid) return;
-
-      const fetchPrimary = async () => {
-        try {
-          const res = await fetch(
-            `https://api.farcaster.xyz/fc/primary-address?fid=${fid}&protocol=ethereum`
-          );
-          const data = await res.json();
-          setAddress(data?.result?.address?.address || null);
-        } catch (err) {
-          console.error("Failed to fetch Farcaster wallet:", err);
-          setAddress(null);
-        }
-      };
-
-      fetchPrimary();
-    }, [fid]);
-
-    return address;
-  }
-
-  const farcasterPrimary = useFarcasterPrimaryWallet(farcaster?.fid);
 
   useEffect(() => {
     console.log("userrr--", user)
-    if (farcasterPrimary) {
+    if (farcasterWallet) {
       // Force Farcaster primary as external
       setActivePrivyWallet({
-        address: farcasterPrimary,
+        address: farcasterWallet,
         walletClientType: "external",
       } as any);
       return;
@@ -87,11 +70,7 @@ const WalletMenu: React.FC = () => {
     } else {
       setActivePrivyWallet(null);
     }
-  }, [wallets, user, setActiveWallet]);
-
-
-
-
+  }, [wallets, user, setActiveWallet, farcasterWallet]);
 
   // --- UI State ---
   const popupRef = useRef<HTMLDivElement>(null);
@@ -106,27 +85,15 @@ const WalletMenu: React.FC = () => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
-  const hasNonEmbeddedWallet = wallets.some(w => w.walletClientType !== 'privy');
+  const hasNonEmbeddedWallet = hasExternalWallet || !!farcasterWallet;
 
-  const connectedAddress =
-    (farcasterPrimary as `0x${string}`) ??
-    (activePrivyWallet?.address as `0x${string}`) ??
-    (wallets.find((w) => !!w.address)?.address as `0x${string}`) ??
-    (user as any)?.wallet?.address ??
-    undefined;
-  const shortConnected = useMemo(
-    () => (connectedAddress ? `${connectedAddress.slice(0, 6)}…${connectedAddress.slice(-4)}` : ""),
-    [connectedAddress]
-  );
   const { data: ethBalance } = useBalance({
     address: connectedAddress ? (connectedAddress as `0x${string}`) : undefined,
     chainId: base.id,
     query: {
-      enabled: !!connectedAddress,   // 👈 works in wagmi v2
+      enabled: !!connectedAddress,
     },
   });
-
-
 
   const { data: tokenBalance } = useBalance({
     address: connectedAddress ? (connectedAddress as `0x${string}`) : undefined,
@@ -136,6 +103,7 @@ const WalletMenu: React.FC = () => {
       enabled: !!connectedAddress,
     },
   });
+
   const email = user?.email?.address;
   const twitterObj =
     user?.twitter ??
@@ -223,7 +191,6 @@ const WalletMenu: React.FC = () => {
     }
 
     try {
-
       const currentChain = activePrivyWallet.chainId;
       if (currentChain !== `eip155:${base.id}` && activePrivyWallet.switchChain) {
         await activePrivyWallet.switchChain(base.id);
@@ -316,7 +283,6 @@ const WalletMenu: React.FC = () => {
       </button>
     );
   }
-
 
   return (
     <Fragment>
@@ -438,7 +404,7 @@ const WalletMenu: React.FC = () => {
                   )}
                 </div>
               )}
-              {connectedAddress && (hasNonEmbeddedWallet || farcasterPrimary) && (
+              {connectedAddress && (hasNonEmbeddedWallet || farcasterWallet) && (
                 <button
                   onClick={() => window.open(`https://basescan.org/address/${connectedAddress}`, "_blank")}
                   className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
@@ -497,7 +463,6 @@ const WalletMenu: React.FC = () => {
               </div>
             </div>
 
-
             {/* Deposit/Send buttons */}
             <div className="flex flex-row gap-2 mt-6 mb-6">
               {activePrivyWallet?.walletClientType === 'privy' && (
@@ -532,7 +497,7 @@ const WalletMenu: React.FC = () => {
             <hr style={{ borderColor: "#F2F2F2", borderWidth: "1px", marginTop: "1rem", marginBottom: "1rem" }} />
 
             {/* Connect wallet if needed */}
-            {!hasNonEmbeddedWallet && !farcasterPrimary &&  (
+            {!hasNonEmbeddedWallet && (
               <div className="flex gap-4">
                 <button
                   onClick={handleLinkWallet}
@@ -546,7 +511,7 @@ const WalletMenu: React.FC = () => {
             {/* Disconnect button */}
             <button
               onClick={handlelLogout}
-              className="w-full flex items-center justify-center text-sm font-medium bg-camel10 dark:bg-[#FFFFFF0D] text-primary hover:bg-red-700 py-3 px-3 rounded-sm transition mt-4 "
+              className="w-full flex items-center justify-center text-sm font-medium bg-camel10 dark:bg-[#FFFFFF0D] text-primary hover:bg-red-700 hover:text-white py-3 px-3 rounded-sm transition mt-4 "
             >
               <i className="bx bx-log-out mr-2" />Disconnect
             </button>

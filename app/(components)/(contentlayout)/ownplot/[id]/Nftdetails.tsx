@@ -3,7 +3,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import Link from "next/link";
 import { Seaport } from "@opensea/seaport-js";
-import { useAccount, useWalletClient, useSwitchChain } from 'wagmi';
+import { useAccount, useSwitchChain } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { id } from 'ethers';
 import axios from "axios";
@@ -11,17 +11,11 @@ import { EthInfo } from "@/shared/data/tokens/data";
 import PurchaseCelebrationModal from "@/shared/layout-components/modal/PurchaseCelebrationModal";
 import PurchaseFailedModal from "@/shared/layout-components/modal/PurchaseFailedModal";
 import MintCelebrationModal from "@/shared/layout-components/modal/MintCelebrationModal";
-import {
-    NFTCreator,
-    NFTCollectionTitle,
-    NFTQuantitySelector,
-    NFTAssetCost,
-    NFTMintButton,
-} from "@coinbase/onchainkit/nft/mint";
-import { NFTMintCard } from "@coinbase/onchainkit/nft";
+
 import { ethers } from "ethers";
 import { nftInfo, SeaDropABIData, CONTRACT_ADDRESS_INFO, SEADROP_ADDRESS_INFO, SEADROP_CONDUIT_INFO } from "@/shared/data/tokens/data";
 import { usePrivy, useLogin } from '@privy-io/react-auth';
+import { useConnectedAddress } from "../../useConnectedAddress"; // Update this import path
 
 type OrderData = {
     parameters: any;
@@ -50,8 +44,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [showToast, setShowToast] = useState(false);
     const [mintPriceEth, setMintPriceEth] = useState<string>("0");
     const [mintPriceUsd, setMintPriceUsd] = useState<string>("0.00");
-    const { address: user } = useAccount();
-    const { data: walletClient } = useWalletClient();
+    
+    // Use the hook to get the appropriate address and client
+    const { 
+        address: userAddress, 
+        client,
+        farcasterWallet,
+        hasExternalWallet,
+        hasEmbeddedWallet,
+        isMinitapp 
+    } = useConnectedAddress();
+    
     const { switchChainAsync } = useSwitchChain();
     const [isMinting, setIsMinting] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -60,12 +63,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const STATIC_MINT_PRICE_ETH = 0.00001; // adjust as needed
     const [isBuying, setIsBuying] = useState(false);
 
-    const { isConnected } = useAccount();
+    // Use isConnected from wagmi, but also check if we have an address from our hook
+    const { isConnected: wagmiConnected } = useAccount();
+    const isConnected = wagmiConnected || !!userAddress;
+
     const [activeTab, setActiveTab] = useState("");
     const tabList = ["Standard 100m² Plot", "Premium 500m² Plot", "Legendary 1000m² Plot"];
-    const [orderData, setOrderData] = useState<OrderData | null>(null);
-    const [isFetchingOrder, setIsFetchingOrder] = useState(false);
-    const [orderFetchError, setOrderFetchError] = useState<string | null>(null);
+
     const [isModalOpen, setModalOpen] = useState(false);
     const [isStandardMintModalOpen, setIsStandardMintModalOpen] = useState(false);
     const [failureTxHash, setFailureTxHash] = useState("");
@@ -101,10 +105,28 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     };
 
     const ensureBaseChain = async () => {
-        if (!walletClient) throw new Error("No wallet client");
-        const chainId = await walletClient.getChainId();
+        if (!client) throw new Error("No wallet client");
+        
+        // In Farcaster miniapp, be more lenient with chain switching
+        if (isMinitapp && farcasterWallet) {
+            // For Farcaster wallets in miniapp, we might not be able to switch chains
+            // but we should check the current chain if possible
+            try {
+                const chainId = await client.getChainId?.();
+                if (chainId && chainId !== BASE_CHAIN_ID) {
+                    // In miniapp, show a less aggressive warning
+                    console.warn(`Current chain: ${chainId}, expected: ${BASE_CHAIN_ID}`);
+                    // Still allow the transaction to proceed - let the wallet handle it
+                }
+            } catch (err) {
+                console.warn("Could not check chain for Farcaster wallet:", err);
+            }
+            return true;
+        }
+
+        // For other wallet types, try to switch chain
+        const chainId = await client.getChainId?.();
         if (chainId !== BASE_CHAIN_ID) {
-            // Try switching. This will prompt MetaMask/Phantom if not already on Base
             try {
                 await switchChainAsync({ chainId: BASE_CHAIN_ID });
                 return true;
@@ -117,6 +139,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
         return true;
     };
+
     // Set initial tab based on initialTabId
     useEffect(() => {
         const tabName = tabIdToName[initialTabId] || "Standard 100m² Plot";
@@ -126,9 +149,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const handleMintAbi = async (quantity: number) => {
         try {
             setLoading(true);
+            console.log("Address for minting:", userAddress)
+            console.log("Is miniapp:", isMinitapp)
 
-            // Check wallet/connection status
-            if (!walletClient || !ready || !authenticated) {
+            if (!client || !userAddress || !ready || !authenticated) {
                 login();
                 return;
             }
@@ -137,7 +161,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 setLoading(false);
                 return;
             }
-            const userAddress = walletClient.account.address;
 
             // Use a public provider just to read contract state (mint price)
             const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
@@ -152,16 +175,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             const calldata = iface.encodeFunctionData("mintPublic", [
                 CONTRACT_ADDRESS,
                 SEADROP_CONDUIT,
-                userAddress,
+                userAddress, // This will be the appropriate address (Farcaster or other)
                 quantity,
             ]) as `0x${string}`;
 
-            // Debug: Print info before sending
-
-
-            // Send the transaction using walletClient (supports embedded/email wallets)
-            const txHash = await walletClient.sendTransaction({
-                account: walletClient.account,
+            // Send the transaction using the client from useConnectedAddress
+            const txHash: any = await client?.sendTransaction({
+                account: client.account,
                 to: SEADROP_ADDRESS,
                 value: totalPrice,
                 data: calldata,
@@ -188,6 +208,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
             // Show modal with all token IDs
             if (mintedTokenIds.length > 0) {
+                
                 setModalData({
                     id: mintedTokenIds.join(", "), // "1896, 1897, 1898"
                     image: "/assets/images/apps/100m2.webp",
@@ -276,10 +297,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     };
 
     useEffect(() => {
-        if (walletClient) {
+        if (userAddress) {
             initPrices();
         }
-    }, [walletClient]);
+    }, [userAddress]);
 
     useEffect(() => {
         if (baseMintPriceEth > 0 && ethToUsd > 0) {
@@ -289,13 +310,12 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         }
     }, [quantity, baseMintPriceEth, ethToUsd]);
 
-
     async function fetchAvailableNfts() {
         setIsLoadingFetchAvailable(true);
 
-        if (!walletClient || !isConnected) {
+        if (!userAddress || !isConnected) {
             setIsLoadingFetchAvailable(false);
-            console.log("Missing wallet client or connection, skipping fetch...");
+            console.log("Missing wallet connection, skipping fetch...");
             return;
         }
 
@@ -311,28 +331,27 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     'api-key': `${apiKey}`
                 }
             });
-            const text = await res.text(); // <- read body no matter what
+            const text = await res.text();
 
             if (!res.ok) {
                 console.error('OpenSea proxy failed', {
                     status: res.status,
                     url: res.url,
-                    body: text.slice(0, 2000) // show real error in console
+                    body: text.slice(0, 2000)
                 });
                 throw new Error(`API error ${res.status}`);
             }
 
-            // upstream returns JSON on success
             return JSON.parse(text);
         };
 
         do {
             try {
                 const data = await getListings(nextCursor);
+                console.log("dataaaaaa---------",data)
                 const nfts = data.listings || [];
                 nextCursor = data.next || null;
 
-                // Categorize NFTs into legendary and premium
                 const newLegendary: number[] = nfts.flatMap((nft: any) => {
                     if (
                         nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
@@ -368,8 +387,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
         } while (nextCursor);
 
-
-        // Log final results
         if (legendaryNftDispo.length === 0) {
             console.log("No legendary NFTs found in range 1-400");
         }
@@ -377,14 +394,12 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             console.log("No premium NFTs found in range 401-1200");
         }
 
-        // Proceed to listings API for legendary NFTs if any
         if (legendaryNftDispo.length > 0) {
             await fetchListedLegendaryItems(legendaryNftDispo.sort((a, b) => a - b));
         } else {
             setListedLegendaryItems([]);
         }
 
-        // Proceed to listings API for premium NFTs if any
         if (primaryNftDispo.length > 0) {
             await fetchListedPremiumItems(primaryNftDispo.sort((a, b) => a - b));
         } else {
@@ -394,10 +409,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         setIsLoadingFetchAvailable(false);
     }
 
-
     async function fetchListedLegendaryItems(tokenIds: any) {
-        if (!walletClient || !isConnected || !apiKey) {
-            console.log("Missing wallet client, connection, or API key, skipping fetch...");
+        if (!userAddress || !isConnected || !apiKey) {
+            console.log("Missing wallet connection or API key, skipping fetch...");
             return;
         }
 
@@ -407,7 +421,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return;
         }
 
-        const firstTokenId = tokenIds[0]; // Use only the first token ID
+        const firstTokenId = tokenIds[0];
 
         try {
             const url = new URL("https://api.opensea.io/api/v2/orders/base/seaport/listings");
@@ -447,7 +461,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             parseInt(b.protocol_data.parameters.offer[0].identifierOrCriteria)
                     );
 
-
                 setListedLegendaryItems(sorted);
             } else {
                 console.log(`No active legendary NFT listings found for token ID ${firstTokenId}`);
@@ -460,8 +473,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     }
 
     async function fetchListedPremiumItems(tokenIds: any) {
-        if (!walletClient || !isConnected || !apiKey) {
-            console.log("Missing wallet client, connection, or API key, skipping fetch...");
+        if (!userAddress || !isConnected || !apiKey) {
+            console.log("Missing wallet connection or API key, skipping fetch...");
             return;
         }
 
@@ -471,7 +484,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return;
         }
 
-        const firstTokenId = tokenIds[0]; // Use only the first token ID
+        const firstTokenId = tokenIds[0];
 
         try {
             const url = new URL("https://api.opensea.io/api/v2/orders/base/seaport/listings");
@@ -494,13 +507,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 setListedPremiumItems([]);
                 return;
             }
-
             const data = await res.json();
+            console.log("dataaa",data)
             const now = Math.floor(Date.now() / 1000);
             const orders = (data.orders || []).filter((order: any) => {
                 const isActive = !order.cancelled && !order.fulfilled && order.expiration_time > now;
                 return isActive;
             });
+            console.log("orders",orders)
 
             if (orders.length > 0) {
                 const sorted = [...orders]
@@ -524,20 +538,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
     useEffect(() => {
         fetchAvailableNfts();
-    }, [walletClient, isConnected]);
+    }, [userAddress, isConnected]);
 
     useEffect(() => {
         fetchAvailableNfts();
     }, [isModalOpen, isFailureModalOpen]);
 
     async function handleBuy(order: any, tier: "Legendary" | "Premium") {
-        if (!walletClient || !ready || !authenticated) {
+        if (!userAddress || !ready || !authenticated) {
             login();
             return;
         }
-
-
-
         if (!order) {
             const modalDataFailed: any = await getModalData();
             setFailureTxHash(txHash);
@@ -546,25 +557,36 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             setFailureModalOpen(true);
             return;
         }
-
         try {
-            setIsBuying(true); // <--- Start transaction loader
+            setIsBuying(true);
+            console.log("Buying in miniapp:", isMinitapp);
+            console.log("Using Farcaster wallet:", !!farcasterWallet);
 
             const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-            const buyerAddress = walletClient.account.address;
+            if (!client) throw new Error("No wallet client available");
 
-            const currentChainId = await walletClient.getChainId();
-            const baseChainId = 8453;
+            // Use the address from our hook (works for all wallet types)
+            const buyerAddress = userAddress;
 
-            if (currentChainId !== baseChainId) {
-                try {
-                    await switchChainAsync({ chainId: baseChainId });
-                } catch (switchError: any) {
-                    if (switchError.code === 4902) {
-                        await walletClient.addChain({ chain: base });
+            // Enhanced chain switching for miniapp environment
+            if (isMinitapp && farcasterWallet) {
+                // In Farcaster miniapp, be more lenient with chain checking
+                console.log("Using Farcaster wallet in miniapp - allowing transaction to proceed");
+            } else if (client.getChainId) {
+                // For non-Farcaster wallets, ensure we're on the correct chain
+                const currentChainId = await client.getChainId();
+                const baseChainId = 8453;
+
+                if (currentChainId !== baseChainId) {
+                    try {
                         await switchChainAsync({ chainId: baseChainId });
-                    } else {
-                        throw switchError;
+                    } catch (switchError: any) {
+                        if (switchError.code === 4902) {
+                            await client?.addChain({ chain: base });
+                            await switchChainAsync({ chainId: baseChainId });
+                        } else {
+                            throw switchError;
+                        }
                     }
                 }
             }
@@ -585,6 +607,11 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     fulfiller: { address: buyerAddress },
                 }),
             });
+
+            if (!fulfillmentRes.ok) {
+                console.error("Failed to get fulfillment data:", fulfillmentRes.status);
+                throw new Error("Failed to get fulfillment data");
+            }
 
             const { fulfillment_data } = await fulfillmentRes.json();
             if (!fulfillment_data?.orders?.length) throw new Error("Invalid fulfillment data");
@@ -615,16 +642,20 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 buyerAddress,
             ]);
 
-            const txHash = await walletClient.sendTransaction({
-                account: walletClient.account,
+            console.log("Sending transaction with value:", value.toString(), "ETH");
+
+            const txHash : any = await client?.sendTransaction({
+                account: client?.account,
                 to: seaport.contract.target as `0x${string}`,
                 value,
                 data: calldata as `0x${string}`,
             });
 
+            console.log("Transaction sent:", txHash);
+
             const txReceipt = await provider.waitForTransaction(txHash);
             if (txReceipt?.status === 1) {
-                console.log("listed items", txReceipt)
+                console.log("Purchase successful:", txReceipt)
                 const modalData: any = await getModalData();
                 setModalData(modalData);
                 setModalOpen(true);
@@ -637,26 +668,46 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
         } catch (error) {
             console.error("❌ Purchase failed:", error);
+            
             const rejected =
                 (error as any)?.code === 4001 ||
-                (error as any)?.message?.toLowerCase().includes("user rejected");
+                (error as any)?.message?.toLowerCase().includes("user rejected") ||
+                (error as any)?.message?.toLowerCase().includes("user denied");
 
             if (rejected) {
                 setToastTitle("Transaction Rejected");
-                setToastMessage("You missed your plot.");
+                setToastMessage("You cancelled the purchase.");
                 setShowToast(true);
                 return;
             }
-            const modalDataFailed: any = await getModalData();
-            setFailureTxHash(txHash);
-            setFailureImage(modalDataFailed.image);
-            setActiveOrder(true)
-            setFailureModalOpen(true);
+
+            const insufficientFunds =
+                (error as any)?.code === "INSUFFICIENT_FUNDS" ||
+                (error as any)?.message?.toLowerCase().includes("insufficient funds");
+            
+            if (insufficientFunds) {
+                setToastTitle("Insufficient Funds");
+                setToastMessage("You need more ETH to complete this purchase.");
+                setShowToast(true);
+                return;
+            }
+
+            // For miniapp environments, provide more helpful error messages
+            if (isMinitapp) {
+                setToastTitle("Purchase Failed");
+                setToastMessage("Please try again or check your connection.");
+                setShowToast(true);
+            } else {
+                const modalDataFailed: any = await getModalData();
+                setFailureTxHash(txHash);
+                setFailureImage(modalDataFailed.image);
+                setActiveOrder(true)
+                setFailureModalOpen(true);
+            }
         } finally {
-            setIsBuying(false); // <--- Always stop transaction loader
+            setIsBuying(false);
         }
     }
-
 
     useEffect(() => {
         if (showToast) {
@@ -666,91 +717,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return () => clearTimeout(timer);
         }
     }, [showToast]);
-
-    // useEffect(() => {
-    //     async function fetchOpenSeaOrder() {
-    //         if (!walletClient || !isConnected) {
-    //             console.log("Wallet client not ready, skipping fetch...");
-    //             return;
-    //         }
-
-    //         setIsFetchingOrder(true);
-    //         setOrderFetchError(null);
-
-    //         try {
-    //             const listingApiUrl = `https://api.opensea.io/api/v2/orders/base/seaport/listings?asset_contract_address=${OPENSEA_CONTRACT_ADDRESS}&token_ids=${TOKEN_ID}&limit=1`;
-
-    //             const listingRes = await fetch(listingApiUrl, {
-    //                 method: "GET",
-    //                 headers: {
-    //                     accept: "application/json",
-    //                     "x-api-key": `${apiKey}`,
-    //                 },
-    //             });
-
-    //             if (!listingRes.ok) {
-    //                 throw new Error(`OpenSea listing API error: ${listingRes.status}`);
-    //             }
-
-    //             const listingData = await listingRes.json();
-    //             const sellOrder = listingData.orders?.[0];
-    //             if (!sellOrder) {
-    //                 setOrderFetchError("No sell order found on OpenSea for this NFT.");
-    //                 return;
-    //             }
-
-    //             const { order_hash, protocol_address } = sellOrder;
-
-    //             const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-    //             await provider.send("eth_requestAccounts", []);
-    //             const signer = await provider.getSigner(walletClient.account.address);
-    //             const fulfillerAddress = await signer.getAddress();
-
-    //             const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
-    //                 method: "POST",
-    //                 headers: {
-    //                     accept: "application/json",
-    //                     "content-type": "application/json",
-    //                     "x-api-key": `${apiKey}`,
-    //                 },
-    //                 body: JSON.stringify({
-    //                     listing: {
-    //                         hash: order_hash,
-    //                         chain: "base",
-    //                         protocol_address: protocol_address,
-    //                     },
-    //                     fulfiller: {
-    //                         address: fulfillerAddress,
-    //                     },
-    //                 }),
-    //             });
-
-    //             if (!fulfillmentRes.ok) {
-    //                 throw new Error(`OpenSea fulfillment API error: ${fulfillmentRes.status}`);
-    //             }
-
-    //             const fulfillmentDataJson = await fulfillmentRes.json();
-    //             const fulfillmentData = fulfillmentDataJson.fulfillment_data;
-    //             const fullOrder = fulfillmentData.orders?.[0];
-
-    //             if (!fullOrder || !fullOrder.parameters || !fullOrder.signature) {
-    //                 throw new Error("Invalid fulfillment data: missing order parameters or signature.");
-    //             }
-
-    //             setOrderData({
-    //                 parameters: fullOrder.parameters,
-    //                 signature: fullOrder.signature,
-    //             });
-    //         } catch (err: any) {
-    //             console.error("Fetch OpenSea order failed:", err);
-    //             setOrderFetchError(err.message || "Unknown error");
-    //         } finally {
-    //             setIsFetchingOrder(false);
-    //         }
-    //     }
-
-    //     fetchOpenSeaOrder();
-    // }, [walletClient, isConnected]);
 
     const getModalData = () => {
         let currentItem;
@@ -781,13 +747,12 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     };
 
     const handleTabChange = (tab: string) => {
-        if (tab === activeTab) return; // Prevent re-setting same tab
+        if (tab === activeTab) return;
 
         const tabId = Object.keys(tabIdToName).find(key => tabIdToName[key] === tab) || "standard";
 
         setActiveTab(tab);
 
-        // Only update URL if needed
         const newUrl = `/ownplot/${tabId}`;
         if (window.location.pathname !== newUrl) {
             window.history.replaceState(null, "", newUrl);
@@ -832,6 +797,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         <img src="/assets/images/brand-logos/favicon.ico" alt="" />
                                                     </span>
                                                     bitgrass.base.eth
+                                                    {isMinitapp && <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Miniapp</span>}
                                                 </div>
 
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
@@ -918,6 +884,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {/* Rest of the Standard tab content remains the same */}
                                                 <div className="mb-4">
                                                     <p className="text-[0.8rem] text-[#8C9097]  mb-1">Description :</p>
                                                     <p>

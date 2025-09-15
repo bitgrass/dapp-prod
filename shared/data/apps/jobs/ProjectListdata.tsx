@@ -56,7 +56,7 @@ export const ProjectListdata: ProjectListData[] = [
         id: 1,
         class: 'Bitgrass Farmland',
         class1: '100 Hectares',
-        src: "../../../assets/images/faces/faviconDark1.png",
+        src: "../../../assets/images/brand-logos/Standard.svg",
         text1: 'Puro',
         statusFontColor: "#23B7E5",
         statusBgColor: "#23B7E51A",

@@ -58,9 +58,11 @@ const categoryIcons: Record<string, JSX.Element> = {
 };
 
 // ---------------- OPTIONS FOR DROPDOWNS ----------------
+// ---------------- OPTIONS FOR DROPDOWNS ----------------
 const questionOptions: Record<string, { value: string; label: string }[]> = {
-  // House
+  // 🏠 House
   house_type: [
+    { value: "none", label: "I don’t live in a house (covered elsewhere)" },
     { value: "detached", label: "Detached" },
     { value: "semi_detached", label: "Semi-detached" },
     { value: "terraced", label: "Terraced" },
@@ -73,13 +75,13 @@ const questionOptions: Record<string, { value: string; label: string }[]> = {
     { value: "4+", label: "4 or more" },
   ],
 
-  // Vehicle
+  // 🚗 Vehicle
   vehicle_type: [
+    { value: "none", label: "I don’t own a vehicle" },
     { value: "petrol", label: "Gasoline / Petrol Car" },
     { value: "diesel", label: "Diesel Car" },
     { value: "motorbike", label: "Motorbike / Scooter" },
     { value: "ev", label: "Electric Vehicle (EV)" },
-    { value: "none", label: "I don’t own a vehicle" },
   ],
   annual_km_band: [
     { value: "<10k", label: "Less than 10,000 km/year" },
@@ -88,11 +90,11 @@ const questionOptions: Record<string, { value: string; label: string }[]> = {
     { value: ">40k", label: "More than 40,000 km/year" },
   ],
 
-  // Transport
+  // 🚌 Public Transport
   pt_frequency: [
     { value: "never", label: "Never" },
-    { value: "1-2", label: "1–2 times" },
-    { value: "2-3", label: "2–3 times" },
+    { value: "1-2", label: "1–2 times per week" },
+    { value: "2-3", label: "2–3 times per week" },
     { value: "4+", label: "More than 4 times per week" },
   ],
   pt_km_day: [
@@ -102,12 +104,25 @@ const questionOptions: Record<string, { value: string; label: string }[]> = {
     { value: ">30", label: "More than 30 km/day" },
   ],
 
-  // Food
+  // ✈️ Flights
+  num_flights: [
+    { value: "0", label: "I don’t take flights" },
+    { value: "1-2", label: "1–2 flights per year" },
+    { value: "3-5", label: "3–5 flights per year" },
+    { value: "6+", label: "More than 6 flights per year" },
+  ],
+  avg_distance: [
+    { value: "<463", label: "Short-haul (<463 km)" },
+    { value: "463-3000", label: "Medium-haul (463–3000 km)" },
+    { value: ">3000", label: "Long-haul (>3000 km)" },
+  ],
+
+  // 🍔 Food
   restaurant_spend: [
-    { value: "$0", label: "$0" },
-    { value: "$1-10", label: "$1–$10" },
-    { value: "$10-60", label: "$10–$60" },
-    { value: ">$60", label: "More than $60" },
+    { value: "$0", label: "$0 (I don’t eat out)" },
+    { value: "$1-10", label: "$1–$10 per week" },
+    { value: "$10-60", label: "$10–$60 per week" },
+    { value: ">$60", label: "More than $60 per week" },
   ],
   food_waste: [
     { value: "none", label: "None" },
@@ -116,6 +131,7 @@ const questionOptions: Record<string, { value: string; label: string }[]> = {
     { value: ">30%", label: "More than 30%" },
   ],
 };
+
 
 // ---------------- QUESTIONS ----------------
 const categories: Record<string, { id: string; text: string }[]> = {
@@ -150,74 +166,122 @@ const questionIdToCategory: Record<string, keyof typeof categories> = Object.key
   return acc;
 }, {} as Record<string, keyof typeof categories>);
 
-// ---- Emission calculators per category (no UI change) ----
+// --- Unit conversions ---
+const KM_PER_MILE = 1.60934;
+
+// --- Verified emission intensities (kg CO2e per km per passenger) ---
+// Sources: OurWorldInData, ICCT, VisualCapitalist, Wikipedia, NAVIT
+const EMISSIONS_KG_PER_KM = {
+  short_flight: 0.257,
+  medium_flight: 0.177,  // 463–3000 km (avg from ICCT 2021)
+  // 257 g/km → <463 km
+  long_flight: 0.113,    // 113 g/km → ≥463 km
+  train: 0.058,          // 58 g/km (avg, German NAVIT 2022)
+  bus: 0.068,            // 68 g/km (avg, EU data)
+  petrol_car: 0.192,     // 192 g/km
+  diesel_car: 0.171,     // 171 g/km
+  motorbike: 0.072,      // 72 g/km
+  // EV placeholder: to be computed from grid × efficiency
+};
+
+// --- EV parameters ---
+const GRID_INTENSITY_G_PER_KWH = 400; // Example: 400 gCO2/kWh (EU avg ~ 2022)
+const EV_EFFICIENCY_KWH_PER_KM = 0.2; // 0.2 kWh/km typical
 function computeEmissionsForCategory(
   cat: keyof typeof categories,
   a: Record<string, string>
 ): number {
   if (cat === "flights") {
-    const numRaw = a["num_flights"];
-    const num = parseFloat((numRaw || "0").toString().replace(/[^\d.]/g, ""));
-    if (!isFinite(num) || num <= 0) return 0;
-    const distRaw = a["avg_distance"];
-    const dist = distRaw && distRaw.trim() !== "" ? parseFloat(distRaw.replace(/[^\d.]/g, "")) : 1000; // default if blank
-    const tPerKm = 0.0002; // 0.2 kg/km -> 0.0002 t/km
-    return (isFinite(num) ? num : 0) * (isFinite(dist) ? dist : 0) * tPerKm || 0;
+    const n = parseFloat(a["num_flights"] || "0") || 0;
+    if (n <= 0) return 0;
+
+    const distKm = parseFloat(a["avg_distance"] || "0") || 1000;
+    let type: keyof typeof EMISSIONS_KG_PER_KM;
+
+    if (distKm < 463) type = "short_flight";
+    else if (distKm <= 3000) type = "medium_flight";
+    else type = "long_flight";
+
+    const kg = n * distKm * (EMISSIONS_KG_PER_KM[type] || 0);
+    return kg / 1000; // tonnes
   }
 
   if (cat === "transport") {
     const freq = a["pt_frequency"];
     if (!freq || freq === "never") return 0;
+
     const daysPerWeek: Record<string, number> = { never: 0, "1-2": 1.5, "2-3": 2.5, "4+": 5 };
     const kmPerDay: Record<string, number> = { "<5": 3, "5-15": 10, "15-30": 22.5, ">30": 35 };
-    const weeklyDays = daysPerWeek[freq] ?? 0;
-    const dailyKm = kmPerDay[a["pt_km_day"]] ?? 0;
-    const annualKm = weeklyDays * dailyKm * 52;
-    return annualKm * 0.00007; // 0.07 kg/km -> 0.00007 t/km
+
+    const annualKm = (daysPerWeek[freq] ?? 0) * (kmPerDay[a["pt_km_day"]] ?? 0) * 52;
+    const kg = annualKm * EMISSIONS_KG_PER_KM["train"]; // assume train by default
+    return kg / 1000;
   }
 
   if (cat === "vehicle") {
     const type = a["vehicle_type"];
     if (!type || type === "none") return 0;
+
     const band = a["annual_km_band"];
-    if (!band) return 0;
-    const kmMid: Record<string, number> = { "<10k": 7500, "10-20k": 15000, "20-40k": 30000, ">40k": 45000 };
-    const factorTPerKm: Record<string, number> = {
-      petrol: 0.000192,
-      diesel: 0.000171,
-      motorbike: 0.000103,
-      ev: 0.00005,
-      none: 0,
+    const kmMid: Record<string, number> = {
+      "<10k": 7500,
+      "10-20k": 15000,
+      "20-40k": 30000,
+      ">40k": 45000,
     };
-    return (kmMid[band] ?? 0) * (factorTPerKm[type] ?? 0);
+    const annualKm = kmMid[band] ?? 0;
+
+    if (type === "ev") {
+      const kgPerKm = (GRID_INTENSITY_G_PER_KWH * EV_EFFICIENCY_KWH_PER_KM) / 1000;
+      return (annualKm * kgPerKm) / 1000;
+    }
+
+    const factor: Record<string, number> = {
+      petrol: EMISSIONS_KG_PER_KM["petrol_car"],
+      diesel: EMISSIONS_KG_PER_KM["diesel_car"],
+      motorbike: EMISSIONS_KG_PER_KM["motorbike"],
+    };
+    return (annualKm * (factor[type] ?? 0)) / 1000;
   }
 
   if (cat === "house") {
     const t = a["house_type"];
+    if (!t || t === "none") return 0;
+
     const b = a["bedrooms"];
-    if (!t || !b) return 0;
     const baseByType: Record<string, number> = {
       detached: 4.8,
       semi_detached: 3.8,
       terraced: 3.0,
       flat: 2.4,
     };
-    const bedroomMult: Record<string, number> = {
-      "1": 0.8,
-      "2": 1.0,
-      "3": 1.2,
-      "4+": 1.4,
-    };
+    const bedroomMult: Record<string, number> = { "1": 0.8, "2": 1.0, "3": 1.2, "4+": 1.4 };
     return (baseByType[t] ?? 0) * (bedroomMult[b] ?? 1);
   }
 
-  // food
-  const spend = a["restaurant_spend"];
-  const waste = a["food_waste"];
-  const spendBase: Record<string, number> = { "$0": 0, "$1-10": 0.05, "$10-60": 0.3, ">$60": 0.8 };
-  const wasteAdd: Record<string, number> = { none: 0, "1-10%": 0.05, "10-30%": 0.2, ">30%": 0.5 };
-  return (spend ? (spendBase[spend] ?? 0) : 0) + (waste ? (wasteAdd[waste] ?? 0) : 0);
+  if (cat === "food") {
+    const spend = a["restaurant_spend"];
+    if (!spend || spend === "$0") return 0;
+
+    const waste = a["food_waste"];
+    const spendBase: Record<string, number> = {
+      "$0": 0,
+      "$1-10": 0.05,
+      "$10-60": 0.3,
+      ">$60": 0.8,
+    };
+    const wasteAdd: Record<string, number> = {
+      none: 0,
+      "1-10%": 0.05,
+      "10-30%": 0.2,
+      ">30%": 0.5,
+    };
+    return (spendBase[spend] ?? 0) + (waste ? (wasteAdd[waste] ?? 0) : 0);
+  }
+
+  return 0;
 }
+
 
 const CarbonCalculator = () => {
   const [activeCategory, setActiveCategory] = useState<keyof typeof categories>("house");
@@ -260,15 +324,20 @@ const CarbonCalculator = () => {
     const firstFilled = raw.length > 0;
 
     if (!firstFilled) return false;
+
     if (activeCategory === "transport" && raw === "never") return false;
     if (activeCategory === "vehicle" && raw === "none") return false;
+    if (activeCategory === "house" && raw === "none") return false;
+    if (activeCategory === "food" && raw === "$0") return false;
 
     if (activeCategory === "flights") {
       const n = parseFloat(raw.replace(/[^\d.]/g, ""));
       if (!isFinite(n) || n <= 0) return false;
     }
+
     return true;
   })();
+
 
   return (
     <Fragment>
@@ -320,38 +389,48 @@ const CarbonCalculator = () => {
 
             {/* Hide scrollbar visually but keep scrollable */}
             <style jsx>{`
-              .no-scrollbar {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-              }
-              .no-scrollbar::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      .no-scrollbar {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      -ms-overflow-style: none;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      scrollbar-width: none;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .no-scrollbar::-webkit-scrollbar {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  display: none;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            `}</style>
 
+            {/* Question 1 */}
             {/* Question 1 */}
             <div className="transition-all duration-300 mb-6">
               <p className="text-base font-semibold text-primary mb-3">
                 {currentQuestions[0].text}
               </p>
 
-              {/* If this question has predefined options -> dropdown; else keep input */}
               {questionOptions[currentQuestions[0].id] ? (
                 <select
-                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none 
+                 focus:ring-2 focus:ring-secondary appearance-none"
                   value={answers[currentQuestions[0].id] || ""}
                   onChange={(e) => handleChange(currentQuestions[0].id, e.target.value)}
                 >
-                  <option value="" disabled>Select an option…</option>
+                  <option value="" disabled>
+                    Select an option…
+                  </option>
                   {questionOptions[currentQuestions[0].id].map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option
+                      key={opt.value}
+                      value={opt.value}
+                      className="hover:bg-secondary hover:text-white"
+                    >
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               ) : (
                 <input
                   type={currentQuestions[0].id === "num_flights" ? "number" : "text"}
                   min={0}
-                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none 
+                 focus:ring-2 focus:ring-secondary"
                   value={answers[currentQuestions[0].id] || ""}
                   onChange={(e) => handleChange(currentQuestions[0].id, e.target.value)}
                   placeholder="Type your answer..."
@@ -374,20 +453,30 @@ const CarbonCalculator = () => {
 
               {questionOptions[currentQuestions[1].id] ? (
                 <select
-                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none 
+                 focus:ring-2 focus:ring-secondary appearance-none"
                   value={answers[currentQuestions[1].id] || ""}
                   onChange={(e) => handleChange(currentQuestions[1].id, e.target.value)}
                 >
-                  <option value="" disabled>Select an option…</option>
+                  <option value="" disabled>
+                    Select an option…
+                  </option>
                   {questionOptions[currentQuestions[1].id].map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option
+                      key={opt.value}
+                      value={opt.value}
+                      className="hover:bg-secondary hover:text-white"
+                    >
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               ) : (
                 <input
                   type={currentQuestions[1].id === "avg_distance" ? "number" : "text"}
                   min={0}
-                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+                  className="w-full px-4 py-3 bg-camel text-sm rounded-sm focus:outline-none 
+                 focus:ring-2 focus:ring-secondary"
                   value={answers[currentQuestions[1].id] || ""}
                   onChange={(e) => handleChange(currentQuestions[1].id, e.target.value)}
                   placeholder="Type your answer..."
@@ -395,6 +484,7 @@ const CarbonCalculator = () => {
               )}
             </div>
           </div>
+
 
           {/* RIGHT SIDE - Emissions Card (4 columns) */}
           <div className="col-span-12 md:col-span-4 box rounded-sm shadow-md p-6 flex flex-col justify-between h-full">

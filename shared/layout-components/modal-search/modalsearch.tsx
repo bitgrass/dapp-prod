@@ -104,7 +104,7 @@ const Modalsearch = () => {
   const tabsData = [
     {id:1, class:"Dashbaord", icon:"user"},
     {id:2, class:"Swap", icon:"file-text"},
-    {id:3, class:"Mint NFT", icon:"align-left"},
+    {id:3, class:"Own Plot", icon:"align-left"},
     {id:4, class:"Portfolio", icon:"server"},
 
   ]

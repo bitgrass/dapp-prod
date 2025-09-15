@@ -230,12 +230,12 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({
             >
               View Item on Opensea
             </Link>
-            <Link
-              href="/portfolio#nfts-tab-pane"
+            <button
+              onClick={() => (window.location.href = "/portfolio#nfts-tab-pane")}
               className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
             >
               View Item on Portfolio
-            </Link>
+            </button>
           </div>
         </div>
       </div>

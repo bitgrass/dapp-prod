@@ -160,7 +160,10 @@ export function useNFTLeaderboard() {
         const tokenIds: number[] = [];
         currentOwnerOfToken.forEach((_owner, id) => tokenIds.push(id));
 
-        const qualifyingByToken = new Map<number, { recipient: string | null; kind: "firstBuy" | "mint" | null }>();
+        const qualifyingByToken = new Map<
+          number,
+          { recipient: string | null; kind: "firstBuy" | "mint" | null }
+        >();
 
         const work = async (id: number) => {
           try {
@@ -201,9 +204,11 @@ export function useNFTLeaderboard() {
           if (q.recipient === currentOwner) addPoints(currentOwner, tokenId);
         });
 
-        // Build final ranking
-        const arr: RankedHolder[] = Object.keys(holders).map((k) => holders[k]);
-        arr.sort((a, b) => b.btg_claim - a.btg_claim);
+        // 4) Build final ranking (hide ineligible: btg_claim === 0)
+        const arr: RankedHolder[] = Object.values(holders)
+          .filter((h) => h.btg_claim > 0) // only eligible holders
+          .sort((a, b) => b.btg_claim - a.btg_claim);
+
         setRanked(arr);
       } catch (e) {
         console.error("useNFTLeaderboard error:", e);

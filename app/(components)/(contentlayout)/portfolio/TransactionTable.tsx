@@ -3,9 +3,9 @@ import Link from "next/link";
 
 interface Transaction {
   transactionHash: string;
-  type: string;
+  type: string; // "crypto" | "nft"
   transaction?: string;
-  NftType: string;
+  NftType?: string;
   grayValue?: string;
   value: string;
   date: string;
@@ -23,7 +23,9 @@ interface TransactionTableProps {
   transactions?: Transaction[];
   transactionCursor: string | null;
   nftTransactionCursor: string | null;
-  fetchMore: () => void;
+  fetchMore: () => Promise<void> | void;
+  loading?: boolean; // passed from parent for initial fetch
+  hasInitiallyLoaded?: boolean; // Add this to track if initial load is complete
 }
 
 const TransactionTable = ({
@@ -31,57 +33,67 @@ const TransactionTable = ({
   transactionCursor,
   nftTransactionCursor,
   fetchMore,
+  loading = false,
+  hasInitiallyLoaded = false,
 }: TransactionTableProps) => {
   const validTransactions = Array.isArray(transactions) ? transactions : [];
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollHint, setShowScrollHint] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false); // for "Load More"
+
   const NFT_TYPE_IMAGES: Record<string, string> = {
     "Legendary 1000m²": "/assets/images/brand-logos/Legendary.svg",
     "Premium 500m²": "/assets/images/brand-logos/Premium.svg",
     "Standard 100m²": "/assets/images/brand-logos/Standard.svg",
-    // Add fallback for other/unknown types if needed
   };
+
   useEffect(() => {
     const scrollArea = scrollRef.current;
     if (!scrollArea) return;
     const onScroll = () => {
-      if (scrollArea.scrollTop > 20) setShowScrollHint(false);
-      else setShowScrollHint(true);
+      setShowScrollHint(scrollArea.scrollTop <= 20);
     };
     scrollArea.addEventListener("scroll", onScroll);
     return () => scrollArea.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (validTransactions.length === 0) {
+  // 1️⃣ Initial loading state - show spinner when initially loading OR when loading and no data has been loaded yet
+  if (loading && !hasInitiallyLoaded) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="spinner"></div>
+        <p className="ml-3 text-sm">Loading transactions, please wait...</p>
+      </div>
+    );
+  }
+
+  // 2️⃣ Loaded but no transactions - only show this if we've completed initial load and have no data
+  if (hasInitiallyLoaded && validTransactions.length === 0) {
     return (
       <div className="xl:col-span-12 col-span-full mt-4">
-        <div className="min-h-[60vh] flex items-center justify-center bg-white border rounded shadow-sm dark:bg-secondary dark:border-gray-700">
+        <div className="min-h-[60vh] flex items-center justify-center bg-camel rounded shadow-sm">
           <div className="text-center">
             <svg
               className="w-10 h-10 text-gray-500 mx-auto"
               xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
               fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth="1"
-              strokeLinecap="round"
-              strokeLinejoin="round"
             >
               <line x1="22" x2="2" y1="12" y2="12" />
               <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-              <line x1="6" x2="6.01" y1="16" y2="16" />
-              <line x1="10" x2="10.01" y1="16" y2="16" />
             </svg>
-            <p className="mt-5 text-sm text-gray-800 dark:text-gray-300">No transactions found</p>
+            <p className="mt-5 text-sm text-gray-800 dark:text-gray-300">
+              No transactions found
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
+  // 3️⃣ Transactions exist
   return (
     <div className="grid grid-cols-12 gap-x-6">
       <div className="xl:col-span-12 col-span-full">
@@ -92,7 +104,6 @@ const TransactionTable = ({
               ref={scrollRef}
               className="flex-1 overflow-y-auto custom-scrollbar relative"
             >
-
               <div className="table-responsive">
                 <table className="table whitespace-nowrap min-w-full">
                   <thead>
@@ -129,10 +140,12 @@ const TransactionTable = ({
                                 ) : (
                                   <img
                                     src={
-                                      NFT_TYPE_IMAGES[tx.NftType] || "/assets/images/faces/NFTTransaction.svg"
+                                      (tx.NftType &&
+                                        NFT_TYPE_IMAGES[tx.NftType]) ||
+                                      "/assets/images/faces/NFTTransaction.svg"
                                     }
                                     alt={tx.NftType || tx.type}
-                                    className="avatar avatar-md avatar-rounded ml-4"
+                                    className="avatar avatar-md avatar-rounded"
                                     width={40}
                                     height={40}
                                   />
@@ -153,14 +166,26 @@ const TransactionTable = ({
                         <td>
                           <div className="items-center">
                             <div className="flex flex-col">
-                              <span className="text-secondary font-semibold">{tx.value}</span>
-                              {tx.type === "nft" ? (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">{tx.NftType}</span>
-                              ) : null}
+                              <span
+                                className={`font-semibold ${
+                                  tx.value.startsWith("-")
+                                    ? "text-red-500"
+                                    : "text-secondary"
+                                }`}
+                              >
+                                {tx.value}
+                              </span>
+                              {tx.type === "nft" && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {tx.NftType}
+                                </span>
+                              )}
                             </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {tx.type === "crypto" ? tx.grayValue : ""}
-                            </p>
+                            {tx.type === "crypto" && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {tx.grayValue}
+                              </p>
+                            )}
                           </div>
                         </td>
                         <td>
@@ -182,19 +207,22 @@ const TransactionTable = ({
                 </table>
               </div>
             </div>
-            {/* Load More always visible at bottom */}
+
+            {/* Load More button */}
             {(transactionCursor || nftTransactionCursor) && (
               <div className="box-footer text-center">
                 <button
-                  className={`ti-btn bg-secondary text-white !font-medium m-0 !me-[0.375rem] btn btn-primary px-6 py-2${loading ? " btn-loading" : ""}`}
+                  className={`ti-btn bg-secondary text-white !font-medium m-0 !me-[0.375rem] btn btn-primary px-6 py-2 ${
+                    loadingMore ? "btn-loading" : ""
+                  }`}
                   onClick={async () => {
-                    setLoading(true);
+                    setLoadingMore(true);
                     await fetchMore();
-                    setTimeout(() => setLoading(false), 500); // UX feedback
+                    setLoadingMore(false);
                   }}
-                  disabled={loading}
+                  disabled={loadingMore}
                 >
-                  {loading ? "Loading..." : "Load More"}
+                  {loadingMore ? "Loading..." : "Load More"}
                 </button>
               </div>
             )}

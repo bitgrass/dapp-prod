@@ -35,14 +35,14 @@ function PrivyWrapper({ children }: { children: ReactNode }) {
           'email',
           'wallet',
           'twitter',
-          'farcaster',
+
         ],
         fundingMethodConfig: {
           moonpay: { useSandbox: true },
         },
         embeddedWallets: {
           showWalletUIs: false,
-          ethereum: { createOnLogin: 'users-without-wallets' },
+          ethereum: { createOnLogin: 'off' },
         },
       }}
     >

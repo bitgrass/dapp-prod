@@ -14,6 +14,9 @@ import { NEXT_PUBLIC_WC_PROJECT_ID } from './config';
 /* 👉  Get createConfig and WagmiProvider from Privy’s package */
 import { createConfig as createPrivyConfig } from '@privy-io/wagmi';
 
+/* 👉 Import Farcaster MiniApp connector */
+import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector';
+
 export function useWagmiConfig() {
   const projectId = NEXT_PUBLIC_WC_PROJECT_ID ?? '';
   if (!projectId) {
@@ -41,10 +44,16 @@ export function useWagmiConfig() {
       },
     );
 
+    // Add Farcaster MiniApp connector here
+    const connectors = [
+      ...rainbowConnectors,
+      farcasterMiniApp(), // 👈 Warpcast wallet support
+    ];
+
     // Privy’s createConfig auto-adds PrivyConnector
     return createPrivyConfig({
       chains: [base],
-      connectors: rainbowConnectors,
+      connectors,
       multiInjectedProviderDiscovery: false,
       ssr: true,
       transports: { [base.id]: http() },

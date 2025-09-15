@@ -3,25 +3,42 @@ import { Fragment, useState, useEffect } from "react";
 import Seo from "@/shared/layout-components/seo/seo";
 import BalanceCard from "./BalanceCard";
 import PortfolioTabs from "./PortfolioTabs";
-import { useAccount } from "wagmi";
 import axios from "axios";
 import { Token } from "@coinbase/onchainkit/token";
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { btgToken, nftInfo, EthInfo } from "@/shared/data/tokens/data";
 import CarbonAssetsCard from "./CarbonAssetsCard";
-const getInitialWalletState = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("walletConnected") === "true";
-  }
-  return false;
-};
+import { useConnectedAddress } from "../useConnectedAddress";
+
+
+function dedupeByHash<T extends { transactionHash?: string; timestamp: number }>(
+  items: T[]
+): T[] {
+  const seen = new Map<string, T>();
+  items.forEach((item) => {
+    const key = item.transactionHash || `${item.timestamp}`;
+    if (!seen.has(key)) {
+      seen.set(key, item);
+    }
+  });
+  return Array.from(seen.values()).sort((a, b) => b.timestamp - a.timestamp);
+}
+
 
 const Crypto = () => {
   const { ready, authenticated } = usePrivy();
   const { wallets } = useWallets();
-  const { address } = useAccount();
+  // 👇 add loading flags for each section
+  const [loadingTx, setLoadingTx] = useState(false);
+  const [loadingNFTs, setLoadingNFTs] = useState(false);
+  const [loadingNftGrid, setLoadingNftGrid] = useState(false);
+
+  // Use the custom hook - this will prioritize Farcaster wallet in miniapp
+  const { address } = useConnectedAddress();
+  const [hasInitialNftLoad, setHasInitialNftLoad] = useState(false);
+  const [hasInitialTransaction, setHasInitialTransaction] = useState(false);
+
   const [status, setStatus] = useState("loading");
-  const [walletConnected, setWalletConnected] = useState(getInitialWalletState);
   const [btgBalance, setBtgBalance] = useState("0.00");
   const [btgPrice, setBtgPrice] = useState(0);
   const [ethPrice, setEthPrice] = useState(0);
@@ -33,13 +50,19 @@ const Crypto = () => {
   const [nftData, setNftData] = useState<any[]>([]);
   const [nftCursor, setNftCursor] = useState(null);
   const [activeTab, setActiveTab] = useState("crypto-tab-pane");
-  const [pageNumber, setPageNumber] = useState<number>(1)
-const [ethSupply, setEthSupply] = useState("0");
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [ethSupply, setEthSupply] = useState("0");
 
-  // Fetch ETH Data (unchanged)
+  // Fetch ETH Data - now properly uses the address from useConnectedAddress
   useEffect(() => {
     async function fetchEthData() {
-      if (!address) return;
+      if (!address) {
+        console.log("No address available for ETH data fetch");
+        return;
+      }
+
+      console.log("Fetching ETH data for address:", address);
+
       try {
         const [priceRes, balanceRes] = await Promise.all([
           axios.get(
@@ -83,33 +106,35 @@ const [ethSupply, setEthSupply] = useState("0");
       }
     }
     fetchEthData();
-  }, [address]);
+  }, [address]); // Dependency on address from useConnectedAddress
 
   useEffect(() => {
-  async function fetchEthSupply() {
-    try {
-      const res = await axios.get(
-        "https://api.etherscan.io/api?module=stats&action=ethsupply2&apikey=Z816H8MXCPSYM93P9E7Q3J4HJWS3KHGG43"
-      );
-      // EthSupply is in wei, convert to ETH (divide by 1e18)
-      const rawSupply = res.data.result.EthSupply;
-      console.log("heeere",rawSupply)
-      const supplyEth = (parseFloat(rawSupply) / 1e18).toLocaleString(undefined, { maximumFractionDigits: 2 });
-            console.log("heeere2222",supplyEth)
-
-      setEthSupply(supplyEth);
-    } catch (err) {
-      console.error("Error fetching ETH supply:", err);
-      setEthSupply("Error");
+    async function fetchEthSupply() {
+      try {
+        const res = await axios.get(
+          "https://api.etherscan.io/api?module=stats&action=ethsupply2&apikey=Z816H8MXCPSYM93P9E7Q3J4HJWS3KHGG43"
+        );
+        const rawSupply = res.data.result.EthSupply;
+        const supplyEth = (parseFloat(rawSupply) / 1e18).toLocaleString(undefined, { maximumFractionDigits: 2 });
+        setEthSupply(supplyEth);
+      } catch (err) {
+        console.error("Error fetching ETH supply:", err);
+        setEthSupply("Error");
+      }
     }
-  }
-  fetchEthSupply();
-}, []);
+    fetchEthSupply();
+  }, []);
 
-  // Fetch BTG Data (unchanged)
+  // Fetch BTG Data - now properly uses the address from useConnectedAddress
   useEffect(() => {
     async function fetchBtgData() {
-      if (!address) return;
+      if (!address) {
+        console.log("No address available for BTG data fetch");
+        return;
+      }
+
+      console.log("Fetching BTG data for address:", address);
+
       try {
         const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
         const [priceRes, balanceRes] = await Promise.all([
@@ -150,11 +175,18 @@ const [ethSupply, setEthSupply] = useState("0");
       }
     }
     fetchBtgData();
-  }, [address]);
+  }, [address]); // Dependency on address from useConnectedAddress
 
-  // Fetch Crypto Transactions (unchanged)
+  // Fetch Crypto Transactions
   const fetchCryptoTransactions = async (cursor = null, limit = 10) => {
-    if (!address) return;
+    if (!address) {
+      console.log("No address available for crypto transactions fetch");
+      setLoadingTx(true); // 👈 start loader
+      return;
+    }
+    if (!cursor) {
+      setLoadingTx(true);
+    }
     try {
       const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
       const params = new URLSearchParams({
@@ -188,16 +220,27 @@ const [ethSupply, setEthSupply] = useState("0");
         };
       });
 
-      setTransactions((prev) => [...prev, ...cryptoTransactions]);
+      setTransactions((prev) => dedupeByHash([...prev, ...cryptoTransactions]));
       setTransactionCursor(response.data.cursor || null);
     } catch (error) {
       console.error("Error fetching crypto transactions:", error);
+    } finally {
+      setLoadingTx(false); // 👈 stop loader
     }
   };
 
-  // Fetch NFT Transactions (unchanged)
+  // Fetch NFT Transactions
   const fetchNftTransactions = async (cursor = null, limit = 10) => {
-    if (!address) return;
+    if (!address) {
+      console.log("No address available for NFT transactions fetch");
+      setLoadingNFTs(true);
+      return;
+    }
+
+    // Only set loading if it's not already loading
+    if (!cursor) {
+      setLoadingNFTs(true);
+    }
     try {
       const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
       const params = new URLSearchParams({
@@ -212,50 +255,72 @@ const [ethSupply, setEthSupply] = useState("0");
       if (cursor) params.append("cursor", cursor);
 
       const response = await axios.get(
-        `https://deep-index.moralis.io/api/v2.2/${address}/nft/transfers?${params.toString()}`, // Changed to /nft/transfers
+        `https://deep-index.moralis.io/api/v2.2/${address}/nft/transfers?${params.toString()}`,
         {
           headers: { accept: "application/json", "X-API-Key": API_KEY },
         }
       );
-
       const nftTransactions = response.data.result
-        .filter((tx: any) => tx.token_address.toLowerCase() === nftInfo.address.toLowerCase()) // Filter by token_address
+        .filter((tx: any) => tx.token_address.toLowerCase() === nftInfo.address.toLowerCase())
         .map((tx: any) => {
-          const tokenId = parseInt(tx.token_id); // Assure que token_id est un nombre
+          const tokenId = parseInt(tx.token_id);
           let NftType = "Standard 100m²";
-          let transactionType = "NFT Mint"
+          let transactionType = "NFT Transfer"; // default
 
+          // classify NFT type by tokenId ranges
           if (tokenId >= 1 && tokenId <= 400) {
             NftType = "Legendary 1000m²";
-            transactionType = "NFT Sale"
           } else if (tokenId >= 401 && tokenId <= 1200) {
             NftType = "Premium 500m²";
-            transactionType = "NFT Sale"
+          }
+
+          // classify transaction type
+          if (tx.from_address === "0x0000000000000000000000000000000000000000") {
+            transactionType = "NFT Mint"; // minted from null address
+          } else if (tx.value && tx.value !== "0") {
+            transactionType = "NFT Sale"; // sale, value > 0
+          } else {
+            transactionType = "NFT Transfer"; // normal transfer
+          }
+
+          // value sign depending on direction
+          let nftValue = `+1 NFT`;
+          if (tx.from_address?.toLowerCase() === address.toLowerCase()) {
+            nftValue = `-1 NFT`; // outgoing
           }
 
           return {
             type: "nft",
             transaction: transactionType,
-            NftType: NftType,
-            value: `+${tx.amount || 1} NFT`,
+            NftType,
+            value: nftValue,
             grayValue: `NFT ID: ${tx.token_id}`,
             date: new Date(tx.block_timestamp).toLocaleString(),
             timestamp: new Date(tx.block_timestamp).getTime(),
-            transactionHash: tx.transaction_hash,
+            transactionHash: tx.transaction_hash || tx.transactionHash,
           };
         });
 
 
-      setTransactions((prev) => [...prev, ...nftTransactions]);
+      setTransactions((prev) => dedupeByHash([...prev, ...nftTransactions]));
       setNftTransactionCursor(response.data.cursor || null);
     } catch (error) {
       console.error("Error fetching NFT transactions:", error);
+    } finally {
+      setLoadingNFTs(false);
     }
   };
 
-  // Fetch NFTs (unchanged)
+  // Fetch NFTs
   const fetchNfts = async (cursor = null, limit = 4) => {
-    if (!address) return;
+    if (!address) {
+      console.log("No address available for NFTs fetch");
+      setLoadingNftGrid(true)
+      return;
+    }
+    if (!cursor) {
+      setLoadingNftGrid(true);
+    }
     try {
       const params = new URLSearchParams({
         chain: "base",
@@ -297,10 +362,12 @@ const [ethSupply, setEthSupply] = useState("0");
         collectionName: nft.name || "Greener Future",
       }));
 
-      setNftData((prev) => [...prev, ...nfts]);
+      setNftData((prev) => dedupeByHash([...prev, ...nfts]));
       setNftCursor(response.data.cursor || null);
     } catch (error) {
       console.error("Error fetching NFTs from Moralis:", error);
+    } finally {
+      setLoadingNftGrid(false);
     }
   };
 
@@ -327,38 +394,55 @@ const [ethSupply, setEthSupply] = useState("0");
     }
   };
 
-  // Initial Fetch (unchanged)
+  // Initial Fetch - will use the correct address from useConnectedAddress
   useEffect(() => {
     if (address) {
+      console.log("Initializing data fetch for address:", address);
+
+      // Set loading states BEFORE starting fetch
+      setLoadingTx(true);
+      setLoadingNFTs(true);
+      setLoadingNftGrid(true);
+
+      // Reset state
       setTransactions([]);
       setTransactionCursor(null);
       setNftTransactionCursor(null);
       setNftData([]);
       setNftCursor(null);
+      setHasInitialNftLoad(false);
+      setHasInitialTransaction(false);
+
+      // Fetch all data
       Promise.all([
         fetchCryptoTransactions(null, 10),
         fetchNftTransactions(null, 10),
         fetchNfts(null, 4),
-      ]);
+      ]).finally(() => {
+        setHasInitialNftLoad(true);
+        setHasInitialTransaction(true);
+
+      });
     }
   }, [address]);
 
-  // Wallet Connection Status (unchanged)
+
+  // Wallet Connection Status - updated to handle the new address source
   useEffect(() => {
     if (!ready) {
       setStatus("loading");
       return;
     }
-    if (authenticated && wallets.length > 0 && address) {
-      localStorage.setItem("walletConnected", "true");
+    if (authenticated && address) {
+      console.log("Status: loaded with address:", address);
       setStatus("loaded");
     } else {
-      localStorage.setItem("walletConnected", "false");
+      console.log("Status: disconnected");
       setStatus("disconnected");
     }
-  }, [ready, authenticated, wallets, address]);
+  }, [ready, authenticated, address]);
 
-  // Handle Tab Navigation (unchanged)
+  // Handle Tab Navigation
   useEffect(() => {
     const hash = window.location.hash;
     if (hash === "#nfts-tab-pane" || hash === "#transactions-tab-pane") {
@@ -370,13 +454,7 @@ const [ethSupply, setEthSupply] = useState("0");
 
   const renderContent = () => {
     switch (status) {
-      case "loading":
-        return (
-          <div className="spinner-container">
-            <div className="spinner"></div>
-            <p className="mt-3">Loading data, please wait...</p>
-          </div>
-        );
+
       case "disconnected":
         return (
           <div className="xl:col-span-12 col-span-12 mt-12">
@@ -415,7 +493,7 @@ const [ethSupply, setEthSupply] = useState("0");
               btgToken={btgToken}
             />
             <PortfolioTabs
-            address={address}
+              address={address}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               transactions={
@@ -426,7 +504,7 @@ const [ethSupply, setEthSupply] = useState("0");
                   : transactions.sort((a, b) => b.timestamp - a.timestamp)
               }
               transactionCursor={transactionCursor}
-              nftTransactionCursor={nftTransactionCursor} // Pass the NFT transaction cursor
+              nftTransactionCursor={nftTransactionCursor}
               nftData={nftData}
               nftCursor={nftCursor}
               loadMore={loadMore}
@@ -436,13 +514,17 @@ const [ethSupply, setEthSupply] = useState("0");
               btgBalance={btgBalance}
               btgToken={btgToken}
               ethSupply={ethSupply}
+              loadingTx={loadingTx}
+              loadingNFTs={loadingNFTs}
+              loadingNftGrid={loadingNftGrid}
+              hasInitialNftLoad={hasInitialNftLoad} // Add this missing prop
+              hasInitialTransaction={hasInitialTransaction} // Add this missing prop
+
             />
-            <CarbonAssetsCard
-            />
+            <CarbonAssetsCard />
           </>
         );
-      default:
-        return <div className="loading">Loading...</div>;
+
     }
   };
 

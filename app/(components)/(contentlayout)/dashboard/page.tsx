@@ -554,8 +554,22 @@ const Dashboard = () => {
                                                     <div className="box-body">
                                                         <TokenizedLandCube />
                                                         <div className="grid">
-                                                            <Link href="/ownplot/standard" className="ti-btn bg-secondary  text-white !font-medium !mb-2 !mt-4">Mint Plot</Link>
-                                                            <Link href="https://opensea.io/collection/bitgrass-nft/overview" target="_blank" rel="noopener noreferrer" className="ti-btn bg-camel10  !font-medium">Discover</Link>
+                                                            <Link
+                                                                href="/ownplot/standard"
+                                                                className="ti-btn bg-secondary hover:bg-[#669e39] text-white !font-medium !mb-2 !mt-4"
+                                                            >
+                                                                Mint Plot
+                                                            </Link>
+
+                                                            <Link
+                                                                href="https://opensea.io/collection/bitgrass-nft/overview"
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="ti-btn bg-camel10 hover:bg-[#e6e2d5] dark:hover:bg-camel10 !font-medium"
+                                                            >
+                                                                Discover
+                                                            </Link>
+
                                                         </div>
                                                     </div>
                                                 </div>

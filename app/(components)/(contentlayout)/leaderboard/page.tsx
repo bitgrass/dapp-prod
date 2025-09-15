@@ -3,113 +3,142 @@ import { useNFTLeaderboard } from '@/shared/data/ranking/useNFTLeaderboard';
 import Pageheader from '@/shared/layout-components/page-header/pageheader';
 import Seo from '@/shared/layout-components/seo/seo';
 import Link from 'next/link';
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { usePrivy } from '@privy-io/react-auth';
-import { useAccount } from 'wagmi';
 import { nftInfo } from "@/shared/data/tokens/data";
 import axios from "axios";
-
+import { useConnectedAddress } from "../useConnectedAddress";
 
 const Select = dynamic(() => import("react-select"), { ssr: false });
+const DO_BASE = "https://durable-object-starter.bitgrass-crypto.workers.dev";
+
+function useDOLeaderboard() {
+    const [ranked, setRanked] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [version, setVersion] = useState<number | null>(null);
+    const [error, setError] = useState<null | string>(null);
+
+
+    useEffect(() => {
+        let closed = false;
+        const abort = new AbortController();
+
+        const fetchOnce = async () => {
+            try {
+                setLoading(true);
+                const res = await fetch(`${DO_BASE}/leaderboard`, {
+                    headers: { accept: "application/json" },
+                    signal: abort.signal,
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const body = await res.json();
+                if (!closed) {
+                    setVersion(body?.version ?? null);
+                    setRanked(Array.isArray(body?.result) ? body.result : []);
+                    setLoading(false);
+                }
+            } catch (e: any) {
+                if (!closed) {
+                    setError(String(e?.message || e));
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchOnce();
+
+        // live updates via WS (optional but nice)
+        let ws: WebSocket | null = null;
+        try {
+            const wsUrl = DO_BASE.replace(/^http/, "ws") + "/ws";
+            ws = new WebSocket(wsUrl);
+            ws.onmessage = (evt) => {
+                try {
+                    const msg = JSON.parse(String(evt.data || "{}"));
+                    if (msg?.type === "leaderboard" && Array.isArray(msg?.data)) {
+                        setVersion(msg?.version ?? null);
+                        setRanked(msg.data);
+                    }
+                } catch { }
+            };
+        } catch { }
+
+        return () => {
+            closed = true;
+            abort.abort();
+            try { ws?.close(); } catch { }
+        };
+    }, []);
+
+    return { ranked, loading, version, error };
+}
 
 const leaderboard = () => {
-    const { address, isConnected } = useAccount();
-    const [userNFTData, setUserNFTData] = useState<any[]>([]);
-    const [userBTG, setUserBTG] = useState(0);
-    const [userLegendary, setUserLegendary] = useState(0);
-    const [userPremium, setUserPremium] = useState(0);
-    const [userStandard, setUserStandard] = useState(0);
+    const { authenticated, login, user } = usePrivy();
+    const { ranked, loading } = useDOLeaderboard();
 
-    const { authenticated, login } = usePrivy();
-    const { ranked, loading } = useNFTLeaderboard();
+    // Use the custom hook - this will prioritize Farcaster wallet in miniapp
+    const { address: connectedAddress } = useConnectedAddress();
+
     const ITEMS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = useState(1);
 
     const totalPages = Math.ceil(ranked.length / ITEMS_PER_PAGE);
-    const currentData = ranked.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
-    );
+    const currentData = useMemo(() => {
+        return ranked.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+    }, [ranked, currentPage]);
 
     const handlePrev = () => currentPage > 1 && setCurrentPage(p => p - 1);
     const handleNext = () => currentPage < totalPages && setCurrentPage(p => p + 1);
 
-    useEffect(() => {
-        if (!address) return;
+    // Create wallet addresses array from the useConnectedAddress hook
+    const walletAddresses = useMemo(() => {
+        if (!connectedAddress) {
+            console.log("No connected address for wallet addresses");
+            return [];
+        }
+        console.log("Using connected address for leaderboard:", connectedAddress);
+        return [connectedAddress.toLowerCase()];
+    }, [connectedAddress]);
 
-        const fetchUserNFTs = async () => {
-            let allNFTs: any[] = [];
-            let cursor: string | null = null;
+    // find the top-most rank among user wallets (if any)
+    const userRankIndex = useMemo(() => {
+        if (!walletAddresses.length || !ranked.length) return -1;
+        const foundIndex = ranked.findIndex((row) => walletAddresses.includes((row.address || "").toLowerCase()));
+        if (foundIndex >= 0) {
+            console.log("User found in leaderboard at index:", foundIndex, "for address:", walletAddresses[0]);
+        } else {
+            console.log("User not found in leaderboard for address:", walletAddresses[0]);
+        }
+        return foundIndex;
+    }, [walletAddresses, ranked]);
 
-            try {
-                do {
-                    const params = new URLSearchParams({
-                        chain: "base",
-                        format: "decimal",
-                        "token_addresses[0]": nftInfo.address,
-                        normalizeMetadata: "true",
-                        limit: "100",
-                        media_items: "false",
-                        include_prices: "false",
-                    });
-                    if (cursor) params.append("cursor", cursor);
+    const displayRank = userRankIndex >= 0 ? `#${String(userRankIndex + 1).padStart(4, '0')}` : "#0000";
 
-                    const res = await axios.get(
-                        `https://deep-index.moralis.io/api/v2.2/${address}/nft?${params.toString()}`,
-                        {
-                            headers: {
-                                accept: "application/json",
-                                "X-API-Key": process.env.NEXT_PUBLIC_MORALIS_APY_KEY!,
-                            },
-                        }
-                    );
+    // grab the aggregate counts/BTG from leaderboard for the user (first matching wallet)
+    const userRow = useMemo(() => {
+        if (!walletAddresses.length) return null;
+        const foundRow = ranked.find((r) => walletAddresses.includes((r.address || "").toLowerCase()));
+        if (foundRow) {
+            console.log("User row found:", foundRow);
+        }
+        return foundRow || null;
+    }, [walletAddresses, ranked]);
 
-                    allNFTs = [...allNFTs, ...(res.data.result || [])];
-                    cursor = res.data.cursor || null;
-                } while (cursor);
-            } catch (e) {
-                console.error("Error fetching NFTs", e);
-            }
+    const userBTG = userRow?.btg_claim || 0;
+    const userLegendary = userRow?.legendary || 0;
+    const userPremium = userRow?.premium || 0;
+    const userStandard = userRow?.standard || 0;
 
-            setUserNFTData(allNFTs);
+    const handleClaimBTG = () => {
+        if (userBTG > 0) {
+            // Redirect to staking site if user has BTG to claim
+            window.open('https://staking.bitgrass.com', '_blank');
+        }
+        // If userBTG is 0, button should be disabled and nothing happens
+    };
 
-            let legendary = 0,
-                premium = 0,
-                standard = 0,
-                totalBTG = 0;
-
-            allNFTs.forEach((nft) => {
-                const id = Number(nft.token_id || nft.tokenId);
-                if (id >= 1 && id <= 400) {
-                    legendary++;
-                    totalBTG += 35000;
-                } else if (id >= 401 && id <= 1200) {
-                    premium++;
-                    totalBTG += 20000;
-                } else if (id >= 1201 && id <= 3200) {
-                    standard++;
-                    totalBTG += 5000;
-                }
-            });
-
-            setUserLegendary(legendary);
-            setUserPremium(premium);
-            setUserStandard(standard);
-            setUserBTG(totalBTG);
-        };
-
-        fetchUserNFTs();
-    }, [address]);
-
-    const { user } = usePrivy();
-    const allWallets = user?.linkedAccounts?.filter((acc) => acc.type === 'wallet');
-    const walletAddresses = allWallets?.map((wallet) => wallet.address.toLowerCase()) || [];
-    const userRank = ranked.findIndex((item) =>
-        walletAddresses.includes(item.address.toLowerCase())
-    );
-
-    const displayRank = userRank >= 0 ? `#${String(userRank + 1).padStart(4, '0')}` : "#0000";
 
     const RankIcon = (
         <svg width="21" height="21" viewBox="0 0 21 21" fill="rgb(var(--primary))" xmlns="http://www.w3.org/2000/svg">
@@ -117,7 +146,6 @@ const leaderboard = () => {
         </svg>);
 
     const StandardNFTIcon = (
-
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6.14551 0.916016C4.82528 3.55647 2.78597 5.59579 0.145508 6.91602C2.78597 8.23624 4.82528 10.2756 6.14551 12.916C7.46574 10.2756 9.50505 8.23624 12.1455 6.91602C9.50505 5.59579 7.46574 3.55647 6.14551 0.916016Z" fill="url(#paint0_linear_420_5206)" />
             <path d="M6.14551 1.60449C7.39878 3.86517 9.19548 5.66262 11.4561 6.91602C9.19573 8.16927 7.39876 9.96624 6.14551 12.2266C4.89212 9.96599 3.09466 8.16929 0.833984 6.91602C3.09491 5.66261 4.8921 3.86542 6.14551 1.60449Z" stroke="url(#paint1_linear_420_5206)" stroke-opacity="0.5" stroke-width="0.643839" />
@@ -134,7 +162,6 @@ const leaderboard = () => {
         </svg>);
 
     const PremiumNFTIcon = (
-
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6.14551 0.916016C4.82528 3.55647 2.78597 5.59579 0.145508 6.91602C2.78597 8.23624 4.82528 10.2756 6.14551 12.916C7.46574 10.2756 9.50505 8.23624 12.1455 6.91602C9.50505 5.59579 7.46574 3.55647 6.14551 0.916016Z" fill="url(#paint0_linear_420_5208)" />
             <path d="M6.14551 1.49219C7.41144 3.81322 9.24744 5.64996 11.5684 6.91602C9.24769 8.18194 7.41143 10.0182 6.14551 12.3389C4.87945 10.0179 3.04271 8.18195 0.72168 6.91602C3.04296 5.64994 4.87943 3.81347 6.14551 1.49219Z" stroke="url(#paint1_linear_420_5208)" stroke-opacity="0.5" stroke-width="0.535243" />
@@ -152,7 +179,6 @@ const leaderboard = () => {
     );
 
     const LegendaryNFTIcon = (
-
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6.14551 0.916016C4.82528 3.55647 2.78597 5.59579 0.145508 6.91602C2.78597 8.23624 4.82528 10.2756 6.14551 12.916C7.46574 10.2756 9.50505 8.23624 12.1455 6.91602C9.50505 5.59579 7.46574 3.55647 6.14551 0.916016Z" fill="url(#paint0_linear_420_5211)" />
             <path d="M6.14551 1.41797C7.41955 3.77942 9.28123 5.64184 11.6426 6.91602C9.28148 8.19005 7.41954 10.052 6.14551 12.4131C4.87134 10.0517 3.00891 8.19006 0.647461 6.91602C3.00917 5.64183 4.87133 3.77967 6.14551 1.41797Z" stroke="url(#paint1_linear_420_5211)" stroke-opacity="0.5" stroke-width="0.466667" />
@@ -175,8 +201,6 @@ const leaderboard = () => {
         </svg>
     );
 
-
-
     return (
         <Fragment>
             <Seo title={"Leaderboard"} />
@@ -188,8 +212,10 @@ const leaderboard = () => {
                         <div className=" w-full p-4">
                             <p className="text-4xl font-bold mb-1 ">Leaderboard</p>
                             <p>
-                                Early NFT Holders are eligible to earn $BTG via Vesting.<br />
-                                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. <br />Aenean commodo ligula eget dolor.   </p>
+                                Early NFT investors are eligible to earn $BTG via Vesting program.<br />
+                                Exclusive to public mint participants, who secure their NFTs during the initial mint session,<br />
+                                and to primary sale buyers, who join at the first offering stage.
+                            </p>
                         </div>
                     </div>
                     {/* Right: Card */}
@@ -216,10 +242,10 @@ const leaderboard = () => {
                                 <div className="text-lg font-bold mb-2 sm:hidden">Your available $BTG for claim</div>
 
                                 {/* Description */}
-                                <div className="text-xs text-[#7d879c] dark:text-white/60 mb-5">
-                                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+                                <div className="text-[#3e4042] dark:text-white mb-5">
+                                    Early NFT investors are eligible to earn $BTG via Vesting program.
                                     <br className="hidden sm:inline" />
-                                    Aenean commodo ligula eget dolor. Check your eligibility.
+                                    Check your eligibility.
                                 </div>
 
                                 {/* BTG Balance and NFT Counts */}
@@ -337,12 +363,29 @@ const leaderboard = () => {
                                 {/* Connect Wallet Button */}
                                 <div className="flex">
                                     <button
-                                        className="w-180 bg-secondary text-white !font-medium btn btn-primary px-8 py-2 rounded-sm mt-2"
-                                        onClick={!authenticated ? login : undefined}
-                                        disabled={authenticated ? true : false}
-                                        style={{ userSelect: 'none', cursor: authenticated ? 'not-allowed' : 'pointer' }}
+                                        className={`w-180 text-white !font-medium btn px-8 py-2 rounded-sm mt-2 ${!authenticated
+                                                ? 'bg-secondary btn-primary cursor-pointer'
+                                                : userBTG > 0
+                                                    ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
+                                                    : 'bg-gray-400 cursor-not-allowed opacity-50'
+                                            }`}
+                                        onClick={!authenticated ? login : authenticated && userBTG > 0 ? handleClaimBTG : undefined}
+                                        disabled={authenticated && userBTG === 0}
+                                        style={{
+                                            userSelect: 'none',
+                                            cursor: !authenticated
+                                                ? 'pointer'
+                                                : userBTG > 0
+                                                    ? 'pointer'
+                                                    : 'not-allowed'
+                                        }}
                                     >
-                                        {authenticated ? 'Claim $BTG' : 'Connect Wallet'}
+                                        {!authenticated
+                                            ? 'Connect Wallet'
+                                            : userBTG > 0
+                                                ? 'Claim $BTG'
+                                                : 'No $BTG to Claim'
+                                        }
                                     </button>
                                 </div>
 
