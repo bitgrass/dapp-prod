@@ -388,8 +388,8 @@ const WalletMenu: React.FC = () => {
                       setShowTooltip(true);
                       setTimeout(() => setShowTooltip(false), 1200);
                     }}
-                    className="w-full flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                    style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
+                    className=" text-hights w-full flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
+                    style={{ fontSize: "12px", padding: "6px", marginTop: "12px" }}
                   >
                     {shortConnected || email || 'User'}
                     <i className="bx bx-copy mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
@@ -407,8 +407,8 @@ const WalletMenu: React.FC = () => {
               {connectedAddress && (hasNonEmbeddedWallet || farcasterWallet) && (
                 <button
                   onClick={() => window.open(`https://basescan.org/address/${connectedAddress}`, "_blank")}
-                  className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                  style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
+                  className="text-hights flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
+                  style={{ fontSize: "12px", padding: "6px", marginTop: "12px" }}
                 >
                   View on Basescan
                   <i className="bx bx-link-alt mr-1" style={{ color: "#666666", marginLeft: "3px" }} />
@@ -417,8 +417,8 @@ const WalletMenu: React.FC = () => {
 
               {activePrivyWallet?.walletClientType === 'privy' && (
                 <button
-                  className="flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
-                  style={{ color: "#666666", fontSize: "12px", padding: "6px", marginTop: "12px" }}
+                  className="text-hights flex-1 flex items-center justify-center px-3 py-1.5 rounded-md hover:bg-camel10 dark:hover:bg-[#FFFFFF0D] transition ti-btn"
+                  style={{ fontSize: "12px", padding: "6px", marginTop: "12px" }}
                   onClick={exportWallet}
                 >
                   Export my wallet <i className='bx bx-export' style={{ color: "#666666", marginLeft: "3px" }}></i>
@@ -484,10 +484,11 @@ const WalletMenu: React.FC = () => {
                 <button
                   onClick={handleSendPanel}
                   style={{ placeContent: 'center' }}
-                  className="flex items-center justify-between text-sm font-medium text-wihte w-full py-3 px-3 rounded-sm hover:opacity-90 transition "
+                  className="flex items-center justify-between text-sm font-medium text-wihte w-full py-3 px-3 rounded-sm hover:opacity-90 transition ti-btn"
                 >
                   <span className="flex text-white items-center">
                     <i className="bx bx-send mr-2 text-white" />
+
                     Send
                   </span>
                 </button>
@@ -524,7 +525,7 @@ const WalletMenu: React.FC = () => {
           <div ref={popupRef} className="w-[95%] z-[9999] max-w-md bg-camel rounded-xl shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-center justify-between">
-              <button onClick={() => handleModal()} className="text-gray-500 hover:text-gray-700 ti-btn">
+              <button onClick={() => handleModal()} className="text-gray-500 hover:text-gray-700">
                 <i className="ri-arrow-left-line align-middle inline-block"></i>
               </button>
               <div style={{ placeItems: 'anchor-center' }}>
@@ -548,27 +549,46 @@ const WalletMenu: React.FC = () => {
                       value={sendToAddress}
                       onChange={(e) => setSendToAddress(e.target.value)}
                       placeholder="Recipient Address"
-                      className="w-full px-3 py-3 border border-secondary rounded-md bg-swap dark:text-white dark:placeholder:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition shadow-sm text-sm"
+                      className={`w-full px-3 py-3 rounded-md bg-swap text-sm shadow-sm transition
+    dark:text-white placeholder:opacity-50 dark:placeholder:opacity-40
+    focus:outline-none focus:ring-2 focus:ring-secondary
+    ${sendToAddress.trim().length > 0
+                          ? "border border-secondary"
+                          : "border border-gray-500 dark:border-gray-600"}`}
                     />
+
                     <div className="w-full flex flex-row justify-between items-center">
                       <span className="text-sm">Amount</span>
                       <span className="text-sm">
                         Balance:{" "}
                         <span style={{ color: "#7FC447" }}>
-                          {ethBalance ? `${ethBalance.formatted.slice(0, 6)} ${ethBalance.symbol}` : "0"}
+                          {ethBalance
+                            ? `${ethBalance.formatted.slice(0, 6)} ${ethBalance.symbol}`
+                            : "0"}
                         </span>
                       </span>
                     </div>
+
                     <input
                       type="number"
                       min="0"
                       value={sendAmount}
                       onChange={(e) => setSendAmount(e.target.value)}
                       placeholder="Amount in ETH"
-                      className="w-full px-3 py-3 border border-secondary rounded-md bg-swap dark:text-white dark:placeholder:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition shadow-sm text-sm"
+                      className={`w-full px-3 py-3 rounded-md bg-swap text-sm shadow-sm transition
+    dark:text-white placeholder:opacity-50 dark:placeholder:opacity-40
+    focus:outline-none focus:ring-2 focus:ring-secondary
+    ${sendAmount.trim().length > 0
+                          ? "border border-secondary"
+                          : "border border-gray-500 dark:border-gray-600"}`}
                     />
-                    <div className="text-xs text-red-500" style={{ height: "20px" }}>{sendError && <span>{sendError}</span>}</div>
-                    {sendError.includes("Please switch to the Base network") && (
+
+
+                    <div className="text-xs text-red-500" style={{ height: '20px' }}>
+                      {sendError && <span>{sendError}</span>}
+                    </div>
+
+                    {sendError.includes('Please switch to the Base network') && (
                       <button
                         onClick={async () => {
                           try {
@@ -579,7 +599,7 @@ const WalletMenu: React.FC = () => {
                             }
                             setSendError('');
                           } catch (err) {
-                            setSendError("Failed to switch to Base network.");
+                            setSendError('Failed to switch to Base network.');
                           }
                         }}
                         className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md font-medium transition mt-2"
@@ -587,9 +607,12 @@ const WalletMenu: React.FC = () => {
                         Switch to Base Network
                       </button>
                     )}
+
                     <button
                       onClick={handleSend}
-                      className="w-full bg-secondary hover:bg-secondary/90 text-white py-2 rounded-md font-medium transition"
+                      className="flex items-center justify-center text-sm font-medium w-full 
+                     bg-secondary hover:bg-secondary/90 text-white px-3 py-3 
+                     rounded-md font-medium transition"
                     >
                       Send
                     </button>
@@ -599,9 +622,18 @@ const WalletMenu: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
                         <circle cx="12" cy="12" r="12" fill="rgb(var(--secondary))" />
-                        <path d="M7 13.5l3 3 7-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path
+                          d="M7 13.5l3 3 7-7"
+                          stroke="#fff"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
-                      <span className="text-[13px] font-semibold" style={{ color: 'rgb(var(--secondary))' }}>
+                      <span
+                        className="text-[13px] font-semibold"
+                        style={{ color: 'rgb(var(--secondary))' }}
+                      >
                         Transaction sent successfully!
                       </span>
                     </div>

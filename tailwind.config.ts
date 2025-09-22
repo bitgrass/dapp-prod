@@ -77,6 +77,7 @@ module.exports = {
         secondary: "rgb(var(--secondary))",
         secondary10: "rgb(var(--secondary-10))",
         secondary20: "rgb(var(--secondary-20))",
+        hights:"rgb(var(--hights))",
 
         success: "rgb(var(--success))",
         info: "rgb(var(--info))",

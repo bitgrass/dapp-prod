@@ -205,7 +205,7 @@ const CryptoTable = ({
       <div className="xl:col-span-12 col-span-12">
         <div className="flex flex-col md:flex-row gap-y-3 md:gap-y-0 md:gap-x-6 mb-6">
           {/* Standard Card */}
-          <div className="flex items-center border-2 border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-secondary/30  px-4">
+          <div className="flex items-center border border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-secondary/30  px-4">
             <span className="avatar avatar-md avatar-rounded me-2">
               <img src="../../../assets/images/brand-logos/Standard.svg" alt="" />
             </span>
@@ -215,7 +215,7 @@ const CryptoTable = ({
             </div>
           </div>
           {/* Premium Card */}
-          <div className="flex items-center border-2 border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-blue-400/30 px-4">
+          <div className="flex items-center border border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-blue-400/30 px-4">
             <span className="avatar avatar-md avatar-rounded me-2">
               <img src="../../../assets/images/brand-logos/Premium.svg" alt="" />
             </span>
@@ -225,7 +225,7 @@ const CryptoTable = ({
             </div>
           </div>
           {/* Legendary Card */}
-          <div className="flex items-center border-2 border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-yellow-500/30 px-4">
+          <div className="flex items-center border border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-yellow-500/30 px-4">
             <span className="avatar avatar-md avatar-rounded me-2">
               <img src="../../../assets/images/brand-logos/Legendary.svg" alt="" />
             </span>

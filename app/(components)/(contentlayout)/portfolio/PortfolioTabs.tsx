@@ -68,7 +68,7 @@ const PortfolioTabs = ({
                   className={`w-full sm:w-auto flex active ${
                     activeTab === "crypto-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
-                      : ""
+                      : "dark:text-white"
                   } py-2 px-4 text-primary text-sm`}
                   href="#crypto-tab-pane"
                   scroll={false}
@@ -83,7 +83,7 @@ const PortfolioTabs = ({
                   className={`w-full sm:w-auto flex active ${
                     activeTab === "nfts-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
-                      : ""
+                      : "dark:text-white"
                   } py-2 px-4 text-primary text-sm`}
                   href="#nfts-tab-pane"
                   scroll={false}
@@ -98,7 +98,7 @@ const PortfolioTabs = ({
                   className={`w-full sm:w-auto flex active ${
                     activeTab === "transactions-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
-                      : ""
+                      : "dark:text-white"
                   } py-2 px-4 text-primary text-sm`}
                   href="#transactions-tab-pane"
                   scroll={false}

@@ -211,7 +211,7 @@ const leaderboard = () => {
                     <div className="col-span-12 md:col-span-6 flex items-center">
                         <div className=" w-full p-4">
                             <p className="text-4xl font-bold mb-1 ">Leaderboard</p>
-                            <p>
+                            <p className='dark:text-white/60'>
                                 Early NFT investors are eligible to earn $BTG via Vesting program.<br />
                                 Exclusive to public mint participants, who secure their NFTs during the initial mint session,<br />
                                 and to primary sale buyers, who join at the first offering stage.
@@ -367,7 +367,7 @@ const leaderboard = () => {
                                                 ? 'bg-secondary btn-primary cursor-pointer'
                                                 : userBTG > 0
                                                     ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
-                                                    : 'bg-gray-400 cursor-not-allowed opacity-50'
+                                                    : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
                                             }`}
                                         onClick={!authenticated ? login : authenticated && userBTG > 0 ? handleClaimBTG : undefined}
                                         disabled={authenticated && userBTG === 0}

@@ -130,6 +130,7 @@ Toast
   --bs-width:	1px;
   --swap : 255 255 255;
   --icons:	249 248 247;
+  --hights:15 56 43;
 }
 
 /* dark mode */
@@ -146,6 +147,7 @@ Toast
   --camel:	37 39 41;
   --swap :37 39 41;
   --icons: 246 246 246;
+  --hights:242, 242, 242;
 
 
 }

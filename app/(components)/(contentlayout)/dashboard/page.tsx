@@ -377,7 +377,7 @@ const Dashboard = () => {
                                                             </div>
                                                             <div>
                                                                 <span className="block text-[#8c9097] dark:text-white/50">Total Carbon Tokenized</span>
-                                                                <span className="text-[1rem] font-semibold">TBA</span>
+                                                                <span className="text-[1rem] font-semibold text-hights">TBA</span>
                                                             </div>
                                                         </div>
 
@@ -399,7 +399,7 @@ const Dashboard = () => {
                                                             </div>
                                                             <div>
                                                                 <span className="block text-[#8c9097] dark:text-white/50">Total Hectares Covered</span>
-                                                                <span className="text-[1rem] font-semibold">100 Hectares</span>
+                                                                <span className="text-[1rem] font-semibold text-hights">100 Hectares</span>
                                                             </div>
                                                         </div>
 
@@ -421,7 +421,7 @@ const Dashboard = () => {
                                                             </div>
                                                             <div>
                                                                 <span className="block text-[#8c9097] dark:text-white/50">Carbon Units</span>
-                                                                <span className="text-[1rem] font-semibold">60 K-tonnes</span>
+                                                                <span className="text-[1rem] font-semibold text-hights">60 K-tonnes</span>
                                                             </div>
                                                         </div>
 
@@ -443,7 +443,7 @@ const Dashboard = () => {
                                                             </div>
                                                             <div>
                                                                 <span className="block text-[#8c9097] dark:text-white/50">Total Carbon Retired</span>
-                                                                <span className="text-[1rem] font-semibold">0</span>
+                                                                <span className="text-[1rem] font-semibold text-hights">0</span>
                                                             </div>
                                                         </div>
 
@@ -565,9 +565,9 @@ const Dashboard = () => {
                                                                 href="https://opensea.io/collection/bitgrass-nft/overview"
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="ti-btn bg-camel10 hover:bg-[#e6e2d5] dark:hover:bg-camel10 !font-medium"
+                                                                className="ti-btn bg-camel10 hover:bg-[#e6e2d5] dark:hover:bg-[#484b4f] !font-medium"
                                                             >
-                                                                Discover
+                                                                Discover Collection
                                                             </Link>
 
                                                         </div>

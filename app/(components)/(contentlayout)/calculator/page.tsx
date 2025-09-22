@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, Fragment } from "react";
+import React, { useState, Fragment, useEffect } from "react";
 import classNames from "classnames";
 
 // ---------------- SVG ICONS ----------------
@@ -282,11 +282,48 @@ function computeEmissionsForCategory(
   return 0;
 }
 
+// Function to check if current tab is completed
+const isTabCompleted = (category: keyof typeof categories, answers: Record<string, string>) => {
+  const questions = categories[category];
+  const firstQuestion = questions[0];
+  const secondQuestion = questions[1];
+
+  // Check if first question is answered
+  const firstAnswer = answers[firstQuestion.id];
+  if (!firstAnswer) return false;
+
+  // Check if second question should be shown and is answered
+  const shouldShowSecond = (() => {
+    const raw = firstAnswer.toString().trim().toLowerCase();
+
+    if (category === "transport" && raw === "never") return false;
+    if (category === "vehicle" && raw === "none") return false;
+    if (category === "house" && raw === "none") return false;
+    if (category === "food" && raw === "$0") return false;
+
+    if (category === "flights") {
+      const n = parseFloat(raw.replace(/[^\d.]/g, ""));
+      if (!isFinite(n) || n <= 0) return false;
+    }
+
+    return true;
+  })();
+
+  // If second question should be shown, check if it's answered
+  if (shouldShowSecond) {
+    const secondAnswer = answers[secondQuestion.id];
+    return !!secondAnswer;
+  }
+
+  // If second question shouldn't be shown, tab is completed with just first answer
+  return true;
+};
+
 
 const CarbonCalculator = () => {
   const [activeCategory, setActiveCategory] = useState<keyof typeof categories>("house");
   const [answers, setAnswers] = useState<Record<string, string>>({});
-
+  const [manualNavigation, setManualNavigation] = useState(false);
   // keep emissions per category so the TOTAL stays stable when switching tabs
   const [emissionsByCategory, setEmissionsByCategory] = useState<
     Record<keyof typeof categories, number>
@@ -338,7 +375,21 @@ const CarbonCalculator = () => {
     return true;
   })();
 
+  useEffect(() => {
+    if (isTabCompleted(activeCategory, answers) && !manualNavigation) {
+      const currentIndex = categoryList.indexOf(activeCategory);
+      const nextIndex = currentIndex + 1;
 
+      // Only auto-advance if we're moving forward, not backward
+      if (nextIndex < categoryList.length) {
+        const timer = setTimeout(() => {
+          setActiveCategory(categoryList[nextIndex]);
+        }, 800);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [answers, activeCategory, manualNavigation]);
   return (
     <Fragment>
       {/* PAGE WRAPPER with consistent spacing */}
@@ -350,7 +401,7 @@ const CarbonCalculator = () => {
           <div className="col-span-12 md:col-span-6 flex items-center">
             <div className="w-full">
               <p className="text-4xl font-bold mb-1">Emissions Calculator</p>
-              <p>
+              <p className="dark:text-white/60">
                 Your daily activities—like travel, shipping, and work—emit greenhouse gases.<br />
                 Bitgrass helps you estimate your footprint and offset what you can’t reduce<br />
                 by owning real land-backed NFTs that generate carbon credits onchain.
@@ -373,9 +424,14 @@ const CarbonCalculator = () => {
                 <button
                   key={cat}
                   type="button"
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => {
+                    setManualNavigation(true);
+                    setActiveCategory(cat);
+                    // Keep manual navigation active longer to prevent auto-advance
+                    setTimeout(() => setManualNavigation(false), 5000); // 5 seconds instead of 1
+                  }}
                   className={classNames(
-                    "nav-link flex items-center gap-2 !py-[0.35rem] !px-4 text-sm !font-medium text-center rounded-md shrink-0",
+                    "nav-link flex items-center gap-2 !py-[0.35rem] !px-4 text-sm !font-medium text-center rounded-md shrink-0 relative",
                     activeCategory === cat
                       ? "active bg-primary text-white"
                       : "text-gray-500 dark:text-gray-400 hover:text-primary"
@@ -483,6 +539,21 @@ const CarbonCalculator = () => {
                 />
               )}
             </div>
+            {/* Progress indicator */}
+            <div className="mt-6 pt-4 dark:border-gray-700">
+              <div className="flex justify-between items-center text-xs ">
+                <span>Progress: {categoryList.filter(cat => isTabCompleted(cat, answers)).length} of {categoryList.length} sections completed</span>
+
+              </div>
+              <div className="w-full bg-camel rounded-full h-2 mt-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${(categoryList.filter(cat => isTabCompleted(cat, answers)).length / categoryList.length) * 100}%`
+                  }}
+                ></div>
+              </div>
+            </div>
           </div>
 
 
@@ -496,9 +567,9 @@ const CarbonCalculator = () => {
                 <div className="text-5xl font-bold text-primary">
                   {totalEmissions.toFixed(2)}
                 </div>
-                <div className="text-sm text-gray-600">tonnes CO₂e</div>
+                <div className="text-sm">tonnes CO₂e</div>
               </div>
-              <div className="text-[10px] text-gray-500 italic mt-2">
+              <div className="text-[10px]  italic mt-2">
                 * CO₂e = carbon-dioxide equivalent
               </div>
               <p className="text-center mt-6">

@@ -30,7 +30,7 @@ const BalanceCard = ({ totalBalance, btgBalance, btgToken }: BalanceCardProps) =
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
                   <div>
                     <div className="">Balance</div>
-                    <div className="text-[2.25rem] font-semibold">
+                    <div className="text-[2.25rem] font-semibold text-hights">
                       {formatLargeValue(Number(btgBalance) || 0)} BTG                    </div>
                     <small className="text-[1rem] mt-0 text-[#8c9097] dark:text-white/50">
                       ~  ${totalBalance || "0.00"} USD

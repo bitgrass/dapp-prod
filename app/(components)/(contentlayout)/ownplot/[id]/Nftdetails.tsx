@@ -549,6 +549,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             login();
             return;
         }
+            // Add comprehensive debugging
+    console.log("=== WALLET DEBUG INFO ===");
+    console.log("userAddress:", userAddress);
+    console.log("client:", client);
+    console.log("farcasterWallet:", farcasterWallet);
+    console.log("isMinitapp:", isMinitapp);
+   
+    
         if (!order) {
             const modalDataFailed: any = await getModalData();
             setFailureTxHash(txHash);
@@ -797,7 +805,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         <img src="/assets/images/brand-logos/favicon.ico" alt="" />
                                                     </span>
                                                     bitgrass.base.eth
-                                                    {isMinitapp && <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Miniapp</span>}
                                                 </div>
 
                                                 <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
@@ -858,13 +865,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
-                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0" style={{ fontSize: "22px" }}>
+                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0 text-hights" style={{ fontSize: "22px" }}>
                                                     Bitgrass NFT Collection – Standard 100m² NFT
                                                 </p>
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
                                                         <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Price</p>
-                                                        <div className="flex items-center font-semibold" style={{ fontSize: "22px" }}>
+                                                        <div className="flex items-center font-semibold text-hights" style={{ fontSize: "22px" }}>
                                                             <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/faces/eth.svg" alt="" />
                                                             </span>
@@ -878,7 +885,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
                                                             Up to &nbsp;
-                                                            <span className="font-semibold" style={{ fontSize: "22px" }}>
+                                                            <span className="font-semibold text-hights" style={{ fontSize: "22px" }}>
                                                                 0.1 tCO2 /year
                                                             </span>
                                                         </div>
@@ -888,9 +895,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <div className="mb-4">
                                                     <p className="text-[0.8rem] text-[#8C9097]  mb-1">Description :</p>
                                                     <p>
-                                                        A <b>Tokenized 100 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                        A <b className="text-hights">Tokenized 100 m² Land plot</b> that grants you the <b className="text-hights">Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                        Experience the transition from tokenized land to tokenized carbon credits with <b className="text-hights">#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -904,7 +911,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                     </svg>
 
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Backed by Real Land</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">Backed by Real Land</p>
                                                                 <p>  Each NFT is tied to real land</p>
                                                             </div>
                                                         </div>
@@ -916,7 +923,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                         <path d="M23 11.1962V10.5C23 7.365 18.2712 5 12 5C5.72875 5 1 7.365 1 10.5V15.5C1 18.1112 4.28125 20.1863 9 20.8075V21.5C9 24.635 13.7288 27 20 27C26.2712 27 31 24.635 31 21.5V16.5C31 13.9125 27.8225 11.835 23 11.1962ZM29 16.5C29 18.1525 25.1512 20 20 20C19.5337 20 19.0712 19.9838 18.615 19.9538C21.3112 18.9713 23 17.375 23 15.5V13.2175C26.7338 13.7737 29 15.2838 29 16.5ZM9 18.7812V15.8075C9.99472 15.9371 10.9969 16.0014 12 16C13.0031 16.0014 14.0053 15.9371 15 15.8075V18.7812C14.0068 18.928 13.004 19.0011 12 19C10.996 19.0011 9.99324 18.928 9 18.7812ZM21 13.7413V15.5C21 16.5488 19.4488 17.675 17 18.3587V15.4375C18.6137 15.0462 19.98 14.4638 21 13.7413ZM12 7C17.1512 7 21 8.8475 21 10.5C21 12.1525 17.1512 14 12 14C6.84875 14 3 12.1525 3 10.5C3 8.8475 6.84875 7 12 7ZM3 15.5V13.7413C4.02 14.4638 5.38625 15.0462 7 15.4375V18.3587C4.55125 17.675 3 16.5488 3 15.5ZM11 21.5V20.9788C11.3288 20.9913 11.6612 21 12 21C12.485 21 12.9587 20.9837 13.4237 20.9562C13.9403 21.1412 14.4665 21.2981 15 21.4263V24.3587C12.5512 23.675 11 22.5488 11 21.5ZM17 24.7812V21.8C17.9944 21.9337 18.9967 22.0005 20 22C21.0031 22.0014 22.0053 21.9371 23 21.8075V24.7812C21.0106 25.0729 18.9894 25.0729 17 24.7812ZM25 24.3587V21.4375C26.6137 21.0462 27.98 20.4637 29 19.7412V21.5C29 22.5488 27.4488 23.675 25 24.3587Z" fill="rgb(var(--primary))" />
                                                                     </svg>
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">$BTG Rewards</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">$BTG Rewards</p>
                                                                 <p>Earn $BTG via Vesting</p>
                                                             </div>
                                                         </div>
@@ -930,14 +937,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                     </svg>
 
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">NFT staking</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">NFT staking</p>
                                                                 <p>Earn TCO₂ starting in 2026</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[0.8rem] text-[#8C9097]  mb-2">NFT Details :</p>
+                                                    <p className="text-[0.8rem] text-[#8C9097]  mb-2 ">NFT Details :</p>
                                                     <div className="table-responsive">
                                                         <table className="table table-bordered whitespace-nowrap min-w-full">
                                                             <tbody>
@@ -1003,13 +1010,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
-                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0" style={{ fontSize: "22px" }}>
+                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0 text-hights" style={{ fontSize: "22px" }}>
                                                     Bitgrass NFT Collection – Premium 500m² NFT
                                                 </p>
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
                                                         <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Price</p>
-                                                        <div className="flex items-center font-semibold" style={{ fontSize: "22px" }}>
+                                                        <div className="flex items-center font-semibold text-hights" style={{ fontSize: "22px" }}>
                                                             <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/faces/eth.svg" alt="" />
                                                             </span>
@@ -1023,7 +1030,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
                                                             Up to &nbsp;
-                                                            <span className="font-semibold" style={{ fontSize: "22px" }}>
+                                                            <span className="font-semibold text-hights" style={{ fontSize: "22px" }}>
                                                                 0.5 tCO2 /year
                                                             </span>
                                                         </div>
@@ -1032,9 +1039,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <div className="mb-4">
                                                     <p className="text-[0.8rem] text-[#8C9097] mb-1">Description :</p>
                                                     <p>
-                                                        A <b>Tokenized 500 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                        A <b className="text-hights">Tokenized 500 m² Land plot</b> that grants you the <b className="text-hights">Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                        Experience the transition from tokenized land to tokenized carbon credits with <b className="text-hights">#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -1048,7 +1055,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                     </svg>
 
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Backed by Real Land</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">Backed by Real Land</p>
                                                                 <p>  Each NFT is tied to real land</p>
                                                             </div>
                                                         </div>
@@ -1060,7 +1067,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                         <path d="M23 11.1962V10.5C23 7.365 18.2712 5 12 5C5.72875 5 1 7.365 1 10.5V15.5C1 18.1112 4.28125 20.1863 9 20.8075V21.5C9 24.635 13.7288 27 20 27C26.2712 27 31 24.635 31 21.5V16.5C31 13.9125 27.8225 11.835 23 11.1962ZM29 16.5C29 18.1525 25.1512 20 20 20C19.5337 20 19.0712 19.9838 18.615 19.9538C21.3112 18.9713 23 17.375 23 15.5V13.2175C26.7338 13.7737 29 15.2838 29 16.5ZM9 18.7812V15.8075C9.99472 15.9371 10.9969 16.0014 12 16C13.0031 16.0014 14.0053 15.9371 15 15.8075V18.7812C14.0068 18.928 13.004 19.0011 12 19C10.996 19.0011 9.99324 18.928 9 18.7812ZM21 13.7413V15.5C21 16.5488 19.4488 17.675 17 18.3587V15.4375C18.6137 15.0462 19.98 14.4638 21 13.7413ZM12 7C17.1512 7 21 8.8475 21 10.5C21 12.1525 17.1512 14 12 14C6.84875 14 3 12.1525 3 10.5C3 8.8475 6.84875 7 12 7ZM3 15.5V13.7413C4.02 14.4638 5.38625 15.0462 7 15.4375V18.3587C4.55125 17.675 3 16.5488 3 15.5ZM11 21.5V20.9788C11.3288 20.9913 11.6612 21 12 21C12.485 21 12.9587 20.9837 13.4237 20.9562C13.9403 21.1412 14.4665 21.2981 15 21.4263V24.3587C12.5512 23.675 11 22.5488 11 21.5ZM17 24.7812V21.8C17.9944 21.9337 18.9967 22.0005 20 22C21.0031 22.0014 22.0053 21.9371 23 21.8075V24.7812C21.0106 25.0729 18.9894 25.0729 17 24.7812ZM25 24.3587V21.4375C26.6137 21.0462 27.98 20.4637 29 19.7412V21.5C29 22.5488 27.4488 23.675 25 24.3587Z" fill="rgb(var(--primary))" />
                                                                     </svg>
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">$BTG Rewards</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">$BTG Rewards</p>
                                                                 <p>Earn $BTG via Vesting</p>
                                                             </div>
                                                         </div>
@@ -1074,7 +1081,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                     </svg>
 
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">NFT staking</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">NFT staking</p>
                                                                 <p>Earn TCO₂ starting in 2026</p>
                                                             </div>
                                                         </div>
@@ -1148,13 +1155,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                         </div>
                                         <div className="xl:col-span-8 col-span-12">
                                             <div className="xxl:mt-0 mt-4">
-                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0" style={{ fontSize: "22px" }}>
+                                                <p className="text-[1.125rem] mb-4 font-semibold mb-0 text-hights" style={{ fontSize: "22px" }}>
                                                     Bitgrass NFT Collection – Legendary 1000m² NFT
                                                 </p>
                                                 <div className="grid grid-cols-12 mb-6">
                                                     <div className="xxl:col-span-3 xl:col-span-12 col-span-12">
                                                         <p className="mb-1 text-[0.8rem] text-[#8C9097] ">Price</p>
-                                                        <div className="flex items-center font-semibold" style={{ fontSize: "22px" }}>
+                                                        <div className="flex items-center font-semibold text-hights" style={{ fontSize: "22px" }}>
                                                             <span className="avatar avatar-sm avatar-rounded leading-none me-1 mt-1">
                                                                 <img src="/assets/images/faces/eth.svg" alt="" />
                                                             </span>
@@ -1168,7 +1175,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                 <img src="/assets/images/faces/Leaf.svg" alt="" />
                                                             </span>
                                                             Up to &nbsp;
-                                                            <span className="font-semibold" style={{ fontSize: "22px" }}>
+                                                            <span className="font-semibold text-hights" style={{ fontSize: "22px" }}>
                                                                 1.0 tCO2 /year
                                                             </span>
                                                         </div>
@@ -1177,9 +1184,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 <div className="mb-4">
                                                     <p className="text-[0.8rem] text-[#8C9097] mb-1">Description :</p>
                                                     <p>
-                                                        A <b>Tokenized 1000 m² Land plot</b> that grants you the <b>Right of Use for Carbon Credits</b>.
+                                                        A <b className="text-hights">Tokenized 1000 m² Land plot</b> that grants you the <b className="text-hights">Right of Use for Carbon Credits</b>.
                                                         <br />
-                                                        Experience the transition from tokenized land to tokenized carbon credits with <b>#RWA</b>.
+                                                        Experience the transition from tokenized land to tokenized carbon credits with <b className="text-hights">#RWA</b>.
                                                     </p>
                                                 </div>
                                                 <div className="mb-4">
@@ -1193,7 +1200,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                     </svg>
 
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">Backed by Real Land</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">Backed by Real Land</p>
                                                                 <p>  Each NFT is tied to real land</p>
                                                             </div>
                                                         </div>
@@ -1205,7 +1212,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                         <path d="M23 11.1962V10.5C23 7.365 18.2712 5 12 5C5.72875 5 1 7.365 1 10.5V15.5C1 18.1112 4.28125 20.1863 9 20.8075V21.5C9 24.635 13.7288 27 20 27C26.2712 27 31 24.635 31 21.5V16.5C31 13.9125 27.8225 11.835 23 11.1962ZM29 16.5C29 18.1525 25.1512 20 20 20C19.5337 20 19.0712 19.9838 18.615 19.9538C21.3112 18.9713 23 17.375 23 15.5V13.2175C26.7338 13.7737 29 15.2838 29 16.5ZM9 18.7812V15.8075C9.99472 15.9371 10.9969 16.0014 12 16C13.0031 16.0014 14.0053 15.9371 15 15.8075V18.7812C14.0068 18.928 13.004 19.0011 12 19C10.996 19.0011 9.99324 18.928 9 18.7812ZM21 13.7413V15.5C21 16.5488 19.4488 17.675 17 18.3587V15.4375C18.6137 15.0462 19.98 14.4638 21 13.7413ZM12 7C17.1512 7 21 8.8475 21 10.5C21 12.1525 17.1512 14 12 14C6.84875 14 3 12.1525 3 10.5C3 8.8475 6.84875 7 12 7ZM3 15.5V13.7413C4.02 14.4638 5.38625 15.0462 7 15.4375V18.3587C4.55125 17.675 3 16.5488 3 15.5ZM11 21.5V20.9788C11.3288 20.9913 11.6612 21 12 21C12.485 21 12.9587 20.9837 13.4237 20.9562C13.9403 21.1412 14.4665 21.2981 15 21.4263V24.3587C12.5512 23.675 11 22.5488 11 21.5ZM17 24.7812V21.8C17.9944 21.9337 18.9967 22.0005 20 22C21.0031 22.0014 22.0053 21.9371 23 21.8075V24.7812C21.0106 25.0729 18.9894 25.0729 17 24.7812ZM25 24.3587V21.4375C26.6137 21.0462 27.98 20.4637 29 19.7412V21.5C29 22.5488 27.4488 23.675 25 24.3587Z" fill="rgb(var(--primary))" />
                                                                     </svg>
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">$BTG Rewards</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">$BTG Rewards</p>
                                                                 <p>Earn $BTG via Vesting</p>
                                                             </div>
                                                         </div>
@@ -1219,7 +1226,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                                     </svg>
 
                                                                 </p>
-                                                                <p className="text-[0.875rem] font-semibold mb-0">NFT staking</p>
+                                                                <p className="text-[0.875rem] font-semibold mb-0 text-hights">NFT staking</p>
                                                                 <p>Earn TCO₂ starting in 2026</p>
                                                             </div>
                                                         </div>

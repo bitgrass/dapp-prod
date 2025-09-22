@@ -44,28 +44,25 @@ export default function ProjectDetails({ params }: Params) {
   const [daysLeft, setDaysLeft] = useState<number>(0);
 
   useEffect(() => {
-    const calculateDaysLeft = (): number => {
-      const today: Date = new Date();
-      const targetDate: Date = new Date(today.getFullYear(), 7, 23);
+  const calculateDaysLeft = (): number => {
+    const today: Date = new Date();
+    const targetDate: Date = new Date(2025, 11, 31); // Month is 0-based, so 11 = December
 
-      if (today > targetDate) {
-        targetDate.setFullYear(targetDate.getFullYear() + 1);
-      }
+    const timeDifference: number = targetDate.getTime() - today.getTime();
+    return Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+  };
 
-      const timeDifference: number = targetDate.getTime() - today.getTime();
-      return Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-    };
+  // Set days on mount
+  setDaysLeft(calculateDaysLeft());
 
-    // Set days on mount
+  // Optional: Update at midnight
+  const midnightTimeout = setTimeout(() => {
     setDaysLeft(calculateDaysLeft());
+  }, 24 * 60 * 60 * 1000); // 24 hours
 
-    // Optional: Update at midnight
-    const midnightTimeout = setTimeout(() => {
-      setDaysLeft(calculateDaysLeft());
-    }, (24 * 60 * 60 * 1000)); // 24 hours
+  return () => clearTimeout(midnightTimeout); // Cleanup
+}, []);
 
-    return () => clearTimeout(midnightTimeout); // Cleanup
-  }, []);
 
   useEffect(() => {
     let mapInstance: Map | null = null;
@@ -113,7 +110,7 @@ export default function ProjectDetails({ params }: Params) {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-bold mb-0 flex items-center">
+                    <h4 className="text-hights font-bold mb-0 flex items-center">
                       <Link href="#!" scroll={false}>
                         {project.name}
                       </Link>
@@ -167,7 +164,7 @@ export default function ProjectDetails({ params }: Params) {
             <div className="box custom-box">
               <div className="box-body !p-0">
                 <div className="box-header">
-                  <h5 className="box-title">Project Data</h5>
+                  <h5 className=" text-hights box-title">Project Data</h5>
                 </div>
                 <div className="grid grid-cols-12 gap-x-6">
                   {project.projectData.map((data, index) => (
@@ -182,7 +179,7 @@ export default function ProjectDetails({ params }: Params) {
                           </span>
                         </div>
                         <div className="flex-grow">
-                          <h5 className="font-semibold ">{data.title}</h5>
+                          <h5 className="font-semibold text-hights ">{data.title}</h5>
                           <p className="text-[#8c9097] dark:text-white/50 mb-0 text-[0.75rem]">{data.subtitle}</p>
                         </div>
                       </div>
@@ -194,7 +191,7 @@ export default function ProjectDetails({ params }: Params) {
 
             <div className="box custom-box">
               <div className="box-body">
-                <h5 className="font-semibold">About</h5>
+                <h5 className="text-hights font-semibold">About</h5>
                 <p className="opacity-[0.9] mt-2" >{project.about}</p>
               </div>
             </div>
@@ -202,7 +199,7 @@ export default function ProjectDetails({ params }: Params) {
             <div className="xl:col-span-6 col-span-12">
               <div className="box custom-box">
                 <div className="box-header">
-                  <div className="box-title">Location</div>
+                  <div className="box-title ">Location</div>
                 </div>
                 <div className="box-body">
                   <div id="map-popup">
@@ -232,43 +229,70 @@ export default function ProjectDetails({ params }: Params) {
                 <div className="box-title">Total NFT Landplots: {project.nftStats.totalLandplots}</div>
               </div>
               <div className="box-body">
-                <ul className="list-none personal-goals-list mb-0">
-                  {project.nftStats.categories.map((category, index) => {
-                    const colors = [
-                      { bg: "bg-secondary/10", text: "text-secondary", bar: "!bg-secondary", icon: "bi bi-star" },
-                      { bg: "bg-[#5ea9cc]/10", text: "text-[#5ea9cc]", bar: "!bg-[#5ea9cc]", icon: "bi bi-star-half " },
-                      { bg: "bg-primary/10", text: "text-primary", bar: "bg-primary", icon: "bi bi-star-fill" }
-                    ];
-                    const { bg, text, bar, icon } = colors[index] || colors[0];
+                <ul className="list-none space-y-4">
+                  {project.nftStats.categories.map((category) => {
+                    // Define colors per tier
+                    const colorMap: Record<string, any> = {
+                      Standard: {
+                        bar: "bg-secondary",
+                        text: "text-secondary",
+                        border: "dark:border-secondary/30",
+                      },
+                      Premium: {
+                        bar: "bg-[#5ea9cc]",
+                        text: "text-[#5ea9cc]",
+                        border: "dark:border-blue-400/30",
+                      },
+                      Legendary: {
+                        bar: "bg-yellow-500",
+                        text: "text-yellow-500",
+                        border: "dark:border-yellow-500/30",
+                      },
+                    };
+
+                    const colors = colorMap[category.name] || colorMap.Standard;
+                    const percentage = (category.current / category.total) * 100;
+
                     return (
-                      <li key={category.name}>
-                        <div className="flex items-center">
-                          <div className="me-2">
-                            <span className={`avatar avatar-rounded ${bg} !${text}`}>
-                              <i className={`${icon} text-[1.125rem]`}></i>
+                      <li
+                        key={category.name}
+                        className={`p-4 rounded-lg border border-gray-200 ${colors.border}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          {/* Left side: icon + details */}
+                          <div className="flex items-center gap-3">
+                            <img src={category.icon} alt={category.name} className="w-8 h-8" />
+                            <div>
+                              <span className="block font-semibold">{category.name}</span>
+                              <span className="text-[#8C9097] text-sm">{category.size}m²</span>
+                            </div>
+                          </div>
+
+                          {/* Right side: current/total + status */}
+                          <div className="text-right">
+                            <span className={`block font-medium`}>
+                              <span className={`font-medium ${colors.text}`}>{category.current}</span>/{category.total}
+                            </span>
+                            <span className={`block font-medium ${colors.text}`}>
+                              {category.status} Plots
                             </span>
                           </div>
-                          <div className="flex-grow">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="block font-semibold">{category.name} : {category.count} plots</span>
-                              <span className={`block ${text}`}>{category.percentage}%</span>
-                            </div>
-                            <div
-                              className="progress progress-animate progress-xs"
-                              role="progressbar"
-                              aria-valuenow={category.percentage}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                            >
-                              <div className={`progress-bar progress-bar-striped ${bar}`} style={{ width: `${category.percentage}%` }}></div>
-                            </div>
-                          </div>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="w-full bg-camel h-2 rounded-full mt-2 overflow-hidden">
+                          <div
+                            className={`${colors.bar} h-2`}
+                            style={{ width: `${percentage}%` }}
+                          />
                         </div>
                       </li>
                     );
                   })}
+
                 </ul>
               </div>
+
             </div>
 
           </div>
