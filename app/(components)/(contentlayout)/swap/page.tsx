@@ -34,6 +34,9 @@ const Dashboard = () => {
 
     const container = useRef<HTMLDivElement | null>(null);
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
+const PRICE_CHART_ID = "my-price-chart";
+const SCRIPT_ID = "moralis-chart-widget";
+const WIDGET_SRC = "https://moralis.com/static/embed/chart.js";
 
     useEffect(() => {
         const handleThemeChange = () => {
@@ -55,6 +58,74 @@ const Dashboard = () => {
             observer.disconnect();
         };
     }, []);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
+     useEffect(() => {
+            if (typeof window === "undefined") return;
+    
+            const tz =
+                Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC";
+    
+            // Ensure container is empty before (re)mounting the widget
+            const clearContainer = () => {
+                if (containerRef.current) {
+                    containerRef.current.innerHTML = "";
+                }
+            };
+    
+            const loadWidget = () => {
+                if (typeof window.createMyWidget === "function") {
+                    clearContainer();
+                    window.createMyWidget(PRICE_CHART_ID, {
+                        autoSize: true,
+                        chainId: "0x2105", // Base chain
+                        pairAddress: "0x2a0F410422951F53CD2F3E9F6d0f29FccB1426E9",
+                        showHoldersChart: false,
+                        defaultInterval: "1D",
+                        timeZone: tz,
+                        theme: theme,
+                        locale: "en",
+                        hideLeftToolbar: true,
+                        hideTopToolbar: true,
+                        hideBottomToolbar: true,
+                    });
+                } else {
+                    console.error("createMyWidget function is not defined.");
+                }
+            };
+    
+            // If script already present
+            const existing = document.getElementById(SCRIPT_ID) as
+                | HTMLScriptElement
+                | null;
+    
+            if (existing) {
+                // If widget function is ready, load immediately; otherwise wait for load
+                if (typeof window.createMyWidget === "function") {
+                    loadWidget();
+                } else {
+                    existing.addEventListener("load", loadWidget, { once: true });
+                }
+            } else {
+                // Inject script
+                const script = document.createElement("script");
+                script.id = SCRIPT_ID;
+                script.src = WIDGET_SRC;
+                script.type = "text/javascript";
+                script.async = true;
+                script.onload = loadWidget;
+                script.onerror = () => {
+                    console.error("Failed to load the chart widget script.");
+                };
+                document.body.appendChild(script);
+            }
+    
+            // Cleanup: clear container on unmount to avoid duplicate embeds
+            return () => {
+                clearContainer();
+            };
+        }, [theme]);
+    
 
     useEffect(() => {
         if (container.current) {
@@ -137,13 +208,18 @@ const Dashboard = () => {
                                                 <div className="box-title">$BTG Chart</div>
 
                                             </div>
-                                            <div className="box-body !p-0">
-                                                <div id="crypto" className="p-4">
-                                                    <div className="tradingview-widget-container" ref={container}>
-                                                        <div className="tradingview-widget-container__widget"></div>
+                                             <div className="box-body !p-0">
+                                                    <div id="crypto" className="p-4">
+                                                        <div
+                                                            id={PRICE_CHART_ID}
+                                                            ref={containerRef}
+                                                            style={{
+                                                                width: "100%",
+                                                                height: "420px", // ensure visible height
+                                                            }}
+                                                        />
                                                     </div>
                                                 </div>
-                                            </div>
                                         </div>
                                     </div>
                                     <div className="xl:col-span-4 col-span-12">
