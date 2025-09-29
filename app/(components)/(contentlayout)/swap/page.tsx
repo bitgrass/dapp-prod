@@ -59,10 +59,26 @@ const WIDGET_SRC = "https://moralis.com/static/embed/chart.js";
         };
     }, []);
     const containerRef = useRef<HTMLDivElement | null>(null);
+// Function to get Tailwind color by creating a temporary element
+const getTailwindBgColor = () => {
+    const tempDiv = document.createElement('div');
+    tempDiv.className = 'bg-camel';
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.visibility = 'hidden';
+    tempDiv.style.pointerEvents = 'none';
+    document.body.appendChild(tempDiv);
+    
+    const computedStyle = getComputedStyle(tempDiv);
+    const bgColor = computedStyle.backgroundColor;
+    
+    document.body.removeChild(tempDiv);
+    return bgColor || '#e9e2e2'; // fallback color
+};
 
      useEffect(() => {
             if (typeof window === "undefined") return;
-    
+     const bgColor = getTailwindBgColor();
+
             const tz =
                 Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC";
     
@@ -88,6 +104,10 @@ const WIDGET_SRC = "https://moralis.com/static/embed/chart.js";
                         hideLeftToolbar: true,
                         hideTopToolbar: true,
                         hideBottomToolbar: true,
+                        showGrid: false, // Hide grid
+                          gridColor: 'transparent', // Make grid transparent
+                        backgroundColor: bgColor,
+
                     });
                 } else {
                     console.error("createMyWidget function is not defined.");

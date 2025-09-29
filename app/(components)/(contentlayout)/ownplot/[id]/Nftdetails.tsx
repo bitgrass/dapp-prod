@@ -16,6 +16,7 @@ import { ethers } from "ethers";
 import { nftInfo, SeaDropABIData, CONTRACT_ADDRESS_INFO, SEADROP_ADDRESS_INFO, SEADROP_CONDUIT_INFO } from "@/shared/data/tokens/data";
 import { usePrivy, useLogin } from '@privy-io/react-auth';
 import { useConnectedAddress } from "../../useConnectedAddress"; // Update this import path
+import sdk from "@farcaster/frame-sdk";
 
 type OrderData = {
     parameters: any;
@@ -25,6 +26,56 @@ type OrderData = {
 interface NftdetailsProps {
     initialTabId: string;
 }
+// Get the Farcaster Ethereum provider
+async function getFarcasterProvider() {
+    try {
+        const provider = await sdk.wallet.getEthereumProvider();
+        console.log("Farcaster Ethereum provider obtained:", provider);
+        return provider;
+    } catch (error) {
+        console.error("Failed to get Farcaster provider:", error);
+        return null;
+    }
+}
+async function pollForTransfer(
+    contractAddress: string,
+    toAddress: string,
+    provider: ethers.JsonRpcProvider,
+    timeoutMs = 120000
+): Promise<string[]> {
+    const startBlock = await provider.getBlockNumber();
+    const transferTopic = ethers.id("Transfer(address,address,uint256)");
+    const tokenIds: string[] = [];
+    const endTime = Date.now() + timeoutMs;
+
+    while (Date.now() < endTime) {
+        const currentBlock = await provider.getBlockNumber();
+
+        const logs = await provider.getLogs({
+            address: contractAddress,
+            fromBlock: startBlock,
+            toBlock: currentBlock,
+            topics: [
+                transferTopic,
+                null, // from (wildcard)
+                "0x" + toAddress.toLowerCase().replace("0x", "").padStart(64, "0"), // to = recipient
+            ],
+        });
+
+        if (logs.length > 0) {
+            for (const log of logs) {
+                const tokenId = BigInt(log.topics[3]).toString();
+                tokenIds.push(tokenId);
+            }
+            break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+
+    return tokenIds;
+}
+
 
 const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
@@ -44,17 +95,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [showToast, setShowToast] = useState(false);
     const [mintPriceEth, setMintPriceEth] = useState<string>("0");
     const [mintPriceUsd, setMintPriceUsd] = useState<string>("0.00");
-    
+
     // Use the hook to get the appropriate address and client
-    const { 
-        address: userAddress, 
+    const {
+        address: userAddress,
         client,
         farcasterWallet,
         hasExternalWallet,
         hasEmbeddedWallet,
-        isMinitapp 
+        isMinitapp
     } = useConnectedAddress();
-    
+
     const { switchChainAsync } = useSwitchChain();
     const [isMinting, setIsMinting] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -104,9 +155,27 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         legendary: "Legendary 1000m² Plot",
     };
 
+
+useEffect(() => {
+    const initSDK = async () => {
+        if (isMinitapp) {
+            try {
+                await sdk.actions.ready();
+                console.log("Farcaster SDK initialized");
+            } catch (error) {
+                console.error("Failed to initialize Farcaster SDK:", error);
+            }
+        }
+    };
+    
+    initSDK();
+}, [isMinitapp]);
+
+
+
     const ensureBaseChain = async () => {
         if (!client) throw new Error("No wallet client");
-        
+
         // In Farcaster miniapp, be more lenient with chain switching
         if (isMinitapp && farcasterWallet) {
             // For Farcaster wallets in miniapp, we might not be able to switch chains
@@ -147,135 +216,130 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     }, [initialTabId]);
 
     const handleMintAbi = async (quantity: number) => {
-        try {
-            setLoading(true);
-            console.log("Address for minting:", userAddress)
-            console.log("Is miniapp:", isMinitapp)
+    try {
+        setLoading(true);
+        console.log("Address for minting:", userAddress);
+        console.log("Is miniapp:", isMinitapp);
 
-            if (!client || !userAddress || !ready || !authenticated) {
-                login();
-                return;
+        if (!userAddress || !ready || !authenticated) {
+            login();
+            return;
+        }
+
+        // For non-Farcaster environments, we still need a client
+        if (!isMinitapp && !client) {
+            login();
+            return;
+        }
+
+        const onBase = await ensureBaseChain();
+        if (!onBase) {
+            setLoading(false);
+            return;
+        }
+
+        // Read mint price from SeaDrop
+        const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+        const readSeaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, publicProvider);
+        const publicDrop = await readSeaDrop.getPublicDrop(CONTRACT_ADDRESS);
+        const mintPrice = publicDrop.mintPrice;
+        const totalPrice = mintPrice * BigInt(quantity);
+
+        // Prepare calldata
+        const iface = new ethers.Interface(SeaDropABI);
+        const calldata = iface.encodeFunctionData("mintPublic", [
+            CONTRACT_ADDRESS,
+            SEADROP_CONDUIT,
+            userAddress,
+            quantity,
+        ]) as `0x${string}`;
+
+        let txHash: string;
+
+        // Use Farcaster SDK's Ethereum provider for miniapp
+        if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
+            console.log("Using Farcaster SDK Ethereum provider for mint");
+            
+            const farcasterProvider = await getFarcasterProvider();
+            if (!farcasterProvider) {
+                throw new Error("Failed to get Farcaster Ethereum provider");
             }
-            const onBase = await ensureBaseChain();
-            if (!onBase) {
-                setLoading(false);
-                return;
-            }
 
-            // Use a public provider just to read contract state (mint price)
-            const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-            const readSeaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, publicProvider);
-            const publicDrop = await readSeaDrop.getPublicDrop(CONTRACT_ADDRESS);
-
-            const mintPrice = publicDrop.mintPrice; // should be a BigInt
-            const totalPrice = mintPrice * BigInt(quantity);
-
-            // Prepare calldata for mintPublic
-            const iface = new ethers.Interface(SeaDropABI);
-            const calldata = iface.encodeFunctionData("mintPublic", [
-                CONTRACT_ADDRESS,
-                SEADROP_CONDUIT,
-                userAddress, // This will be the appropriate address (Farcaster or other)
-                quantity,
-            ]) as `0x${string}`;
-
-            // Send the transaction using the client from useConnectedAddress
-            const txHash: any = await client?.sendTransaction({
-                account: client.account,
-                to: SEADROP_ADDRESS,
-                value: totalPrice,
-                data: calldata,
+            txHash = await farcasterProvider.request({
+                method: "eth_sendTransaction",
+                params: [
+                    {
+                        from: userAddress as `0x${string}`,
+                        to: SEADROP_ADDRESS,
+                        value: "0x" + totalPrice.toString(16) as `0x${string}`,
+                        data: calldata,
+                    },
+                ],
             });
+            console.log("✅ Farcaster provider mint submitted:", txHash);
+        } else {
+            // Standard EIP-1193 for other environments
+            console.log("Using standard EIP-1193 provider for mint");
+            txHash = await client.request({
+                method: "eth_sendTransaction",
+                params: [
+                    {
+                        from: userAddress,
+                        to: SEADROP_ADDRESS,
+                        value: "0x" + totalPrice.toString(16),
+                        data: calldata,
+                    },
+                ],
+            });
+            console.log("✅ Standard mint transaction submitted:", txHash);
+        }
 
-            // Wait for confirmation using a public provider
-            const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-            const receipt = await provider.waitForTransaction(txHash);
+        // Wait for confirmation and parse events
+        const receipt = await publicProvider.waitForTransaction(txHash);
+        const transferTopic = ethers.id("Transfer(address,address,uint256)");
+        const mintedTokenIds: string[] = [];
 
-            // Extract all Transfer events from your NFT contract
-            const transferTopic = id("Transfer(address,address,uint256)");
-            const mintedTokenIds: string[] = [];
-            if (!receipt) return
-            for (const log of receipt?.logs) {
+        if (receipt) {
+            for (const log of receipt.logs) {
                 if (
                     log.address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() &&
                     log.topics[0] === transferTopic &&
                     log.topics.length === 4
                 ) {
-                    const tokenId = BigInt(log.topics[3]).toString();
-                    mintedTokenIds.push(tokenId);
+                    mintedTokenIds.push(BigInt(log.topics[3]).toString());
                 }
             }
-
-            // Show modal with all token IDs
-            if (mintedTokenIds.length > 0) {
-                
-                setModalData({
-                    id: mintedTokenIds.join(", "), // "1896, 1897, 1898"
-                    image: "/assets/images/apps/100m2.webp",
-                    name: `Bitgrass - Standard Collection`,
-                });
-                setIsStandardMintModalOpen(true);
-            }
-
-        } catch (error: any) {
-            // Handle user rejection
-            const rejected =
-                error?.code === 4001 ||
-                error?.message?.toLowerCase().includes("user rejected");
-
-            if (rejected) {
-                setToastTitle("Transaction Rejected");
-                setToastMessage("You missed your plot.");
-                setShowToast(true);
-                return;
-            }
-            // Handle insufficient funds
-            const insufficientFunds =
-                error?.code === "INSUFFICIENT_FUNDS" ||
-                error?.message?.toLowerCase().includes("insufficient funds");
-            if (insufficientFunds) {
-                setToastTitle("Insufficient Funds");
-                setToastMessage("You need more ETH in your wallet to complete your mint.");
-                setShowToast(true);
-                return;
-            }
-
-            // Contract custom errors
-            if (error?.data) {
-                try {
-                    const iface = new ethers.Interface(SeaDropABI);
-                    const parsed = iface.parseError(error.data);
-                    const errorName = parsed?.name;
-                    switch (errorName) {
-                        case "IncorrectPayment":
-                            setToastMessage("Incorrect payment amount.");
-                            break;
-                        case "MintQuantityExceedsMaxSupply":
-                            setToastTitle("Supply Reached");
-                            setToastMessage("No more plots available.");
-                            setShowToast(true);
-                            break;
-                        case "NotActive":
-                            setToastMessage("Mint is not active right now.");
-                            break;
-                        default:
-                            setToastMessage(`⚠️ Mint failed: ${errorName}`);
-                    }
-                    setShowToast(true);
-                    return;
-                } catch (parseError) {
-                    console.error("Could not parse contract error:", parseError);
-                }
-            }
-
-            setToastMessage("⚠️ Something went wrong. Please try again.");
-            setShowToast(true);
-            console.error("❌ Mint failed:", error);
-
-        } finally {
-            setLoading(false);
         }
-    };
+
+        if (mintedTokenIds.length > 0) {
+            setModalData({
+                id: mintedTokenIds.join(", "),
+                image: "/assets/images/apps/100m2.webp",
+                name: `Bitgrass - Standard Collection`,
+            });
+            setIsStandardMintModalOpen(true);
+        }
+    } catch (error: any) {
+        console.error("❌ Mint failed:", error);
+
+        if (error?.code === 4001 || error?.message?.toLowerCase().includes("user rejected")) {
+            setToastTitle("Transaction Rejected");
+            setToastMessage("You missed your plot.");
+        } else if (
+            error?.code === "INSUFFICIENT_FUNDS" ||
+            error?.message?.toLowerCase().includes("insufficient funds")
+        ) {
+            setToastTitle("Insufficient Funds");
+            setToastMessage("You need more ETH in your wallet to complete your mint.");
+        } else {
+            setToastTitle("Transaction Failed");
+            setToastMessage("⚠️ Something went wrong. Please try again.");
+        }
+        setShowToast(true);
+    } finally {
+        setLoading(false);
+    }
+};
 
     const initPrices = async () => {
         try {
@@ -348,7 +412,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         do {
             try {
                 const data = await getListings(nextCursor);
-                console.log("dataaaaaa---------",data)
+                console.log("dataaaaaa---------", data)
                 const nfts = data.listings || [];
                 nextCursor = data.next || null;
 
@@ -508,13 +572,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 return;
             }
             const data = await res.json();
-            console.log("dataaa",data)
+            console.log("dataaa", data)
             const now = Math.floor(Date.now() / 1000);
             const orders = (data.orders || []).filter((order: any) => {
                 const isActive = !order.cancelled && !order.fulfilled && order.expiration_time > now;
                 return isActive;
             });
-            console.log("orders",orders)
+            console.log("orders", orders)
 
             if (orders.length > 0) {
                 const sorted = [...orders]
@@ -543,179 +607,161 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     useEffect(() => {
         fetchAvailableNfts();
     }, [isModalOpen, isFailureModalOpen]);
+   // Updated handleBuy function for web-based Farcaster
+async function handleBuy(order: any, tier: "Legendary" | "Premium") {
+    if (!userAddress || !ready || !authenticated) {
+        login();
+        return;
+    }
 
-    async function handleBuy(order: any, tier: "Legendary" | "Premium") {
-        if (!userAddress || !ready || !authenticated) {
-            login();
-            return;
-        }
-            // Add comprehensive debugging
     console.log("=== WALLET DEBUG INFO ===");
     console.log("userAddress:", userAddress);
-    console.log("client:", client);
     console.log("farcasterWallet:", farcasterWallet);
     console.log("isMinitapp:", isMinitapp);
-   
-    
-        if (!order) {
+
+    if (!order) {
+        const modalDataFailed: any = await getModalData();
+        setFailureImage(modalDataFailed.image);
+        setActiveOrder(false);
+        setFailureModalOpen(true);
+        return;
+    }
+
+    try {
+        setIsBuying(true);
+
+        const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+        const buyerAddress = userAddress;
+
+        // Get fulfillment data from OpenSea
+        const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
+            method: "POST",
+            headers: {
+                accept: "application/json",
+                "content-type": "application/json",
+                "x-api-key": `${apiKey}`,
+            },
+            body: JSON.stringify({
+                listing: {
+                    hash: order.order_hash,
+                    chain: "base",
+                    protocol_address: order.protocol_address,
+                },
+                fulfiller: { address: buyerAddress },
+            }),
+        });
+
+        if (!fulfillmentRes.ok) {
+            throw new Error("Failed to get fulfillment data");
+        }
+
+        const { fulfillment_data } = await fulfillmentRes.json();
+        if (!fulfillment_data?.orders?.length) throw new Error("Invalid fulfillment data");
+
+        const { parameters, signature } = fulfillment_data.orders[0];
+        const seaport = new Seaport(provider, {
+            overrides: { contractAddress: order.protocol_address },
+        });
+
+        const advancedOrder = {
+            parameters,
+            signature,
+            numerator: BigInt(1),
+            denominator: BigInt(1),
+            extraData: "0x",
+        };
+
+        const value = parameters.consideration
+            .filter((i: any) => i.token === ethers.ZeroAddress)
+            .reduce((sum: bigint, i: any) => sum + BigInt(i.startAmount), BigInt(0));
+
+        const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
+            advancedOrder,
+            [],
+            parameters.conduitKey,
+            buyerAddress,
+        ]);
+
+        let txHash: string;
+
+        // Use Farcaster SDK's Ethereum provider for miniapp
+        if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
+            console.log("Using Farcaster SDK Ethereum provider");
+            
+            const farcasterProvider = await getFarcasterProvider();
+            if (!farcasterProvider) {
+                throw new Error("Failed to get Farcaster Ethereum provider");
+            }
+
+            // Use the Farcaster provider directly
+            txHash = await farcasterProvider.request({
+                method: "eth_sendTransaction",
+                params: [
+                    {
+                        from: buyerAddress as `0x${string}`,
+                        to: seaport.contract.target as `0x${string}`,
+                        value: "0x" + value.toString(16) as `0x${string}`,
+                        data: calldata as `0x${string}`,
+                    } ,
+                ],
+            });
+            console.log("✅ Farcaster provider transaction submitted:", txHash);
+        } else {
+            // Standard EIP-1193 for other environments
+            console.log("Using standard EIP-1193 provider");
+            txHash = await client.request({
+                method: "eth_sendTransaction",
+                params: [
+                    {
+                        from: buyerAddress,
+                        to: seaport.contract.target as string,
+                        value: "0x" + value.toString(16),
+                        data: calldata,
+                    },
+                ],
+            });
+            console.log("✅ Standard transaction submitted:", txHash);
+        }
+
+        // Wait for confirmation
+        const receipt = await provider.waitForTransaction(txHash);
+        if (receipt?.status === 1) {
+            const modalData: any = await getModalData();
+            setModalData(modalData);
+            setModalOpen(true);
+        } else {
             const modalDataFailed: any = await getModalData();
             setFailureTxHash(txHash);
             setFailureImage(modalDataFailed.image);
-            setActiveOrder(false)
+            setActiveOrder(true);
             setFailureModalOpen(true);
-            return;
         }
-        try {
-            setIsBuying(true);
-            console.log("Buying in miniapp:", isMinitapp);
-            console.log("Using Farcaster wallet:", !!farcasterWallet);
+    } catch (error: any) {
+        console.error("❌ Purchase failed:", error);
 
-            const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-            if (!client) throw new Error("No wallet client available");
-
-            // Use the address from our hook (works for all wallet types)
-            const buyerAddress = userAddress;
-
-            // Enhanced chain switching for miniapp environment
-            if (isMinitapp && farcasterWallet) {
-                // In Farcaster miniapp, be more lenient with chain checking
-                console.log("Using Farcaster wallet in miniapp - allowing transaction to proceed");
-            } else if (client.getChainId) {
-                // For non-Farcaster wallets, ensure we're on the correct chain
-                const currentChainId = await client.getChainId();
-                const baseChainId = 8453;
-
-                if (currentChainId !== baseChainId) {
-                    try {
-                        await switchChainAsync({ chainId: baseChainId });
-                    } catch (switchError: any) {
-                        if (switchError.code === 4902) {
-                            await client?.addChain({ chain: base });
-                            await switchChainAsync({ chainId: baseChainId });
-                        } else {
-                            throw switchError;
-                        }
-                    }
-                }
-            }
-
-            const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
-                method: "POST",
-                headers: {
-                    accept: "application/json",
-                    "content-type": "application/json",
-                    "x-api-key": `${apiKey}`,
-                },
-                body: JSON.stringify({
-                    listing: {
-                        hash: order.order_hash,
-                        chain: "base",
-                        protocol_address: order.protocol_address,
-                    },
-                    fulfiller: { address: buyerAddress },
-                }),
-            });
-
-            if (!fulfillmentRes.ok) {
-                console.error("Failed to get fulfillment data:", fulfillmentRes.status);
-                throw new Error("Failed to get fulfillment data");
-            }
-
-            const { fulfillment_data } = await fulfillmentRes.json();
-            if (!fulfillment_data?.orders?.length) throw new Error("Invalid fulfillment data");
-
-            const fullOrder = fulfillment_data.orders[0];
-            const { parameters, signature } = fullOrder;
-
-            const seaport = new Seaport(provider, {
-                overrides: { contractAddress: order.protocol_address },
-            });
-
-            const advancedOrder = {
-                parameters,
-                signature,
-                numerator: BigInt(1),
-                denominator: BigInt(1),
-                extraData: "0x",
-            };
-
-            const value = parameters.consideration
-                .filter((item: any) => item.token === "0x0000000000000000000000000000000000000000")
-                .reduce((sum: bigint, item: any) => sum + BigInt(item.startAmount), BigInt(0));
-
-            const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
-                advancedOrder,
-                [],
-                parameters.conduitKey,
-                buyerAddress,
-            ]);
-
-            console.log("Sending transaction with value:", value.toString(), "ETH");
-
-            const txHash : any = await client?.sendTransaction({
-                account: client?.account,
-                to: seaport.contract.target as `0x${string}`,
-                value,
-                data: calldata as `0x${string}`,
-            });
-
-            console.log("Transaction sent:", txHash);
-
-            const txReceipt = await provider.waitForTransaction(txHash);
-            if (txReceipt?.status === 1) {
-                console.log("Purchase successful:", txReceipt)
-                const modalData: any = await getModalData();
-                setModalData(modalData);
-                setModalOpen(true);
-            } else {
-                const modalDataFailed: any = await getModalData();
-                setFailureTxHash(txHash);
-                setFailureImage(modalDataFailed.image);
-                setActiveOrder(true)
-                setFailureModalOpen(true);
-            }
-        } catch (error) {
-            console.error("❌ Purchase failed:", error);
-            
-            const rejected =
-                (error as any)?.code === 4001 ||
-                (error as any)?.message?.toLowerCase().includes("user rejected") ||
-                (error as any)?.message?.toLowerCase().includes("user denied");
-
-            if (rejected) {
-                setToastTitle("Transaction Rejected");
-                setToastMessage("You cancelled the purchase.");
-                setShowToast(true);
-                return;
-            }
-
-            const insufficientFunds =
-                (error as any)?.code === "INSUFFICIENT_FUNDS" ||
-                (error as any)?.message?.toLowerCase().includes("insufficient funds");
-            
-            if (insufficientFunds) {
-                setToastTitle("Insufficient Funds");
-                setToastMessage("You need more ETH to complete this purchase.");
-                setShowToast(true);
-                return;
-            }
-
-            // For miniapp environments, provide more helpful error messages
-            if (isMinitapp) {
-                setToastTitle("Purchase Failed");
-                setToastMessage("Please try again or check your connection.");
-                setShowToast(true);
-            } else {
-                const modalDataFailed: any = await getModalData();
-                setFailureTxHash(txHash);
-                setFailureImage(modalDataFailed.image);
-                setActiveOrder(true)
-                setFailureModalOpen(true);
-            }
-        } finally {
-            setIsBuying(false);
+        if (
+            error?.code === 4001 ||
+            error?.message?.toLowerCase().includes("user rejected") ||
+            error?.message?.toLowerCase().includes("user denied")
+        ) {
+            setToastTitle("Transaction Rejected");
+            setToastMessage("You cancelled the purchase.");
+        } else if (
+            error?.code === "INSUFFICIENT_FUNDS" ||
+            error?.message?.toLowerCase().includes("insufficient funds")
+        ) {
+            setToastTitle("Insufficient Funds");
+            setToastMessage("You need more ETH to complete this purchase.");
+        } else {
+            setToastTitle("Purchase Failed");
+            setToastMessage("⚠️ Something went wrong. Please try again.");
         }
+        setShowToast(true);
+    } finally {
+        setIsBuying(false);
     }
+}
+
 
     useEffect(() => {
         if (showToast) {
