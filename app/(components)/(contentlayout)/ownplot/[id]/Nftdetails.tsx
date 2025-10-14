@@ -904,7 +904,7 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                     {loading && (
                                                         <span className="btn-spinner"></span>
                                                     )}
-                                                    {loading ? "Minting..." : "Mint Plot"}
+                                                    {loading ? "Processing..." : "Buy Tokenized Plot"}
                                                 </button>
 
                                             </div>
@@ -1048,7 +1048,7 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                     {isBuying && (
                                                         <span className="btn-spinner"></span>
                                                     )}
-                                                    {isBuying ? "Processing..." : "Buy Now"}
+                                                    {isBuying ? "Processing..." : "Buy Tokenized Plot"}
                                                 </button>
 
 
@@ -1193,7 +1193,7 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                     {isBuying && (
                                                         <span className="btn-spinner"></span>
                                                     )}
-                                                    {isBuying ? "Processing..." : "Buy Now"}
+                                                    {isBuying ? "Processing..." : "Buy Tokenized Plot"}
 
                                                 </button>
 

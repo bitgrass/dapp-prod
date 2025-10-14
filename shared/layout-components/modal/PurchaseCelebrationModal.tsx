@@ -118,8 +118,8 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({
     typeof window !== 'undefined'
       ? window.location.href.replace(/\/$/, '')
       : '';
-  const shareTextTwitter = `Checkout $${name} on @bitgrass`;
-  const shareTextWarpcast = `Checkout $${name} on @bitgrass`;
+  const shareTextTwitter = `Discover The ${name} — live now on #Base`;
+  const shareTextWarpcast = `Discover The ${name} — live now on #Base`;
   const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
   const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
   const encodedLink = encodeURIComponent(currentUrl);
@@ -207,8 +207,7 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({
 
             <div className="flex items-center gap-1 ms-2">
               <button
-                onClick={() => window.open(twitterUrl, '_blank')}
-                className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
+c                className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
               >
                 <XIcon size={14} color="#7FC447" />
               </button>

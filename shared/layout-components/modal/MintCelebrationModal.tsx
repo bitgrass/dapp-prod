@@ -118,8 +118,8 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({
     typeof window !== 'undefined'
       ? window.location.href.replace(/\/$/, '')
       : '';
-  const shareTextTwitter = `Checkout $${name} on @bitgrass`;
-  const shareTextWarpcast = `Checkout $${name} on @bitgrass`;
+  const shareTextTwitter = `Discover The ${name} — live now on #Base`;
+  const shareTextWarpcast = `Discover The ${name} — live now on #Base`;
   const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
   const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
   const encodedLink = encodeURIComponent(currentUrl);

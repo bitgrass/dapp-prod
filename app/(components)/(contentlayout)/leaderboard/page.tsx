@@ -20,6 +20,7 @@ function useDOLeaderboard() {
     const [error, setError] = useState<null | string>(null);
 
 
+
     useEffect(() => {
         let closed = false;
         const abort = new AbortController();
@@ -77,7 +78,11 @@ function useDOLeaderboard() {
 const leaderboard = () => {
     const { authenticated, login, user } = usePrivy();
     const { ranked, loading } = useDOLeaderboard();
-
+    const getProfilePicture = (address: string) => {
+        // You can customize this URL to match your actual profile picture API
+        // This example uses a placeholder service that generates avatars from addresses
+        return `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`;
+    };
     // Use the custom hook - this will prioritize Farcaster wallet in miniapp
     const { address: connectedAddress } = useConnectedAddress();
 
@@ -364,10 +369,10 @@ const leaderboard = () => {
                                 <div className="flex">
                                     <button
                                         className={`w-180 text-white !font-medium btn px-8 py-2 rounded-sm mt-2 ${!authenticated
-                                                ? 'bg-secondary btn-primary cursor-pointer'
-                                                : userBTG > 0
-                                                    ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
-                                                    : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
+                                            ? 'bg-secondary btn-primary cursor-pointer'
+                                            : userBTG > 0
+                                                ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
+                                                : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
                                             }`}
                                         onClick={!authenticated ? login : authenticated && userBTG > 0 ? handleClaimBTG : undefined}
                                         disabled={authenticated && userBTG === 0}
@@ -447,25 +452,46 @@ const leaderboard = () => {
                                             ) : (
                                                 [...Array(ITEMS_PER_PAGE)].map((_, i) => {
                                                     const holder = currentData[i];
-                                                    return holder ? (
-                                                        <tr key={holder.address}>
+                                                    if (!holder) {
+                                                        return (
+                                                            <tr key={`empty-${i}`}>
+                                                                <td colSpan={6}>&nbsp;</td>
+                                                            </tr>
+                                                        );
+                                                    }
+
+                                                    // Check if this row is the current user
+                                                    const isCurrentUser = connectedAddress &&
+                                                        holder.address.toLowerCase() === connectedAddress.toLowerCase();
+
+                                                    return (
+                                                        <tr
+                                                            key={holder.address}
+                                                            className={`hover:bg-white/5 ${isCurrentUser ? 'bg-secondary/10 border-l-4 border-secondary' : ''}`}
+                                                        >
                                                             <td>{(currentPage - 1) * ITEMS_PER_PAGE + i + 1}</td>
                                                             <td>
-                                                                <span className="inline-block bg-camel10 rounded-sm text-primary text-xs px-2 py-1">
-                                                                    {holder.address.slice(0, 6)}...{holder.address.slice(-4)}
-                                                                </span>
-                                                            </td>
+                                                                <div className="flex items-center gap-2">
+                                                                    <img
+                                                                        src="/assets/images/brand-logos/iconDefault.svg"
+                                                                        alt="Profile"
 
+                                                                    />
+                                                                    <span className={`inline-block rounded-sm px-2 py-1 text-xs ${isCurrentUser
+                                                                            ? 'bg-secondary/30 text-secondary font-bold'
+                                                                            : 'bg-camel10 text-primary'
+                                                                        }`}>
+                                                                        {holder.address.slice(0, 6)}...{holder.address.slice(-4)}
+                                                                        {isCurrentUser && ' (You)'}
+                                                                    </span>
+                                                                </div>
+                                                            </td>
                                                             <td>{holder.standard}</td>
                                                             <td>{holder.premium}</td>
                                                             <td>{holder.legendary}</td>
                                                             <td className="font-black text-primary" style={{ fontWeight: 900 }}>
                                                                 {holder.btg_claim.toLocaleString()} BTG
                                                             </td>
-                                                        </tr>
-                                                    ) : (
-                                                        <tr key={`empty-${i}`}>
-                                                            <td colSpan={6}>&nbsp;</td>
                                                         </tr>
                                                     );
                                                 })

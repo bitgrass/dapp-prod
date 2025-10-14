@@ -97,7 +97,7 @@ export const ProjectListdata: ProjectListData[] = [
     name: "Bitgrass Farmland",
     location: "Tunisia",
     status: "Under Developement",
-    area: "100 Hecrares",
+    area: "100 Hectares",
     daysLeftToInvest: 45,
     longitude: 10.7603,
     latitude: 34.7406,
@@ -168,7 +168,7 @@ export const ProjectListdata: ProjectListData[] = [
           size: 100,
           current: 0,
           total: 2000,
-          status: "Minted",
+          status: "Sold",
           icon: "../../../assets/images/brand-logos/Standard.svg",
         },
         {

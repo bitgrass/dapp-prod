@@ -324,6 +324,8 @@ const CarbonCalculator = () => {
   const [activeCategory, setActiveCategory] = useState<keyof typeof categories>("house");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [manualNavigation, setManualNavigation] = useState(false);
+  const [manualNavTimeout, setManualNavTimeout] = useState<NodeJS.Timeout | null>(null);
+
   // keep emissions per category so the TOTAL stays stable when switching tabs
   const [emissionsByCategory, setEmissionsByCategory] = useState<
     Record<keyof typeof categories, number>
@@ -336,16 +338,53 @@ const CarbonCalculator = () => {
   });
 
   const totalEmissions = Object.values(emissionsByCategory).reduce((s, v) => s + v, 0);
+  const [previousCompletionState, setPreviousCompletionState] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const currentlyCompleted = isTabCompleted(activeCategory, answers);
+    const wasCompleted = previousCompletionState[activeCategory];
+
+    // Update completion state first
+    if (currentlyCompleted !== wasCompleted) {
+      setPreviousCompletionState(prev => ({
+        ...prev,
+        [activeCategory]: currentlyCompleted
+      }));
+    }
+
+    // Only auto-advance if tab just became completed
+    if (currentlyCompleted && !wasCompleted && !manualNavigation) {
+      const currentIndex = categoryList.indexOf(activeCategory);
+      const nextIndex = currentIndex + 1;
+
+      if (nextIndex < categoryList.length) {
+        const timer = setTimeout(() => {
+          setActiveCategory(categoryList[nextIndex]);
+        }, 800);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [answers, activeCategory, manualNavigation]);
 
   const handleChange = (id: string, value: string) => {
+    // Clear the manual navigation timeout if it exists
+    if (manualNavTimeout) {
+      clearTimeout(manualNavTimeout);
+      setManualNavTimeout(null);
+    }
+
+    // Reset manual navigation flag when user starts answering
+    setManualNavigation(false);
+
     const updated = { ...answers, [id]: value };
     setAnswers(updated);
 
-    // figure out which category this question belongs to, then recompute only that bucket
     const cat = questionIdToCategory[id] || activeCategory;
     const nextVal = computeEmissionsForCategory(cat, updated);
     setEmissionsByCategory((prev) => ({ ...prev, [cat]: nextVal }));
   };
+
 
   const currentQuestions = categories[activeCategory];
 
@@ -375,21 +414,7 @@ const CarbonCalculator = () => {
     return true;
   })();
 
-  useEffect(() => {
-    if (isTabCompleted(activeCategory, answers) && !manualNavigation) {
-      const currentIndex = categoryList.indexOf(activeCategory);
-      const nextIndex = currentIndex + 1;
 
-      // Only auto-advance if we're moving forward, not backward
-      if (nextIndex < categoryList.length) {
-        const timer = setTimeout(() => {
-          setActiveCategory(categoryList[nextIndex]);
-        }, 800);
-
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [answers, activeCategory, manualNavigation]);
   return (
     <Fragment>
       {/* PAGE WRAPPER with consistent spacing */}
@@ -425,10 +450,31 @@ const CarbonCalculator = () => {
                   key={cat}
                   type="button"
                   onClick={() => {
+                    // Clear any existing timeout
+                    if (manualNavTimeout) {
+                      clearTimeout(manualNavTimeout);
+                    }
+
                     setManualNavigation(true);
                     setActiveCategory(cat);
-                    // Keep manual navigation active longer to prevent auto-advance
-                    setTimeout(() => setManualNavigation(false), 5000); // 5 seconds instead of 1
+
+                    const currentIndex = categoryList.indexOf(activeCategory);
+                    const targetIndex = categoryList.indexOf(cat);
+
+                    if (targetIndex < currentIndex) {
+                      setPreviousCompletionState(prev => ({
+                        ...prev,
+                        [cat]: false
+                      }));
+                    }
+
+                    // Store the timeout ID so we can cancel it later
+                    const timeoutId = setTimeout(() => {
+                      setManualNavigation(false);
+                      setManualNavTimeout(null);
+                    }, 5000);
+
+                    setManualNavTimeout(timeoutId);
                   }}
                   className={classNames(
                     "nav-link flex items-center gap-2 !py-[0.35rem] !px-4 text-sm !font-medium text-center rounded-md shrink-0 relative",

@@ -504,7 +504,7 @@ const Dashboard = () => {
                                                             <div className="mb-6">
                                                                 <p className="text-[.9375rem] mb-2 font-semibold">Description :</p>
                                                                 <p className="text-[0.75rem]">
-                                                                    Bitgrass will tokenize <b className="text-defaulttextcolor">100 hectares of farmland</b>  into a limited collection of <b className="text-defaulttextcolor"> 3,200 NFTs</b>, launching on <b className="text-defaulttextcolor">September 1, 2025.</b>
+                                                                    Bitgrass will tokenize <b className="text-defaulttextcolor">100 hectares of farmland</b>  into a limited collection of <b className="text-defaulttextcolor"> 3,200 NFTs</b>, launching on <b className="text-defaulttextcolor">November 3, 2025.</b>
 
                                                                 </p><br /> Each NFT represents a tokenized farmland plot with multiple use cases:<br />
                                                                 <ul className="text-[0.75rem] list-disc list-inside ml-4">
@@ -887,7 +887,7 @@ const Dashboard = () => {
 
                                                         <div>
                                                             <span className="block text-[#8c9097] dark:text-white/50 text-[0.75rem]">Launch Date</span>
-                                                            <span className="block text-[.875rem] font-semibold">September 1, 2025</span>
+                                                            <span className="block text-[.875rem] font-semibold">November 3, 2025</span>
                                                         </div>
                                                         <div>
                                                             <span className="block text-[#8c9097] dark:text-white/50 text-[0.75rem]">Live on</span>

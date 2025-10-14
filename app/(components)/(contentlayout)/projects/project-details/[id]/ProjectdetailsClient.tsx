@@ -20,11 +20,35 @@ interface Params {
 const DEFAULT_TOTALS = { standard: 0, premium: 0, legendary: 0 };
 
 export default function ProjectDetails({ params }: Params) {
+
+  const getAbsoluteUrl = (path: string): string => {
+  if (typeof window !== 'undefined') {
+    // Client-side: use window.location
+    const { protocol, host } = window.location;
+    return `${protocol}//${host}${path.startsWith('/') ? path : '/' + path}`;
+  }
+  // Server-side: use your production domain
+  const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://bitgrass.com';
+  return `${baseUrl}${path.startsWith('/') ? path : '/' + path}`;
+};
+
+// STEP 2: Inside your component, calculate the absolute image URL
+const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
   const [project, setProject] = useState<any | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [daysLeft, setDaysLeft] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+   const shareTextTwitter = `Discover Bitgrass Farmland — live now on #Base`;
+    const currentUrl =
+    typeof window !== 'undefined'
+      ? window.location.href.replace(/\/$/, '')
+      : '';
+   const encodedLink = encodeURIComponent(currentUrl);
+
   const [error, setError] = useState<string | null>(null);
+  const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
+
+  const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
 
   // Fetch totals directly from Durable Object
   const fetchData = async () => {
@@ -131,7 +155,7 @@ export default function ProjectDetails({ params }: Params) {
           nftStats: {
             totalLandplots: 3200,
             categories: [
-              { name: "Standard", size: 100, current: totals.standard, total: 2000, status: "Minted", icon: "../../../assets/images/brand-logos/Standard.svg" },
+              { name: "Standard", size: 100, current: totals.standard, total: 2000, status: "Sold", icon: "../../../assets/images/brand-logos/Standard.svg" },
               { name: "Premium", size: 500, current: totals.premium, total: 800, status: "Sold", icon: "../../../assets/images/brand-logos/Premium.svg" },
               { name: "Legendary", size: 1000, current: totals.legendary, total: 400, status: "Sold", icon: "../../../assets/images/brand-logos/Legendary.svg" },
             ],
@@ -233,7 +257,9 @@ export default function ProjectDetails({ params }: Params) {
 
   return (
     <Fragment>
-      <Seo title={project.name} />
+      <Seo title={project.name} 
+        image={imageUrl} // or project.logo
+ />
       <div className="container">
         {/* HEADER */}
         <div className="box custom-box mt-6">
@@ -266,6 +292,14 @@ export default function ProjectDetails({ params }: Params) {
                   <Link href="/ownplot/standard" className="ti-btn bg-secondary text-white !font-medium m-0 !me-[0.375rem]">
                     Mint Plot
                   </Link>
+                  <div
+                    aria-label="anchor"
+                    className="ti-btn ti-btn-icon ti-btn-primary"
+                    onClick={() => window.open(twitterUrl, '_blank')}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <i className="ri-share-line"></i>
+                  </div>
                 </div>
                 <p className="mb-0">
                   <i className="bi bi-info-circle text-danger"></i>{' '}

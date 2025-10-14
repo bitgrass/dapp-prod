@@ -7,6 +7,7 @@ import PrelineScript from "./PrelineScript";
 import { useState } from "react";
 import { Initialload } from "@/shared/contextapi";
 import dynamic from "next/dynamic";
+import { ThirdwebProvider } from "thirdweb/react";
 
 // Dynamically import OnchainProviders to handle blockchain-specific functionality
 const MiniKitContextProvider = dynamic(
@@ -26,7 +27,9 @@ const RootLayout = ({ children }: any) => {
           <Initialload.Provider value={{ pageloading, setpageloading }}>
             {/* Wrap blockchain-specific components with OnchainProviders */}
             <MiniKitContextProvider >
-              {children}
+              <ThirdwebProvider>
+                {children}
+              </ThirdwebProvider>
             </MiniKitContextProvider >
           </Initialload.Provider>
         </Provider>

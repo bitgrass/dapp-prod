@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 
   const title = project.name
-  const description =  'Project details page'
-  const imageUrl = project.logo ?? '/default-image.png'
+  const description =  'Bitgrass Farm tokenizes 100 hectares of farmland into a limited collection of 3,200 NFTs. Each NFT grants the Right of Use for Carbon Credits, allowing holders to stake for rewards, boost $BTG APY, or burn to offset their carbon footprint.'
+  const imageUrl = project.logo ?? '../../../assets/images/brand-logos/farShare.jpg'
   const baseUrl = 'https://optimise-bitgrass-dapp.pages.dev';
 
    return {
