@@ -207,7 +207,9 @@ const PurchaseCelebrationModal: React.FC<PurchaseCelebrationModalProps> = ({
 
             <div className="flex items-center gap-1 ms-2">
               <button
-c                className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
+                onClick={() => window.open(twitterUrl, '_blank')}
+
+                className="w-6 h-6 rounded-full border border-[#7FC447] bg-transparent flex items-center justify-center transition-colors duration-200 hover:bg-[#7FC447]/10"
               >
                 <XIcon size={14} color="#7FC447" />
               </button>
