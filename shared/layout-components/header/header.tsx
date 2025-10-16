@@ -87,6 +87,10 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
 
 
 
+  // Store refs for event listeners to properly clean them up
+  const overlayClickHandlerRef = React.useRef<(() => void) | null>(null);
+  const resizeHandlerRef = React.useRef<(() => void) | null>(null);
+
   const toggleSidebar = () => {
     const theme = store.getState();
     let sidemenuType = theme.dataNavLayout;
@@ -197,36 +201,55 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
     }
     else {
       if (theme.dataToggled === "close") {
+        console.log('📱 Opening mobile menu');
         ThemeChanger({ ...theme, "dataToggled": "open" });
 
         setTimeout(() => {
-          if (theme.dataToggled == "open") {
+          // Check current state from store, not closure
+          const currentTheme = store.getState();
+          if (currentTheme.dataToggled === "open") {
             const overlay = document.querySelector("#responsive-overlay");
 
             if (overlay) {
               overlay.classList.add("active");
-              overlay.addEventListener("click", () => {
+              
+              // Remove old listener if exists
+              if (overlayClickHandlerRef.current) {
+                overlay.removeEventListener("click", overlayClickHandlerRef.current);
+              }
+              
+              // Create new handler and store reference
+              overlayClickHandlerRef.current = () => {
                 const overlay = document.querySelector("#responsive-overlay");
-
                 if (overlay) {
                   overlay.classList.remove("active");
                   menuClose();
                 }
-              });
+              };
+              
+              overlay.addEventListener("click", overlayClickHandlerRef.current);
             }
           }
 
-          window.addEventListener("resize", () => {
+          // Remove old resize listener if exists
+          if (resizeHandlerRef.current) {
+            window.removeEventListener("resize", resizeHandlerRef.current);
+          }
+          
+          // Create new resize handler and store reference
+          resizeHandlerRef.current = () => {
             if (window.screen.width >= 992) {
               const overlay = document.querySelector("#responsive-overlay");
-
               if (overlay) {
                 overlay.classList.remove("active");
               }
             }
-          });
+          };
+          
+          window.addEventListener("resize", resizeHandlerRef.current);
         }, 100);
-      } else {
+      } else if (theme.dataToggled === "open") {
+        console.log('📱 Closing mobile menu');
         ThemeChanger({ ...theme, "dataToggled": "close" });
       }
     }
@@ -234,6 +257,19 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
 
 
   };
+  
+  // Cleanup event listeners on unmount
+  useEffect(() => {
+    return () => {
+      const overlay = document.querySelector("#responsive-overlay");
+      if (overlay && overlayClickHandlerRef.current) {
+        overlay.removeEventListener("click", overlayClickHandlerRef.current);
+      }
+      if (resizeHandlerRef.current) {
+        window.removeEventListener("resize", resizeHandlerRef.current);
+      }
+    };
+  }, []);
   //Dark Model
 
   const ToggleDark = () => {

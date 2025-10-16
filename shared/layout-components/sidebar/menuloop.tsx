@@ -16,7 +16,10 @@ function Menuloop({ local_varaiable, MenuItems, toggleSidemenu, level, HoverTogg
 const closeMenu = () => {
   if (window.innerWidth <= 992 || isMobileUserAgent()) {
     const theme = store.getState();
-    ThemeChanger({ ...theme, dataToggled: "close" });
+    // Only close if menu is actually open
+    if (theme.dataToggled === "open") {
+      ThemeChanger({ ...theme, dataToggled: "close" });
+    }
   }
 };
 

@@ -103,8 +103,20 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         farcasterWallet,
         hasExternalWallet,
         hasEmbeddedWallet,
-        isMinitapp
+        isMinitapp,
+        _debug
     } = useConnectedAddress();
+    
+    // Debug logging to track address being used for transactions
+    useEffect(() => {
+        console.log('🛒 Ownplot Address Debug:', {
+            userAddress,
+            priorityUsed: _debug?.priorityUsed,
+            walletsCount: _debug?.walletsCount,
+            hasExternalWallet,
+            hasEmbeddedWallet
+        });
+    }, [userAddress, _debug, hasExternalWallet, hasEmbeddedWallet]);
 
     const { switchChainAsync } = useSwitchChain();
     const [isMinting, setIsMinting] = useState(false);

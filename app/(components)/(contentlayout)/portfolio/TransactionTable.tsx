@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 
 interface Transaction {
@@ -21,41 +21,30 @@ interface Transaction {
 
 interface TransactionTableProps {
   transactions?: Transaction[];
-  transactionCursor: string | null;
-  nftTransactionCursor: string | null;
-  fetchMore: () => Promise<void> | void;
-  loading?: boolean; // passed from parent for initial fetch
-  hasInitiallyLoaded?: boolean; // Add this to track if initial load is complete
+  allTransactions?: Transaction[];
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  loading?: boolean;
+  hasInitiallyLoaded?: boolean;
 }
 
 const TransactionTable = ({
   transactions,
-  transactionCursor,
-  nftTransactionCursor,
-  fetchMore,
+  allTransactions,
+  currentPage,
+  totalPages,
+  onPageChange,
   loading = false,
   hasInitiallyLoaded = false,
 }: TransactionTableProps) => {
   const validTransactions = Array.isArray(transactions) ? transactions : [];
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [showScrollHint, setShowScrollHint] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false); // for "Load More"
 
   const NFT_TYPE_IMAGES: Record<string, string> = {
     "Legendary 1000m²": "/assets/images/brand-logos/Legendary.svg",
     "Premium 500m²": "/assets/images/brand-logos/Premium.svg",
     "Standard 100m²": "/assets/images/brand-logos/Standard.svg",
   };
-
-  useEffect(() => {
-    const scrollArea = scrollRef.current;
-    if (!scrollArea) return;
-    const onScroll = () => {
-      setShowScrollHint(scrollArea.scrollTop <= 20);
-    };
-    scrollArea.addEventListener("scroll", onScroll);
-    return () => scrollArea.removeEventListener("scroll", onScroll);
-  }, []);
 
   // 1️⃣ Initial loading state - show spinner when initially loading OR when loading and no data has been loaded yet
   if (loading && !hasInitiallyLoaded) {
@@ -98,14 +87,9 @@ const TransactionTable = ({
     <div className="grid grid-cols-12 gap-x-6">
       <div className="xl:col-span-12 col-span-full">
         <div className="box">
-          <div className="box-body p-0 flex flex-col" style={{ height: "60vh" }}>
-            {/* Scrollable Table Area */}
-            <div
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto custom-scrollbar relative"
-            >
-              <div className="table-responsive">
-                <table className="table whitespace-nowrap min-w-full">
+          <div className="box-body p-0">
+            <div className="table-responsive">
+              <table className="table whitespace-nowrap min-w-full">
                   <thead>
                     <tr>
                       <th className="text-left">Transaction</th>
@@ -206,24 +190,78 @@ const TransactionTable = ({
                   </tbody>
                 </table>
               </div>
-            </div>
-
-            {/* Load More button */}
-            {(transactionCursor || nftTransactionCursor) && (
-              <div className="box-footer text-center">
-                <button
-                  className={`ti-btn bg-secondary text-white !font-medium m-0 !me-[0.375rem] btn btn-primary px-6 py-2 ${
-                    loadingMore ? "btn-loading" : ""
-                  }`}
-                  onClick={async () => {
-                    setLoadingMore(true);
-                    await fetchMore();
-                    setLoadingMore(false);
-                  }}
-                  disabled={loadingMore}
-                >
-                  {loadingMore ? "Loading..." : "Load More"}
-                </button>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="box-footer">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                  {/* Page Info - Centered on mobile, left on desktop */}
+                  <div className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
+                    Showing page {currentPage} of {totalPages} ({allTransactions?.length || 0} total transactions)
+                  </div>
+                  
+                  {/* Pagination Buttons - Centered on mobile and desktop */}
+                  <nav aria-label="Transaction pagination" className="w-full md:w-auto flex justify-center">
+                    <ul className="ti-pagination mb-0 flex items-center gap-2 flex-wrap justify-center">
+                      <li className="page-item">
+                        <button
+                          className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
+                            currentPage === 1 
+                              ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                              : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
+                          }`}
+                          onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Previous
+                        </button>
+                      </li>
+                      
+                      {/* Page numbers */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        
+                        return (
+                          <li key={pageNum} className="page-item">
+                            <button
+                              className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${
+                                currentPage === pageNum 
+                                  ? '!bg-secondary !text-white shadow-md border-secondary' 
+                                  : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
+                              }`}
+                              onClick={() => onPageChange(pageNum)}
+                            >
+                              {pageNum}
+                            </button>
+                          </li>
+                        );
+                      })}
+                      
+                      <li className="page-item">
+                        <button
+                          className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
+                            currentPage === totalPages 
+                              ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                              : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
+                          }`}
+                          onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
               </div>
             )}
           </div>

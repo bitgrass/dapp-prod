@@ -14,6 +14,9 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 	const [menuitems, setMenuitems] = useState(MenuItems);
 	const [activeTab, setActiveTab] = useState('');
 	const searchParams = useSearchParams();
+	const menuCloseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+	const lastMenuCloseTime = React.useRef<number>(0);
+	
 	useEffect(() => {
 		const tab = searchParams.get('tab');
 		if (tab) {
@@ -47,10 +50,23 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 			const theme = store.getState();
 			ThemeChanger({ ...theme, dataToggled: "" });
 		}
-		mainContent!.addEventListener('click', menuClose);
+		
+		// Add click listener to main content
+		if (mainContent) {
+			mainContent.addEventListener('click', menuClose);
+		}
+		
 		return () => {
 			window.removeEventListener("resize", menuResizeFn);
 			window.removeEventListener('resize', checkHoriMenu);
+			// Remove main content click listener
+			if (mainContent) {
+				mainContent.removeEventListener('click', menuClose);
+			}
+			// Clear any pending menu close timeout
+			if (menuCloseTimeoutRef.current) {
+				clearTimeout(menuCloseTimeoutRef.current);
+			}
 		};
 	}, []);
 
@@ -58,10 +74,16 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 	function isMobileUserAgent() {
 		return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Warpcast|Farcaster/i.test(navigator.userAgent);
 	}
+	
+	// Close menu on route change (mobile only)
 	useEffect(() => {
+		// Only close menu on mobile when navigating away from dashboard
 		if ((window.innerWidth <= 992 || isMobileUserAgent()) && pathname != "/dashboard") {
 			const theme = store.getState();
-			ThemeChanger({ ...theme, dataToggled: "close" });
+			// Only close if menu is currently open
+			if (theme.dataToggled === "open") {
+				ThemeChanger({ ...theme, dataToggled: "close" });
+			}
 		}
 	}, [pathname])
 
@@ -82,17 +104,37 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 	}
 
 	function menuClose() {
-		const theme = store.getState();
-		if (window.innerWidth <= 992) {
-			ThemeChanger({ ...theme, dataToggled: "close" });
+		// Prevent duplicate calls within 100ms (from multiple handlers)
+		const now = Date.now();
+		if (now - lastMenuCloseTime.current < 100) {
+			console.log('🚫 Ignoring duplicate menuClose call');
+			return;
 		}
-		const overlayElement = document.querySelector("#responsive-overlay") as HTMLElement | null;
-		if (overlayElement) {
-			overlayElement.classList.remove("active");
+		lastMenuCloseTime.current = now;
+		
+		// Clear any pending menu close timeout
+		if (menuCloseTimeoutRef.current) {
+			clearTimeout(menuCloseTimeoutRef.current);
 		}
-		if (theme.dataNavLayout == "horizontal" || theme.dataNavStyle == "menu-click" || theme.dataNavStyle == "icon-click") {
-			closeMenu();
-		}
+		
+		// Debounce menu close to prevent rapid toggling
+		menuCloseTimeoutRef.current = setTimeout(() => {
+			const theme = store.getState();
+			// Only close if menu is actually open
+			if (window.innerWidth <= 992 && theme.dataToggled === "open") {
+				console.log('✅ Closing menu');
+				ThemeChanger({ ...theme, dataToggled: "close" });
+			} else {
+				console.log('ℹ️ Menu already closed, skipping');
+			}
+			const overlayElement = document.querySelector("#responsive-overlay") as HTMLElement | null;
+			if (overlayElement) {
+				overlayElement.classList.remove("active");
+			}
+			if (theme.dataNavLayout == "horizontal" || theme.dataNavStyle == "menu-click" || theme.dataNavStyle == "icon-click") {
+				closeMenu();
+			}
+		}, 50); // 50ms debounce
 	}
 
 	const WindowPreSize = typeof window !== 'undefined' ? [window.innerWidth] : [];

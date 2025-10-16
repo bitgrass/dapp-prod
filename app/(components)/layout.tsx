@@ -57,7 +57,7 @@ function Layout({ children, local_varaiable, ThemeChanger }: any) {
         {theme.pageloading && children}
 
         {/* Load external scripts inside a useEffect or _document.js */}
-        <script src="https://cdn.jsdelivr.net/npm/dragula@3.7.3/dist/dragula.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dragula@3.7.3/dist/dragula.min.js" async></script>
       </div>
     </>
   );

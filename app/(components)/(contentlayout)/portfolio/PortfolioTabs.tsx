@@ -8,23 +8,30 @@ interface PortfolioTabsProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   transactions: any[];
+  allTransactions: any[];
+  currentTransactionPage: number;
+  totalTransactionPages: number;
+  onTransactionPageChange: (page: number) => void;
+  nftData: any[];
+  allNftData: any[];
+  currentNftPage: number;
+  totalNftPages: number;
+  onNftPageChange: (page: number) => void;
   transactionCursor: string | null;
   nftTransactionCursor: string | null;
-  nftData: any[];
   nftCursor: string | null;
-  loadMore: () => void;
   ethBalance: string;
   ethPrice: number;
   btgPrice: number;
   btgBalance: string;
   btgToken: any;
   ethSupply: any;
-  hasInitialNftLoad: boolean; // Fixed formatting
-  hasInitialTransaction:boolean;
-  // Added loaders
+  hasInitialNftLoad: boolean;
+  hasInitialTransaction: boolean;
   loadingTx?: boolean;
   loadingNFTs?: boolean;
   loadingNftGrid?: boolean;
+  onRefreshNfts?: () => void;
 }
 
 const PortfolioTabs = ({
@@ -32,21 +39,29 @@ const PortfolioTabs = ({
   activeTab,
   setActiveTab,
   transactions,
+  allTransactions,
+  currentTransactionPage,
+  totalTransactionPages,
+  onTransactionPageChange,
+  nftData,
+  allNftData,
+  currentNftPage,
+  totalNftPages,
+  onNftPageChange,
   transactionCursor,
   nftTransactionCursor,
-  nftData,
   nftCursor,
-  loadMore,
   ethBalance,
   ethPrice,
   btgPrice,
   btgBalance,
   ethSupply,
-  hasInitialNftLoad, // ✅ Added missing destructured prop
+  hasInitialNftLoad,
   loadingTx,
   loadingNFTs,
   loadingNftGrid,
   hasInitialTransaction,
+  onRefreshNfts,
 }: PortfolioTabsProps) => {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -150,12 +165,17 @@ const PortfolioTabs = ({
                   role="tabpanel"
                   aria-labelledby="nfts-tab"
                 >
+                  {/* Refresh Button */}
+                  
+     
                   <NFTTable
                     nftData={nftData}
-                    nftCursor={nftCursor}
-                    fetchMore={loadMore}
+                    allNftData={allNftData}
+                    currentPage={currentNftPage}
+                    totalPages={totalNftPages}
+                    onPageChange={onNftPageChange}
                     loading={loadingNftGrid}
-                    hasInitiallyLoaded={hasInitialNftLoad} // ✅ Now properly defined
+                    hasInitiallyLoaded={hasInitialNftLoad}
                   />
                 </div>
 
@@ -180,9 +200,10 @@ const PortfolioTabs = ({
                   ) : (
                     <TransactionTable
                       transactions={transactions}
-                      transactionCursor={transactionCursor}
-                      nftTransactionCursor={nftTransactionCursor}
-                      fetchMore={loadMore}
+                      allTransactions={allTransactions}
+                      currentPage={currentTransactionPage}
+                      totalPages={totalTransactionPages}
+                      onPageChange={onTransactionPageChange}
                       loading={loadingTx}
                       hasInitiallyLoaded={hasInitialTransaction}
                     />

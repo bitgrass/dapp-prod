@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 
 interface NftData {
@@ -15,22 +15,23 @@ interface NftData {
 
 interface NFTTableProps {
   nftData: NftData[];
-  nftCursor: string | null;
-  fetchMore?: (cursor: any | null) => void;
-  loading?: boolean; // controlled by parent
-  hasInitiallyLoaded?: boolean; // Add this to track if initial load is complete
+  allNftData: NftData[];
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  loading?: boolean;
+  hasInitiallyLoaded?: boolean;
 }
 
 const NFTTable = ({
   nftData,
-  nftCursor,
-  fetchMore,
+  allNftData,
+  currentPage,
+  totalPages,
+  onPageChange,
   loading = false,
   hasInitiallyLoaded = false
 }: NFTTableProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [showScrollHint, setShowScrollHint] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   // Helper: get tier details by tokenId
   const getTier = (tokenId: number) => {
     if (tokenId >= 1 && tokenId <= 400) {
@@ -77,17 +78,6 @@ const NFTTable = ({
     // fallback to API image if no match
     return originalImage || "/assets/images/apps/placeholder.jpg";
   };
-
-
-  useEffect(() => {
-    const scrollArea = scrollRef.current;
-    if (!scrollArea) return;
-    const onScroll = () => {
-      setShowScrollHint(scrollArea.scrollTop <= 20);
-    };
-    scrollArea.addEventListener("scroll", onScroll);
-    return () => scrollArea.removeEventListener("scroll", onScroll);
-  }, []);
 
   // 1️⃣ Initial loading state - show spinner when initially loading OR when loading and no data has been loaded yet
   if (loading && !hasInitiallyLoaded) {
@@ -143,10 +133,12 @@ const NFTTable = ({
 
   // 3️⃣ NFTs exist
   return (
-    <div className="flex flex-col" style={{ height: "70vh" }}>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar relative">
-        <div className="grid grid-cols-12 gap-x-6 gap-y-4">
-          {nftData.map((nft) => (
+    <div className="grid grid-cols-12 gap-x-6">
+      <div className="xl:col-span-12 col-span-full">
+        <div className="box">
+          <div className="box-body">
+            <div className="grid grid-cols-12 gap-x-6 gap-y-4">
+              {nftData.map((nft) => (
             <div
               className="xxl:col-span-3 xl:col-span-3 lg:col-span-3 md:col-span-6 sm:col-span-6 col-span-12"
               key={nft.tokenId}
@@ -206,26 +198,87 @@ const NFTTable = ({
               </div>
             </div>
 
-          ))}
+              ))}
+            </div>
+          </div>
+          
+          {/* Pagination - Always show if we have NFTs */}
+          {allNftData && allNftData.length > 0 && (
+            <div className="box-footer">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                {/* Page Info - Centered on mobile, left on desktop */}
+                <div className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
+                  Showing page {currentPage} of {totalPages} ({allNftData?.length || 0} total NFTs)
+                </div>
+                
+                {/* Pagination Buttons - Centered on mobile and desktop */}
+                {totalPages > 1 && (
+                  <nav aria-label="NFT pagination" className="w-full md:w-auto flex justify-center">
+                    <ul className="ti-pagination mb-0 flex items-center gap-2 flex-wrap justify-center">
+                      <li className="page-item">
+                        <button
+                          className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
+                            currentPage === 1 
+                              ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                              : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
+                          }`}
+                          onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Previous
+                        </button>
+                      </li>
+                
+                {/* Page numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <li key={pageNum} className="page-item">
+                      <button
+                        className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${
+                          currentPage === pageNum 
+                            ? '!bg-secondary !text-white shadow-md border-secondary' 
+                            : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                        onClick={() => onPageChange(pageNum)}
+                      >
+                        {pageNum}
+                      </button>
+                    </li>
+                  );
+                })}
+                
+                <li className="page-item">
+                  <button
+                    className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
+                      currentPage === totalPages 
+                        ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                        : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
+                    }`}
+                    onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </li>
+                  </ul>
+                </nav>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Load More button */}
-      {nftCursor && (
-        <div className="box-footer text-center">
-          <button
-            className={`ti-btn bg-secondary text-white px-6 py-2 ${loadingMore ? "btn-loading" : ""}`}
-            onClick={async () => {
-              setLoadingMore(true);
-              await fetchMore?.(nftCursor);
-              setLoadingMore(false);
-            }}
-            disabled={loadingMore}
-          >
-            {loadingMore ? "Loading..." : "Load More"}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

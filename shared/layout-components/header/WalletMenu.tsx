@@ -442,7 +442,7 @@ const WalletMenu: React.FC = () => {
                   <span className="font-semibold text-sm ms-2">{btgToken.symbol}</span>
                 </div>
                 <div className="text-sm font-medium text-right">
-                  {tokenBalance ? `${tokenBalance.formatted.slice(0, 6)} ${tokenBalance.symbol}` : "0"}
+                  {tokenBalance ? `${tokenBalance.formatted.slice(0, 7)} ${tokenBalance.symbol}` : "0"}
                 </div>
               </div>
 

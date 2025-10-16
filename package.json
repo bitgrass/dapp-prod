@@ -110,7 +110,7 @@
     "tailwind-clip-path": "^1.0.0",
     "thirdweb": "^5.108.8",
     "wagmi": "^2.15.6",
-    "wrangler": "^4.40.0",
+    "wrangler": "^4.43.0",
     "yet-another-react-lightbox": "^3.17.2"
   },
   "devDependencies": {

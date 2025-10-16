@@ -159,10 +159,12 @@ const CryptoTable = ({
 
   const { legendary, premium, standard } = getTierCounts(nftData);
 
-  const supplyNum = Number((ethSupply + "").replace(/,/g, ""));
-  const priceNum = Number((ethPrice + "").replace(/,/g, ""));
-
   const formatLargeValue = (value: number) => {
+    // Handle invalid values
+    if (!value || isNaN(value) || value === 0) {
+      return "Loading...";
+    }
+    
     if (value >= 1_000_000_000) {
       return `$${(Math.round(value / 100_000_000) / 10).toFixed(1)}B`;
     } else if (value >= 1_000_000) {
@@ -170,9 +172,26 @@ const CryptoTable = ({
     } else if (value >= 1_000) {
       return `$${(Math.round(value / 100) / 10).toFixed(1)}K`;
     } else {
-      return `$${value}`;
+      return `$${value.toFixed(2)}`;
     }
   };
+
+  // Parse supply and price, handling commas and invalid values
+  const supplyNum = Number((ethSupply + "").replace(/,/g, "")) || 0;
+  const priceNum = Number((ethPrice + "").replace(/,/g, "")) || 0;
+  
+  // Calculate market cap
+  const marketCap = supplyNum * priceNum;
+  
+  // Debug logging
+  console.log('💰 ETH Market Cap Calculation:', {
+    ethSupply,
+    ethPrice,
+    supplyNum,
+    priceNum,
+    marketCap,
+    formatted: formatLargeValue(marketCap)
+  });
 
   const formatLargeValueBTG = (value: number) => {
     if (value >= 1_000_000_000) {
@@ -283,7 +302,7 @@ const CryptoTable = ({
                   <td>
                     <div className="items-center">
                       <p className="mb-0 font-semibold">
-                        {formatLargeValue(supplyNum * priceNum)}
+                        {formatLargeValue(marketCap)}
                       </p>
                     </div>
                   </td>

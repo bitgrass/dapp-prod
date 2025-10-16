@@ -75,7 +75,7 @@ function useDOLeaderboard() {
     return { ranked, loading, version, error };
 }
 
-const leaderboard = () => {
+const Leaderboard = () => {
     const { authenticated, login, user } = usePrivy();
     const { ranked, loading } = useDOLeaderboard();
     const getProfilePicture = (address: string) => {
@@ -538,4 +538,4 @@ const leaderboard = () => {
 
 };
 
-export default leaderboard;
+export default Leaderboard;
