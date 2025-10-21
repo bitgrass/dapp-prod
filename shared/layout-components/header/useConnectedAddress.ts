@@ -1,35 +1,56 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useAccount, useWalletClient } from 'wagmi'
 
 function ensureSendTransaction(client: any) {
   if (!client) return client;
 
-  // Already has sendTransaction
-  if (typeof client.sendTransaction === "function") {
+  const hasRequest = typeof client.request === "function";
+  const hasSendTransaction = typeof client.sendTransaction === "function";
+  
+  if (hasRequest && hasSendTransaction) {
     return client;
   }
 
-  // Wrap .request into a signer-like object
-  return {
+  const wrappedClient = {
     ...client,
-    sendTransaction: async (tx: any) => {
-      return client.request({
-        method: "eth_sendTransaction",
-        params: [tx],
-      });
+    request: hasRequest ? client.request.bind(client) : async (args: any) => {
+      if (args.method === "eth_sendTransaction" && client.sendTransaction) {
+        return client.sendTransaction(args.params[0]);
+      }
+      if (args.method === "eth_sendTransaction" && client.send) {
+        return new Promise((resolve, reject) => {
+          client.send(args.method, args.params, (err: any, result: any) => {
+            if (err) reject(err);
+            else resolve(result);
+          });
+        });
+      }
+      throw new Error(`Method ${args.method} not supported`);
+    },
+    sendTransaction: hasSendTransaction ? client.sendTransaction.bind(client) : async (tx: any) => {
+      if (client.request) {
+        return client.request({
+          method: "eth_sendTransaction",
+          params: [tx],
+        });
+      }
+      throw new Error("sendTransaction not available");
     },
     signMessage: async (msg: any) => {
-      return client.request({
-        method: "personal_sign",
-        params: [msg],
-      });
+      if (client.request) {
+        return client.request({
+          method: "personal_sign",
+          params: [msg],
+        });
+      }
+      throw new Error("signMessage not available");
     },
   };
+
+  return wrappedClient;
 }
 
-
-// Keep existing useFarcasterWallet hook as is...
 function useFarcasterWallet(fid?: number) {
   const [address, setAddress] = useState<string | null>(null)
 
@@ -82,45 +103,6 @@ function useFarcasterWallet(fid?: number) {
   return address
 }
 
-// Keep existing useEnsureEmbeddedWallet hook...
-export function useEnsureEmbeddedWallet() {
-  const { user, authenticated, createWallet } = usePrivy()
-  const creatingWallet = useRef(false)
-  const walletCreated = useRef(false)
-
-  useEffect(() => {
-    if (!authenticated || !user || creatingWallet.current || walletCreated.current) {
-      return
-    }
-
-    const ensureWallet = async () => {
-      const hasAnyWallet = user.linkedAccounts.some(
-        account => account.type === 'wallet'
-      )
-
-      if (!hasAnyWallet) {
-        creatingWallet.current = true
-
-        try {
-          await createWallet()
-          walletCreated.current = true
-          console.log('✅ Embedded wallet created successfully')
-        } catch (error) {
-          console.error('❌ Failed to create embedded wallet:', error)
-          creatingWallet.current = false
-        }
-      }
-    }
-
-    ensureWallet()
-  }, [authenticated, user?.id, createWallet])
-
-  useEffect(() => {
-    creatingWallet.current = false
-    walletCreated.current = false
-  }, [user?.id])
-}
-
 function isFarcasterMiniapp(): boolean {
   if (typeof window === 'undefined') return false
 
@@ -136,7 +118,6 @@ function isFarcasterMiniapp(): boolean {
   )
 }
 
-// Keep existing useFarcasterProvider hook as is...
 function useFarcasterProvider(farcasterWallet: string | null) {
   const [provider, setProvider] = useState<any>(null)
   const [providerError, setProviderError] = useState<string | null>(null)
@@ -154,8 +135,6 @@ function useFarcasterProvider(farcasterWallet: string | null) {
       setProviderError(null)
 
       try {
-        // All existing provider setup logic...
-        // (keeping it short for brevity - use your existing implementation)
         const proxyProvider = {
           isProxy: true,
           targetAddress: farcasterWallet,
@@ -166,7 +145,7 @@ function useFarcasterProvider(farcasterWallet: string | null) {
 
             if (args.method === "eth_sendTransaction" || args.method === "personal_sign") {
               if ((window as any).ethereum?.request) {
-                return (window as any).ethereum.request(args); // ✅ forward to Warpcast injected provider
+                return (window as any).ethereum.request(args);
               }
               throw new Error("Warpcast provider not available");
             }
@@ -175,7 +154,6 @@ function useFarcasterProvider(farcasterWallet: string | null) {
           },
           getChainId: () => 8453,
         };
-
 
         setProvider(proxyProvider)
         setProviderError('Farcaster wallet requires manual connection for signing')
@@ -196,10 +174,99 @@ function useFarcasterProvider(farcasterWallet: string | null) {
 }
 
 /**
- * IMPROVED: Stable wallet connection with proper loading states
+ * Hook to ensure embedded wallet is created when needed
+ * Now handles fallback when external wallet disconnects
+ */
+function useEnsureEmbeddedWallet() {
+  const { user, authenticated, createWallet } = usePrivy()
+  const { wallets } = useWallets()
+  const creatingWallet = useRef(false)
+  const hadExternalWallet = useRef(false)
+
+  useEffect(() => {
+    if (!authenticated || !user) {
+      creatingWallet.current = false
+      hadExternalWallet.current = false
+      return
+    }
+
+    const ensureWallet = async () => {
+      // Prevent concurrent creation attempts
+      if (creatingWallet.current) {
+        console.log('⏳ Already creating wallet, skipping...')
+        return
+      }
+
+      // ONLY check the wallets array for active wallets
+      const hasExternalWallet = wallets.some(w => w.walletClientType !== 'privy')
+      const hasEmbeddedWallet = wallets.some(w => w.walletClientType === 'privy')
+
+      const currentlyHasExternal = hasExternalWallet
+      const currentlyHasEmbedded = hasEmbeddedWallet
+
+      // Detect when external wallet was disconnected
+      const externalWalletWasDisconnected = hadExternalWallet.current && !currentlyHasExternal
+
+      console.log('🔍 Wallet state check:', {
+        hasExternal: currentlyHasExternal,
+        hasEmbedded: currentlyHasEmbedded,
+        hadExternal: hadExternalWallet.current,
+        disconnected: externalWalletWasDisconnected,
+        walletsCount: wallets.length
+      })
+
+      // Update tracking
+      hadExternalWallet.current = currentlyHasExternal
+
+      // Create embedded wallet if:
+      // 1. User has no wallets at all, OR
+      // 2. External wallet was just disconnected and no embedded wallet exists
+      const shouldCreateEmbedded = (
+        (!currentlyHasExternal && !currentlyHasEmbedded) ||
+        (externalWalletWasDisconnected && !currentlyHasEmbedded)
+      )
+
+      if (shouldCreateEmbedded) {
+        creatingWallet.current = true
+        
+        if (externalWalletWasDisconnected) {
+          console.log('🔄 External wallet disconnected, creating embedded wallet fallback...')
+        } else {
+          console.log('🔧 No wallet found, creating embedded wallet...')
+        }
+
+        try {
+          await createWallet()
+          console.log('✅ Embedded wallet created successfully')
+        } catch (error) {
+          console.error('❌ Failed to create embedded wallet:', error)
+        } finally {
+          creatingWallet.current = false
+        }
+      }
+    }
+
+    // Small delay to allow state to settle after wallet changes
+    const timeoutId = setTimeout(() => {
+      ensureWallet()
+    }, 150)
+
+    return () => clearTimeout(timeoutId)
+  }, [authenticated, user, wallets, createWallet])
+
+  // Reset tracking when user changes
+  useEffect(() => {
+    creatingWallet.current = false
+    hadExternalWallet.current = false
+  }, [user?.id])
+}
+
+/**
+ * Always prioritize external wallets over embedded wallets
+ * Now properly handles disconnection of external wallets
  */
 export function useConnectedAddress() {
-  const { user } = usePrivy()
+  const { user, ready, authenticated } = usePrivy()
   const { wallets } = useWallets()
   const { address: wagmiAddress } = useAccount()
   const { data: wagmiClient } = useWalletClient()
@@ -214,99 +281,170 @@ export function useConnectedAddress() {
     isLoading: fcProviderLoading
   } = useFarcasterProvider(farcasterWallet)
 
-  // CRITICAL FIX: Add loading states and stable address resolution
+  // Ensure embedded wallet is created when needed
+  useEnsureEmbeddedWallet()
+
+  const FORCE_EXTERNAL_PRIORITY = true
+
   const [isWalletsLoading, setIsWalletsLoading] = useState(true)
   const [stableAddress, setStableAddress] = useState<string | undefined>(undefined)
   const [walletClient, setWalletClient] = useState<any>(null)
   const [clientReady, setClientReady] = useState(false)
   const [clientError, setClientError] = useState<string | null>(null)
-
-  // Track when wallets have finished loading
+  
+  // Clear cached wallet address on mount - force fresh resolution
   useEffect(() => {
-    // Consider wallets loaded when we have user and either:
-    // 1. We have wallets, or 
-    // 2. We've waited enough time and still have no wallets
-    if (user) {
-      const timer = setTimeout(() => {
-        setIsWalletsLoading(false)
-      }, 1000) // Give wallets 1 second to load
-
-      if (wallets.length > 0) {
-        setIsWalletsLoading(false)
-        clearTimeout(timer)
-      }
-
-      return () => clearTimeout(timer)
-    } else {
-      setIsWalletsLoading(true)
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.removeItem('preferredWalletAddress')
+        console.log('🗑️ Cleared cached wallet on mount - will resolve fresh')
+      } catch {}
     }
-  }, [user, wallets.length])
-
-  useEnsureEmbeddedWallet()
-
-  // CRITICAL FIX: Stable address resolution that doesn't change on every render
+  }, [])
+  
   useEffect(() => {
-    // Don't resolve address until wallets are loaded
+    if (!authenticated) {
+      try {
+        sessionStorage.removeItem('preferredWalletAddress')
+        console.log('🗑️ Cleared preferred wallet on disconnect')
+      } catch {}
+    }
+  }, [authenticated])
+
+  useEffect(() => {
+    if (!ready) {
+      setIsWalletsLoading(true)
+      return
+    }
+
+    if (wallets.length > 0) {
+      console.log('✅ Wallets detected, waiting for initialization...')
+      const timer = setTimeout(() => {
+        console.log('✅ Wallets fully loaded')
+        setIsWalletsLoading(false)
+      }, 500)
+      
+      return () => clearTimeout(timer)
+    }
+
+    const timer = setTimeout(() => {
+      console.log('✅ No wallets detected, marking as loaded')
+      setIsWalletsLoading(false)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [ready, wallets.length])
+
+  console.log("wallets---", wallets)
+
+  useEffect(() => {
     if (isWalletsLoading) {
       console.log('⏳ Waiting for wallets to load...')
       return
     }
 
-    const resolveStableAddress = () => {
-      console.log('🔍 Resolving stable address...', {
+    if (!authenticated) {
+      console.log('❌ Not authenticated - clearing address')
+      setStableAddress(undefined)
+      return
+    }
+
+    const resolveAddress = () => {
+      console.log('🔍 Resolving address...', {
         isMinitapp,
         farcasterWallet,
         walletsCount: wallets.length,
-        wagmiAddress
+        wagmiAddress,
+        forceExternal: FORCE_EXTERNAL_PRIORITY,
+        allWallets: wallets.map(w => ({
+          address: w.address?.slice(0, 10) + '...',
+          type: w.walletClientType,
+        }))
       })
 
-      // In Farcaster miniapp: ALWAYS use Farcaster wallet if available
-      if (isMinitapp && farcasterWallet) {
-        console.log('🎯 Using Farcaster wallet in miniapp:', farcasterWallet)
-        setStableAddress(farcasterWallet as `0x${string}`)
-        return
+      // PRIORITY 1: Farcaster miniapp
+      if (isMinitapp) {
+        if (farcasterWallet) {
+          console.log('🎯 Using Farcaster wallet in miniapp:', farcasterWallet)
+          setStableAddress(farcasterWallet as `0x${string}`)
+          return
+        } else {
+          console.log('⚠️ In miniapp but no Farcaster wallet found')
+          setStableAddress(undefined)
+          return
+        }
       }
 
-      // In other environments: External wallet → Embedded wallet → Fallbacks
+      // PRIORITY 2: Active external wallets (must be in wallets array to be considered active)
+      const externalWallets = wallets.filter(w => 
+        w.walletClientType !== 'privy' && w.address
+      )
 
-      // Priority 1: External wallet (non-privy)
-      const externalWallet = wallets.find(w => w.walletClientType !== 'privy' && w.address)
-      if (externalWallet?.address) {
-        console.log('🎯 Using external wallet:', externalWallet.address)
+      if (externalWallets.length > 0) {
+        const externalWallet = externalWallets[0]
+        console.log('🎯 Using ACTIVE external wallet:', externalWallet.address)
         setStableAddress(externalWallet.address as `0x${string}`)
         return
       }
 
-      // Priority 2: Embedded wallet (privy)
-      const embeddedWallet = wallets.find(w => w.walletClientType === 'privy' && w.address)
-      if (embeddedWallet?.address) {
-        console.log('🎯 Using embedded wallet:', embeddedWallet.address)
-        setStableAddress(embeddedWallet.address as `0x${string}`)
-        return
-      }
+      // CRITICAL: At this point, NO external wallet is active
+      // Do NOT check linkedAccounts for external wallets
+      // linkedAccounts may contain disconnected wallets
 
-      // Priority 3: wagmi address fallback
+      console.log('✅ No active external wallet, falling back to embedded wallet')
+
+      // PRIORITY 3: Embedded wallet via wagmi
       if (wagmiAddress) {
-        console.log('🎯 Using wagmi address:', wagmiAddress)
+        console.log('🎯 Using embedded wallet via wagmi:', wagmiAddress)
         setStableAddress(wagmiAddress)
         return
       }
 
-      // Priority 4: user wallet fallback
+      // PRIORITY 4: Embedded wallet from wallets array
+      const embeddedWallet = wallets.find(w => 
+        w.walletClientType === 'privy' && w.address
+      )
+      
+      if (embeddedWallet?.address) {
+        console.log('🎯 Using embedded wallet from wallets array:', embeddedWallet.address)
+        setStableAddress(embeddedWallet.address as `0x${string}`)
+        return
+      }
+
+      // PRIORITY 5: Embedded wallet from linkedAccounts (last resort)
+      const embeddedWalletAccount = user?.linkedAccounts?.find(
+        (acc: any) => acc.type === 'wallet' && acc.walletClientType === 'privy' && acc.address
+      )
+
+      if (embeddedWalletAccount) {
+        console.log('🎯 Using embedded wallet from linkedAccounts:', (embeddedWalletAccount as any).address)
+        setStableAddress((embeddedWalletAccount as any).address as `0x${string}`)
+        return
+      }
+
+      // PRIORITY 6: User wallet fallback
       if ((user as any)?.wallet?.address) {
         console.log('🎯 Using user wallet fallback:', (user as any).wallet.address)
         setStableAddress((user as any).wallet.address as `0x${string}`)
         return
       }
 
-      console.log('❌ No wallet address found')
+      console.log('⏳ No wallet available')
       setStableAddress(undefined)
     }
 
-    resolveStableAddress()
-  }, [isWalletsLoading, isMinitapp, farcasterWallet, wallets, wagmiAddress, user])
+    resolveAddress()
+  }, [
+    isWalletsLoading, 
+    isMinitapp, 
+    farcasterWallet, 
+    wallets, 
+    wagmiAddress, 
+    user, 
+    authenticated,
+    FORCE_EXTERNAL_PRIORITY
+  ])
 
-  // Resolve wallet client based on stable address
   useEffect(() => {
     const resolveWalletClient = async () => {
       try {
@@ -315,7 +453,7 @@ export function useConnectedAddress() {
 
         console.log('🔍 Resolving wallet client for:', stableAddress)
 
-        // In Farcaster miniapp using Farcaster wallet
+        // Farcaster miniapp
         if (isMinitapp && farcasterWallet && stableAddress === farcasterWallet) {
           if (fcProviderLoading) {
             console.log('⏳ Waiting for Farcaster provider...')
@@ -324,7 +462,7 @@ export function useConnectedAddress() {
 
           if (fcProvider) {
             console.log('✅ Using Farcaster wallet provider')
-            setWalletClient(ensureSendTransaction(fcProvider));
+            setWalletClient(ensureSendTransaction(fcProvider))
             setClientError(fcProviderError)
             setClientReady(true)
             return
@@ -345,36 +483,45 @@ export function useConnectedAddress() {
           return
         }
 
-        // For non-Farcaster scenarios, use wagmi client first
-        if (wagmiClient) {
-          console.log('✅ Using wagmi client')
-          setWalletClient(wagmiClient)
-          setClientReady(true)
-          return
-        }
-
-        // Try to get client from matching wallet
+        // Get client from matching wallet
         if (stableAddress) {
           const matchingWallet = wallets.find(w =>
             w.address?.toLowerCase() === stableAddress.toLowerCase()
           )
 
-          if (matchingWallet?.getEthereumProvider) {
-            const provider = await matchingWallet.getEthereumProvider()
-            if (provider) {
-              setWalletClient(provider)
+          // For EXTERNAL wallets, use their provider directly
+          if (matchingWallet?.walletClientType !== 'privy') {
+            console.log('🎯 Found external wallet, getting its provider...')
+            
+            if (matchingWallet?.getEthereumProvider) {
+              try {
+                const provider = await matchingWallet.getEthereumProvider()
+                if (provider) {
+                  setWalletClient(ensureSendTransaction(provider))
+                  setClientReady(true)
+                  console.log('✅ Got provider from external wallet')
+                  return
+                }
+              } catch (err) {
+                console.error('Failed to get external wallet provider:', err)
+              }
+            }
+
+            if ((matchingWallet as any)?.walletClient) {
+              setWalletClient(ensureSendTransaction((matchingWallet as any).walletClient))
               setClientReady(true)
-              console.log('✅ Got provider from matching wallet')
+              console.log('✅ Got walletClient from external wallet')
               return
             }
           }
+        }
 
-          if ((matchingWallet as any)?.walletClient) {
-            setWalletClient((matchingWallet as any).walletClient)
-            setClientReady(true)
-            console.log('✅ Got walletClient from matching wallet')
-            return
-          }
+        // Use wagmi client for embedded wallets
+        if (wagmiClient) {
+          console.log('✅ Using wagmi client for embedded wallet')
+          setWalletClient(wagmiClient)
+          setClientReady(true)
+          return
         }
 
         console.log('❌ No client found')
@@ -388,7 +535,7 @@ export function useConnectedAddress() {
       }
     }
 
-    if (stableAddress !== undefined) { // Only resolve when we have a stable address (could be null)
+    if (stableAddress !== undefined) {
       resolveWalletClient()
     }
   }, [stableAddress, isMinitapp, farcasterWallet, wallets, wagmiClient, fcProvider, fcProviderError, fcProviderLoading])
@@ -401,33 +548,45 @@ export function useConnectedAddress() {
     [stableAddress]
   )
 
+  // Determine if using external wallet - ONLY check wallets array
+  const isUsingExternalWallet = useMemo(() => {
+    if (!stableAddress) return false
+    
+    // ONLY check active wallets array, not linkedAccounts
+    return wallets.some(w =>
+      w.walletClientType !== 'privy' &&
+      w.address?.toLowerCase() === stableAddress.toLowerCase()
+    )
+  }, [stableAddress, wallets])
+
   return useMemo(() => ({
     address: stableAddress,
     client: walletClient,
-    clientReady: clientReady && !isWalletsLoading, // Don't mark ready until wallets load
+    clientReady: clientReady && !isWalletsLoading,
     clientError,
     shortAddress,
     farcasterWallet,
     isMinitapp,
-    isLoading: isWalletsLoading, // Add explicit loading state
+    isLoading: isWalletsLoading,
     hasExternalWallet: wallets.some(w => w.walletClientType !== 'privy'),
     hasEmbeddedWallet: wallets.some(w => w.walletClientType === 'privy'),
-    isUsingExternalWallet: stableAddress && wallets.some(w =>
-      w.walletClientType !== 'privy' &&
-      w.address?.toLowerCase() === stableAddress.toLowerCase()
-    ),
+    isUsingExternalWallet,
     isUsingFarcasterWallet: stableAddress === farcasterWallet,
     farcasterProviderError: fcProviderError,
     needsWalletConnection: isMinitapp && farcasterWallet && !fcProvider && !fcProviderError,
+    needsExternalWalletReconnection: isUsingExternalWallet && !walletClient && clientReady,
     _debug: {
       isWalletsLoading,
       walletsCount: wallets.length,
+      wagmiAddress,
       wagmiClientAvailable: !!wagmiClient,
       stableAddress,
-      priorityUsed: isMinitapp && farcasterWallet === stableAddress ? 'farcaster-wallet' :
-        wallets.some(w => w.walletClientType !== 'privy' && w.address?.toLowerCase() === stableAddress?.toLowerCase()) ? 'external' :
-          wallets.some(w => w.walletClientType === 'privy' && w.address?.toLowerCase() === stableAddress?.toLowerCase()) ? 'embedded' :
-            'fallback'
+      forceExternal: FORCE_EXTERNAL_PRIORITY,
+      allWallets: wallets.map(w => ({
+        address: w.address?.slice(0, 10) + '...',
+        type: w.walletClientType,
+        isActive: w.address?.toLowerCase() === stableAddress?.toLowerCase()
+      }))
     }
   }), [
     stableAddress,
@@ -442,6 +601,8 @@ export function useConnectedAddress() {
     wagmiClient,
     fcProvider,
     fcProviderError,
-    fcProviderLoading
+    fcProviderLoading,
+    wagmiAddress,
+    isUsingExternalWallet
   ])
 }

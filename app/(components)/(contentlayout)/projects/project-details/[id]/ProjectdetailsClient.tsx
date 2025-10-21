@@ -290,7 +290,7 @@ const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
               <div>
                 <div className="btn-list md:flex items-center mb-2 project-header">
                   <Link href="/ownplot/standard" className="ti-btn bg-secondary text-white !font-medium m-0 !me-[0.375rem]">
-                    Mint Plot
+                    Buy Plot
                   </Link>
                   <div
                     aria-label="anchor"

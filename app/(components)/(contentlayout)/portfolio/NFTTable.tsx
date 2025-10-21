@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import Link from "next/link";
 
 interface NftData {
@@ -11,6 +11,8 @@ interface NftData {
   symbol: string;
   tokenId: string;
   collectionName: string;
+  timestamp: number; // ✅ Added for sorting by buy date
+  date?: string; // Optional formatted date string
 }
 
 interface NFTTableProps {
@@ -32,12 +34,17 @@ const NFTTable = ({
   loading = false,
   hasInitiallyLoaded = false
 }: NFTTableProps) => {
+  
+  // ✅ Sort NFTs by timestamp (buy date) - newest first
+  const sortedNftData = useMemo(() => {
+    return [...nftData].sort((a, b) => b.timestamp - a.timestamp);
+  }, [nftData]);
+
   // Helper: get tier details by tokenId
   const getTier = (tokenId: number) => {
     if (tokenId >= 1 && tokenId <= 400) {
       return {
         label: "Legendary",
-        // Warm gold tones, smooth blend
         badgeBg: "bg-gradient-to-r from-yellow-400 to-yellow-500",
         icon: "/assets/images/brand-logos/Legendary.svg",
       };
@@ -45,7 +52,6 @@ const NFTTable = ({
     if (tokenId >= 401 && tokenId <= 1200) {
       return {
         label: "Premium",
-        // Softer cyan/blue blend
         badgeBg: "bg-gradient-to-r from-cyan-400 to-sky-500",
         icon: "/assets/images/brand-logos/Premium.svg",
       };
@@ -53,7 +59,6 @@ const NFTTable = ({
     if (tokenId >= 1201 && tokenId <= 3200) {
       return {
         label: "Standard",
-        // Natural green blend, not too far apart
         badgeBg: "bg-secondary",
         icon: "/assets/images/brand-logos/Standard.svg",
       };
@@ -61,25 +66,45 @@ const NFTTable = ({
     return null;
   };
 
-
   const getNftImage = (tokenId: number, originalImage?: string) => {
     if (tokenId >= 1 && tokenId <= 400) {
-      // Legendary
       return "/assets/images/apps/1000m2v1.jpg";
     }
     if (tokenId >= 401 && tokenId <= 1200) {
-      // Premium
       return "/assets/images/apps/500m2v1.jpg";
     }
     if (tokenId >= 1201 && tokenId <= 3200) {
-      // Standard
       return "/assets/images/apps/100m2v1.jpg";
     }
-    // fallback to API image if no match
     return originalImage || "/assets/images/apps/placeholder.jpg";
   };
 
-  // 1️⃣ Initial loading state - show spinner when initially loading OR when loading and no data has been loaded yet
+  // ✅ Memoize page numbers
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, 5];
+    }
+    
+    if (currentPage >= totalPages - 2) {
+      return Array.from({ length: 5 }, (_, i) => totalPages - 4 + i);
+    }
+    
+    return Array.from({ length: 5 }, (_, i) => currentPage - 2 + i);
+  }, [currentPage, totalPages]);
+
+  // ✅ Add click guard
+  const handlePageChange = useCallback((newPage: number) => {
+    if (newPage === currentPage || newPage < 1 || newPage > totalPages) {
+      return;
+    }
+    onPageChange(newPage);
+  }, [currentPage, totalPages, onPageChange]);
+
+  // 1️⃣ Initial loading state
   if (loading && !hasInitiallyLoaded) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -89,15 +114,14 @@ const NFTTable = ({
     );
   }
 
-  // 2️⃣ Loaded but no NFTs - only show this if we've completed initial load and have no data
-  if (hasInitiallyLoaded && (!nftData || nftData.length === 0)) {
+  // 2️⃣ Loaded but no NFTs
+  if (hasInitiallyLoaded && (!sortedNftData || sortedNftData.length === 0)) {
     return (
       <div className="grid grid-cols-12 gap-x-6">
         <div className="xl:col-span-12 col-span-full">
           <div className="box text-center">
             <div className="box-body">
               <p className="mb-4 inline-flex">
-                {/* SVG icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 64 64"
@@ -122,7 +146,7 @@ const NFTTable = ({
                 href="/ownplot/standard"
                 className="ti-btn bg-secondary text-white !font-medium px-6 py-2"
               >
-                Mint Now
+                Buy Now
               </Link>
             </div>
           </div>
@@ -131,149 +155,142 @@ const NFTTable = ({
     );
   }
 
-  // 3️⃣ NFTs exist
+  // 3️⃣ NFTs exist - Use sortedNftData
   return (
     <div className="grid grid-cols-12 gap-x-6">
       <div className="xl:col-span-12 col-span-full">
         <div className="box">
           <div className="box-body">
             <div className="grid grid-cols-12 gap-x-6 gap-y-4">
-              {nftData.map((nft) => (
-            <div
-              className="xxl:col-span-3 xl:col-span-3 lg:col-span-3 md:col-span-6 sm:col-span-6 col-span-12"
-              key={nft.tokenId}
-            >
-              <div className="box overflow-hidden">
-                <div className="relative aspect-[4/5]">
-                  <img
-                    src={getNftImage(Number(nft.tokenId), nft.image)}
-                    className="w-full h-full object-cover rounded-t-lg"
-                    alt={nft.name || "NFT Image"}
-                  />
+              {sortedNftData.map((nft) => (
+                <div
+                  className="xxl:col-span-3 xl:col-span-3 lg:col-span-3 md:col-span-6 sm:col-span-6 col-span-12"
+                  key={`nft-${nft.tokenId}-${nft.timestamp}`}
+                >
+                  <div className="box overflow-hidden">
+                    <div className="relative aspect-[4/5]">
+                      <img
+                        src={getNftImage(Number(nft.tokenId), nft.image)}
+                        className="w-full h-full object-cover rounded-t-lg"
+                        alt={nft.name || "NFT Image"}
+                      />
 
-                  {/* Badge Overlay - Fixed positioning */}
-                  {(() => {
-                    const tier = getTier(Number(nft.tokenId));
-                    if (!tier) return null;
-                    return (
-                      <div className="absolute top-3 right-3 z-10">
-                        <span
-                          className={`inline-flex items-center gap-2 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg ${tier.badgeBg}`}
-                        >
-                          #{nft.tokenId}
-                          <img
-                            src={tier.icon}
-                            alt={tier.label}
-                            className="w-4 h-4 object-contain"
-                          />
-                        </span>
+                      {/* Badge Overlay */}
+                      {(() => {
+                        const tier = getTier(Number(nft.tokenId));
+                        if (!tier) return null;
+                        return (
+                          <div className="absolute top-3 right-3 z-10">
+                            <span
+                              className={`inline-flex items-center gap-2 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg ${tier.badgeBg}`}
+                            >
+                              #{nft.tokenId}
+                              <img
+                                src={tier.icon}
+                                alt={tier.label}
+                                className="w-4 h-4 object-contain"
+                              />
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="box-body">
+                      <div className="flex items-center mb-3">
+                        <img
+                          src={nft.image || "/assets/images/apps/placeholder.jpg"}
+                          alt={nft.name}
+                          className="avatar avatar-md rounded-md me-2"
+                        />
+                        <div>
+                          <p className="mb-0 font-semibold text-sm">{nft.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-0">
+                            @{nft.collectionName || "N/A"}
+                          </p>
+                        </div>
                       </div>
-                    );
-                  })()}
-                </div>
-
-                <div className="box-body">
-                  <div className="flex items-center mb-3">
-                    <img
-                      src={nft.image || "/assets/images/apps/placeholder.jpg"}
-                      alt={nft.name}
-                      className="avatar avatar-md rounded-md me-2"
-                    />
-                    <div>
-                      <p className="mb-0 font-semibold text-sm">{nft.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-0">
-                        @{nft.collectionName || "N/A"}
+                      <p className="text-xs text-gray-800 dark:text-white mb-2 line-clamp-2">
+                        {nft.description || "No description available."}
                       </p>
+                      
+                      {/* ✅ Show purchase date if available */}
+                      {nft.date && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                          Purchased: {nft.date}
+                        </p>
+                      )}
+                      
+                      <div className="grid">
+                        <Link href="/leaderboard" className="ti-btn ti-btn-primary w-full">
+                          Check reward eligibility
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-800 dark:text-white mb-2 line-clamp-2">
-                    {nft.description || "No description available."}
-                  </p>
-                  <div className="grid">
-                    <Link href="/leaderboard" className="ti-btn ti-btn-primary w-full">
-                      Check reward eligibility
-                    </Link>
-                  </div>
                 </div>
-              </div>
-            </div>
-
               ))}
             </div>
           </div>
           
-          {/* Pagination - Always show if we have NFTs */}
-          {allNftData && allNftData.length > 0 && (
+          {/* Pagination */}
+          {allNftData && allNftData.length > 0 && totalPages > 1 && (
             <div className="box-footer">
               <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-                {/* Page Info - Centered on mobile, left on desktop */}
                 <div className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
                   Showing page {currentPage} of {totalPages} ({allNftData?.length || 0} total NFTs)
                 </div>
                 
-                {/* Pagination Buttons - Centered on mobile and desktop */}
-                {totalPages > 1 && (
-                  <nav aria-label="NFT pagination" className="w-full md:w-auto flex justify-center">
-                    <ul className="ti-pagination mb-0 flex items-center gap-2 flex-wrap justify-center">
-                      <li className="page-item">
-                        <button
-                          className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
-                            currentPage === 1 
-                              ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
-                              : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
-                          }`}
-                          onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          Previous
-                        </button>
-                      </li>
-                
-                {/* Page numbers */}
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <li key={pageNum} className="page-item">
+                <nav aria-label="NFT pagination" className="w-full md:w-auto flex justify-center">
+                  <ul className="ti-pagination mb-0 flex items-center gap-2 flex-wrap justify-center">
+                    <li className="page-item">
                       <button
-                        className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${
-                          currentPage === pageNum 
-                            ? '!bg-secondary !text-white shadow-md border-secondary' 
-                            : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
+                        className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
+                          currentPage === 1 
+                            ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                            : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
                         }`}
-                        onClick={() => onPageChange(pageNum)}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        type="button"
                       >
-                        {pageNum}
+                        Previous
                       </button>
                     </li>
-                  );
-                })}
-                
-                <li className="page-item">
-                  <button
-                    className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
-                      currentPage === totalPages 
-                        ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
-                        : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
-                    }`}
-                    onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </li>
+                    
+                    {pageNumbers.map((pageNum) => (
+                      <li key={`nft-page-${pageNum}`} className="page-item">
+                        <button
+                          className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${
+                            currentPage === pageNum 
+                              ? '!bg-secondary !text-white shadow-md border-secondary' 
+                              : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
+                          }`}
+                          onClick={() => handlePageChange(pageNum)}
+                          disabled={currentPage === pageNum}
+                          type="button"
+                        >
+                          {pageNum}
+                        </button>
+                      </li>
+                    ))}
+                    
+                    <li className="page-item">
+                      <button
+                        className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
+                          currentPage === totalPages 
+                            ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                            : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
+                        }`}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        type="button"
+                      >
+                        Next
+                      </button>
+                    </li>
                   </ul>
                 </nav>
-                )}
               </div>
             </div>
           )}
@@ -283,4 +300,4 @@ const NFTTable = ({
   );
 };
 
-export default NFTTable;
+export default React.memo(NFTTable);

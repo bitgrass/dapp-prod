@@ -26,6 +26,7 @@ interface PortfolioTabsProps {
   btgBalance: string;
   btgToken: any;
   ethSupply: any;
+  ethSupplyLoaded: boolean;
   hasInitialNftLoad: boolean;
   hasInitialTransaction: boolean;
   loadingTx?: boolean;
@@ -56,6 +57,7 @@ const PortfolioTabs = ({
   btgPrice,
   btgBalance,
   ethSupply,
+  ethSupplyLoaded,
   hasInitialNftLoad,
   loadingTx,
   loadingNFTs,
@@ -139,7 +141,7 @@ const PortfolioTabs = ({
                   role="tabpanel"
                   aria-labelledby="crypto-tab"
                 >
-                  {loadingNftGrid ? (
+                  {(loadingNftGrid || !ethSupplyLoaded) ? (
                     <div className="flex flex-col items-center justify-center py-6">
                       <div className="spinner"></div>
                       <p className="mt-3 text-sm">Loading data, please wait...</p>

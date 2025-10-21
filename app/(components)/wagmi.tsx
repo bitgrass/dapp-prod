@@ -54,7 +54,7 @@ export function useWagmiConfig() {
     return createPrivyConfig({
       chains: [base],
       connectors,
-      multiInjectedProviderDiscovery: false,
+      multiInjectedProviderDiscovery: true,
       ssr: true,
       transports: { [base.id]: http() },
     });

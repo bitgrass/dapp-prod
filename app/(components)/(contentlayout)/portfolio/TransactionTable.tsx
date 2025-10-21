@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import Link from "next/link";
 
 interface Transaction {
-  transactionHash: string;
-  type: string; // "crypto" | "nft"
+  _key?: string;
+  _uniqueIndex?: number;
+  transactionHash?: string;
+  type: string;
   transaction?: string;
   NftType?: string;
   grayValue?: string;
   value: string;
   date: string;
+  timestamp: number;
+  tokenId?: string;
   sold?: {
     logo: string;
     symbol: string;
@@ -38,7 +42,19 @@ const TransactionTable = ({
   loading = false,
   hasInitiallyLoaded = false,
 }: TransactionTableProps) => {
-  const validTransactions = Array.isArray(transactions) ? transactions : [];
+  
+  // ✅ CRITICAL: Memoize with stable identity
+  const validTransactions = useMemo(() => {
+    const txs = Array.isArray(transactions) ? transactions : [];
+    console.log('🔄 TransactionTable render:', {
+      txCount: txs.length,
+      currentPage,
+      totalPages,
+      firstTx: txs[0]?._key,
+      lastTx: txs[txs.length - 1]?._key
+    });
+    return txs;
+  }, [transactions, currentPage, totalPages]);
 
   const NFT_TYPE_IMAGES: Record<string, string> = {
     "Legendary 1000m²": "/assets/images/brand-logos/Legendary.svg",
@@ -46,7 +62,49 @@ const TransactionTable = ({
     "Standard 100m²": "/assets/images/brand-logos/Standard.svg",
   };
 
-  // 1️⃣ Initial loading state - show spinner when initially loading OR when loading and no data has been loaded yet
+  // ✅ CRITICAL: Generate STABLE unique keys with fallback
+  const getUniqueKey = useCallback((tx: Transaction, index: number) => {
+    // Priority 1: Use pre-generated _key
+    if (tx._key) {
+      return `${tx._key}-${currentPage}`;
+    }
+    
+    // Priority 2: Use _uniqueIndex if available
+    if (tx._uniqueIndex !== undefined) {
+      return `tx-${tx._uniqueIndex}-${currentPage}`;
+    }
+    
+    // Priority 3: Fallback with all identifying data
+    return `${tx.type}-${tx.transactionHash}-${tx.timestamp}-${index}-p${currentPage}`;
+  }, [currentPage]);
+
+  // ✅ CRITICAL: Memoize page numbers to prevent re-calculation
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, 5];
+    }
+    
+    if (currentPage >= totalPages - 2) {
+      return Array.from({ length: 5 }, (_, i) => totalPages - 4 + i);
+    }
+    
+    return Array.from({ length: 5 }, (_, i) => currentPage - 2 + i);
+  }, [currentPage, totalPages]);
+
+  // ✅ CRITICAL: Prevent rapid clicking with debounced handler
+  const handlePageChange = useCallback((newPage: number) => {
+    if (newPage === currentPage || newPage < 1 || newPage > totalPages) {
+      return; // Ignore invalid clicks
+    }
+    
+    console.log('🖱️ Page click:', { from: currentPage, to: newPage });
+    onPageChange(newPage);
+  }, [currentPage, totalPages, onPageChange]);
+
   if (loading && !hasInitiallyLoaded) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -56,7 +114,6 @@ const TransactionTable = ({
     );
   }
 
-  // 2️⃣ Loaded but no transactions - only show this if we've completed initial load and have no data
   if (hasInitiallyLoaded && validTransactions.length === 0) {
     return (
       <div className="xl:col-span-12 col-span-full mt-4">
@@ -82,7 +139,6 @@ const TransactionTable = ({
     );
   }
 
-  // 3️⃣ Transactions exist
   return (
     <div className="grid grid-cols-12 gap-x-6">
       <div className="xl:col-span-12 col-span-full">
@@ -90,18 +146,21 @@ const TransactionTable = ({
           <div className="box-body p-0">
             <div className="table-responsive">
               <table className="table whitespace-nowrap min-w-full">
-                  <thead>
-                    <tr>
-                      <th className="text-left">Transaction</th>
-                      <th className="text-left">Value</th>
-                      <th className="text-left">Date</th>
-                      <th className="text-left"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {validTransactions.map((tx, index) => (
+                <thead>
+                  <tr>
+                    <th className="text-left">Transaction</th>
+                    <th className="text-left">Value</th>
+                    <th className="text-left">Date</th>
+                    <th className="text-left"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {validTransactions.map((tx, index) => {
+                    const uniqueKey = getUniqueKey(tx, index);
+                    
+                    return (
                       <tr
-                        key={tx.transactionHash || `tx-${index}`}
+                        key={uniqueKey}
                         className="border !border-t-0 !border-x-0 border-b border-gray-200 dark:border-gray-700"
                       >
                         <td>
@@ -186,21 +245,20 @@ const TransactionTable = ({
                           </Link>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
             
-            {/* Pagination */}
+            {/* ✅ CRITICAL: Stable pagination with disabled state */}
             {totalPages > 1 && (
               <div className="box-footer">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-                  {/* Page Info - Centered on mobile, left on desktop */}
                   <div className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
-                    Showing page {currentPage} of {totalPages} ({allTransactions?.length || 0} total transactions)
+                    Showing page {currentPage} of {totalPages} ({allTransactions?.length || 0} total)
                   </div>
                   
-                  {/* Pagination Buttons - Centered on mobile and desktop */}
                   <nav aria-label="Transaction pagination" className="w-full md:w-auto flex justify-center">
                     <ul className="ti-pagination mb-0 flex items-center gap-2 flex-wrap justify-center">
                       <li className="page-item">
@@ -210,41 +268,30 @@ const TransactionTable = ({
                               ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
                               : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
                           }`}
-                          onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+                          onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
+                          type="button"
                         >
                           Previous
                         </button>
                       </li>
                       
-                      {/* Page numbers */}
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-                        
-                        return (
-                          <li key={pageNum} className="page-item">
-                            <button
-                              className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${
-                                currentPage === pageNum 
-                                  ? '!bg-secondary !text-white shadow-md border-secondary' 
-                                  : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
-                              }`}
-                              onClick={() => onPageChange(pageNum)}
-                            >
-                              {pageNum}
-                            </button>
-                          </li>
-                        );
-                      })}
+                      {pageNumbers.map((pageNum) => (
+                        <li key={`page-${pageNum}`} className="page-item">
+                          <button
+                            className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${
+                              currentPage === pageNum 
+                                ? '!bg-secondary !text-white shadow-md border-secondary' 
+                                : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
+                            }`}
+                            onClick={() => handlePageChange(pageNum)}
+                            disabled={currentPage === pageNum}
+                            type="button"
+                          >
+                            {pageNum}
+                          </button>
+                        </li>
+                      ))}
                       
                       <li className="page-item">
                         <button
@@ -253,8 +300,9 @@ const TransactionTable = ({
                               ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
                               : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
                           }`}
-                          onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+                          onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
+                          type="button"
                         >
                           Next
                         </button>
@@ -271,4 +319,4 @@ const TransactionTable = ({
   );
 };
 
-export default TransactionTable;
+export default React.memo(TransactionTable);

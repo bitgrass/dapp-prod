@@ -175,7 +175,7 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({
           {/* Header */}
           <div className="flex flex-col items-center gap-4 mb-4">
             <span className="font-semibold text-lg text-gray-900 dark:text-white text-center">
-              Congratulations on Your Mint!
+              Congratulations on Your Purchase!
             </span>
           </div>
 

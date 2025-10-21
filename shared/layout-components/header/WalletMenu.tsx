@@ -270,6 +270,19 @@ const WalletMenu: React.FC = () => {
     window.location.reload();
   };
 
+  // Format large values like BalanceCard
+  const formatLargeValue = (value: number) => {
+    if (value >= 1_000_000_000) {
+      return `${(Math.round(value / 100_000_000) / 10).toFixed(1)}B`;
+    } else if (value >= 1_000_000) {
+      return `${(Math.round(value / 100_000) / 10).toFixed(1)}M`;
+    } else if (value >= 1_000) {
+      return `${(Math.round(value / 100) / 10).toFixed(1)}K`;
+    } else {
+      return `${value.toFixed(2)}`;
+    }
+  };
+
   if (!ready) {
     return <button disabled className="btn btn-sm btn-outline-primary opacity-50 cursor-not-allowed ti-btn">Connecting…</button>;
   }
@@ -442,7 +455,7 @@ const WalletMenu: React.FC = () => {
                   <span className="font-semibold text-sm ms-2">{btgToken.symbol}</span>
                 </div>
                 <div className="text-sm font-medium text-right">
-                  {tokenBalance ? `${tokenBalance.formatted.slice(0, 7)} ${tokenBalance.symbol}` : "0"}
+                  {tokenBalance ? `${formatLargeValue(Number(tokenBalance.formatted))} ${tokenBalance.symbol}` : "0"}
                 </div>
               </div>
 

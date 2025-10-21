@@ -579,7 +579,7 @@ const Dashboard = () => {
                                                                 href="/ownplot/standard"
                                                                 className="ti-btn bg-secondary hover:bg-[#669e39] text-white !font-medium !mb-2 !mt-4"
                                                             >
-                                                                Mint Plot
+                                                                Buy Plot
                                                             </Link>
 
                                                             <Link

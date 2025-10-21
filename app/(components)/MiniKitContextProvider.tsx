@@ -26,7 +26,6 @@ function PrivyWrapper({ children }: { children: ReactNode }) {
           walletChainType: 'ethereum-only',
           walletList: [
             'coinbase_wallet',
-            'detected_wallets',
             'metamask',
             'phantom',
           ],
@@ -44,6 +43,7 @@ function PrivyWrapper({ children }: { children: ReactNode }) {
           showWalletUIs: false,
           ethereum: { createOnLogin: 'off' },
         },
+        supportedChains: [base],
       }}
     >
       {children}
