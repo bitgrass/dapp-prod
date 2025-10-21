@@ -34,7 +34,7 @@ const NFTTable = ({
   loading = false,
   hasInitiallyLoaded = false
 }: NFTTableProps) => {
-  
+
   // ✅ Sort NFTs by timestamp (buy date) - newest first
   const sortedNftData = useMemo(() => {
     return [...nftData].sort((a, b) => b.timestamp - a.timestamp);
@@ -84,15 +84,15 @@ const NFTTable = ({
     if (totalPages <= 5) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-    
+
     if (currentPage <= 3) {
       return [1, 2, 3, 4, 5];
     }
-    
+
     if (currentPage >= totalPages - 2) {
       return Array.from({ length: 5 }, (_, i) => totalPages - 4 + i);
     }
-    
+
     return Array.from({ length: 5 }, (_, i) => currentPage - 2 + i);
   }, [currentPage, totalPages]);
 
@@ -213,14 +213,14 @@ const NFTTable = ({
                       <p className="text-xs text-gray-800 dark:text-white mb-2 line-clamp-2">
                         {nft.description || "No description available."}
                       </p>
-                      
+
                       {/* ✅ Show purchase date if available */}
                       {nft.date && (
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                           Purchased: {nft.date}
                         </p>
                       )}
-                      
+
                       <div className="grid">
                         <Link href="/leaderboard" className="ti-btn ti-btn-primary w-full">
                           Check reward eligibility
@@ -232,24 +232,23 @@ const NFTTable = ({
               ))}
             </div>
           </div>
-          
+
           {/* Pagination */}
           {allNftData && allNftData.length > 0 && totalPages > 1 && (
-            <div className="box-footer">
+            <div className="box-footer" style={{ paddingInline: "0px" }}>
               <div className="flex flex-col md:flex-row items-center justify-between gap-3">
                 <div className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
                   Showing page {currentPage} of {totalPages} ({allNftData?.length || 0} total NFTs)
                 </div>
-                
+
                 <nav aria-label="NFT pagination" className="w-full md:w-auto flex justify-center">
                   <ul className="ti-pagination mb-0 flex items-center gap-2 flex-wrap justify-center">
                     <li className="page-item">
                       <button
-                        className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
-                          currentPage === 1 
-                            ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                        className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${currentPage === 1
+                            ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
                             : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
-                        }`}
+                          }`}
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
                         type="button"
@@ -257,15 +256,14 @@ const NFTTable = ({
                         Previous
                       </button>
                     </li>
-                    
+
                     {pageNumbers.map((pageNum) => (
                       <li key={`nft-page-${pageNum}`} className="page-item">
                         <button
-                          className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${
-                            currentPage === pageNum 
-                              ? '!bg-secondary !text-white shadow-md border-secondary' 
+                          className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${currentPage === pageNum
+                              ? '!bg-secondary !text-white shadow-md border-secondary'
                               : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
-                          }`}
+                            }`}
                           onClick={() => handlePageChange(pageNum)}
                           disabled={currentPage === pageNum}
                           type="button"
@@ -274,14 +272,13 @@ const NFTTable = ({
                         </button>
                       </li>
                     ))}
-                    
+
                     <li className="page-item">
                       <button
-                        className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${
-                          currentPage === totalPages 
-                            ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' 
+                        className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${currentPage === totalPages
+                            ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
                             : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
-                        }`}
+                          }`}
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
                         type="button"

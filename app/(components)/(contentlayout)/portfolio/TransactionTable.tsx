@@ -253,7 +253,7 @@ const TransactionTable = ({
             
             {/* ✅ CRITICAL: Stable pagination with disabled state */}
             {totalPages > 1 && (
-              <div className="box-footer">
+              <div className="box-footer" style={{ paddingInline: "0px" }}>
                 <div className="flex flex-col md:flex-row items-center justify-between gap-3">
                   <div className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
                     Showing page {currentPage} of {totalPages} ({allTransactions?.length || 0} total)

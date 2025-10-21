@@ -65,7 +65,8 @@ const PortfolioTabs = ({
   hasInitialTransaction,
   onRefreshNfts,
 }: PortfolioTabsProps) => {
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (e: React.MouseEvent, tab: string) => {
+    e.preventDefault();
     setActiveTab(tab);
     window.history.replaceState(null, "", `#${tab}`);
   };
@@ -81,51 +82,48 @@ const PortfolioTabs = ({
                 className="-mb-0.5 flex md:space-x-4 rtl:space-x-reverse pb-2 gap-3"
                 role="tablist"
               >
-                <Link
+                <button
+                  type="button"
                   className={`w-full sm:w-auto flex active ${
                     activeTab === "crypto-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
                       : "dark:text-white"
-                  } py-2 px-4 text-primary text-sm`}
-                  href="#crypto-tab-pane"
-                  scroll={false}
+                  } py-2 px-4 text-primary text-sm cursor-pointer`}
                   id="crypto-tab"
                   data-hs-tab="#crypto-tab-pane"
                   aria-controls="crypto-tab-pane"
-                  onClick={() => handleTabChange("crypto-tab-pane")}
+                  onClick={(e) => handleTabChange(e, "crypto-tab-pane")}
                 >
                   Overview
-                </Link>
-                <Link
+                </button>
+                <button
+                  type="button"
                   className={`w-full sm:w-auto flex active ${
                     activeTab === "nfts-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
                       : "dark:text-white"
-                  } py-2 px-4 text-primary text-sm`}
-                  href="#nfts-tab-pane"
-                  scroll={false}
+                  } py-2 px-4 text-primary text-sm cursor-pointer`}
                   id="nfts-tab"
                   data-hs-tab="#nfts-tab-pane"
                   aria-controls="nfts-tab-pane"
-                  onClick={() => handleTabChange("nfts-tab-pane")}
+                  onClick={(e) => handleTabChange(e, "nfts-tab-pane")}
                 >
                   NFTs
-                </Link>
-                <Link
+                </button>
+                <button
+                  type="button"
                   className={`w-full sm:w-auto flex active ${
                     activeTab === "transactions-tab-pane"
                       ? "hs-tab-active:font-semibold hs-tab-active:text-primary border-b-2 border-primary"
                       : "dark:text-white"
-                  } py-2 px-4 text-primary text-sm`}
-                  href="#transactions-tab-pane"
-                  scroll={false}
+                  } py-2 px-4 text-primary text-sm cursor-pointer`}
                   id="transactions-tab"
                   data-hs-tab="#transactions-tab-pane"
                   aria-controls="transactions-tab-pane"
-                  onClick={() => handleTabChange("transactions-tab-pane")}
+                  onClick={(e) => handleTabChange(e, "transactions-tab-pane")}
                 >
                   Transactions
-                </Link>
+                </button>
               </nav>
             </div>
 
@@ -135,8 +133,9 @@ const PortfolioTabs = ({
                 {/* ---------- Overview ---------- */}
                 <div
                   className={`tab-pane fade ${
-                    activeTab === "crypto-tab-pane" ? "show active" : "hidden"
+                    activeTab === "crypto-tab-pane" ? "show active" : ""
                   } !p-0 !border-0`}
+                  style={{ display: activeTab === "crypto-tab-pane" ? "block" : "none" }}
                   id="crypto-tab-pane"
                   role="tabpanel"
                   aria-labelledby="crypto-tab"
@@ -161,8 +160,9 @@ const PortfolioTabs = ({
                 {/* ---------- NFTs ---------- */}
                 <div
                   className={`tab-pane fade ${
-                    activeTab === "nfts-tab-pane" ? "show active" : "hidden"
+                    activeTab === "nfts-tab-pane" ? "show active" : ""
                   } !p-0 !border-0`}
+                  style={{ display: activeTab === "nfts-tab-pane" ? "block" : "none" }}
                   id="nfts-tab-pane"
                   role="tabpanel"
                   aria-labelledby="nfts-tab"
@@ -186,8 +186,9 @@ const PortfolioTabs = ({
                   className={`tab-pane fade ${
                     activeTab === "transactions-tab-pane"
                       ? "show active"
-                      : "hidden"
+                      : ""
                   } !p-0 !border-0`}
+                  style={{ display: activeTab === "transactions-tab-pane" ? "block" : "none" }}
                   id="transactions-tab-pane"
                   role="tabpanel"
                   aria-labelledby="transactions-tab"
