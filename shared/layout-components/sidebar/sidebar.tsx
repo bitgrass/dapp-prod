@@ -37,10 +37,10 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 
 
 	useEffect(() => {
-
 		window.addEventListener('resize', menuResizeFn);
 		window.addEventListener('resize', checkHoriMenu);
 		const mainContent = document.querySelector(".main-content");
+		
 		if (window.innerWidth <= 992) {
 			if (document.documentElement.getAttribute('data-nav-layout') == 'horizontal') {
 				closeMenu();
@@ -51,9 +51,18 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 			ThemeChanger({ ...theme, dataToggled: "" });
 		}
 		
-		// Add click listener to main content
+		// Add click listener to main content (but not sidebar clicks)
+		const handleMainContentClick = (e: Event) => {
+			const target = e.target as HTMLElement;
+			// Don't close if clicking inside sidebar or wallet menu
+			if (target.closest('.app-sidebar') || target.closest('.wallet-menu-popup')) {
+				return;
+			}
+			menuClose();
+		};
+		
 		if (mainContent) {
-			mainContent.addEventListener('click', menuClose);
+			mainContent.addEventListener('click', handleMainContentClick);
 		}
 		
 		return () => {
@@ -61,7 +70,7 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 			window.removeEventListener('resize', checkHoriMenu);
 			// Remove main content click listener
 			if (mainContent) {
-				mainContent.removeEventListener('click', menuClose);
+				mainContent.removeEventListener('click', handleMainContentClick);
 			}
 			// Clear any pending menu close timeout
 			if (menuCloseTimeoutRef.current) {
@@ -104,6 +113,13 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 	}
 
 	function menuClose() {
+		// Check if sidebar is disabled (e.g., wallet menu is open)
+		const sidebar = document.querySelector(".app-sidebar");
+		if (sidebar?.classList.contains("disabled")) {
+			console.log('🚫 Sidebar disabled, skipping menuClose');
+			return;
+		}
+		
 		// Prevent duplicate calls within 100ms (from multiple handlers)
 		const now = Date.now();
 		if (now - lastMenuCloseTime.current < 100) {
