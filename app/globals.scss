@@ -44,3 +44,16 @@
         display: block !important;
     }
 }
+
+@keyframes electric-border {
+  0%, 100% {
+    box-shadow: 0 0 3px rgba(127, 196, 71, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 6px rgba(127, 196, 71, 0.5);
+  }
+}
+
+.electric-border {
+  animation: electric-border 1.5s ease-in-out infinite;
+}

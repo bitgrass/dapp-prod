@@ -27,8 +27,11 @@ const CryptoTable = ({
   const [nftLoading, setNftLoading] = useState<boolean>(false);
   const [btgPercentChange, setBtgPercentChange] = useState(0)
   const [ethPercentChange, setEthPercentChange] = useState(0)
+  const [hasBoostPass, setHasBoostPass] = useState<boolean>(false);
+  const [boostPassLoading, setBoostPassLoading] = useState<boolean>(false);
 
   const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
+  const BOOST_PASS_CONTRACT = "0xBd528427e8612ff27961cDdb819688aF5c7D8735";
 
   const getChangeStyle = (percent: number | string) => {
     const value = parseFloat(percent as string);
@@ -100,6 +103,35 @@ const CryptoTable = ({
 
     fetchPriceEth();
   }, []);
+
+  // Fetch Boost Pass NFT
+  useEffect(() => {
+    if (!address) return;
+    const fetchBoostPass = async () => {
+      setBoostPassLoading(true);
+      try {
+        const response = await axios.get(
+          `https://deep-index.moralis.io/api/v2.2/${address}/nft?chain=base&token_addresses[]=${BOOST_PASS_CONTRACT}&limit=1`,
+          {
+            headers: {
+              accept: "application/json",
+              "X-API-Key": API_KEY!,
+            },
+          }
+        );
+        
+        const hasNFT = response.data.result && response.data.result.length > 0;
+        setHasBoostPass(hasNFT);
+      } catch (err) {
+        console.error("Error fetching Boost Pass NFT", err);
+        setHasBoostPass(false);
+      } finally {
+        setBoostPassLoading(false);
+      }
+    };
+
+    fetchBoostPass();
+  }, [address]);
 
   // Fetch all NFTs with cursor-based pagination
   useEffect(() => {
@@ -222,35 +254,55 @@ const CryptoTable = ({
   return (
     <div className="grid grid-cols-12 gap-x-6">
       <div className="xl:col-span-12 col-span-12">
-        <div className="flex flex-col md:flex-row gap-y-3 md:gap-y-0 md:gap-x-6 mb-6">
-          {/* Standard Card */}
-          <div className="flex items-center border border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-secondary/30  px-4">
-            <span className="avatar avatar-md avatar-rounded me-2">
-              <img src="../../../assets/images/brand-logos/Standard.svg" alt="" />
-            </span>
-            <div className="ml-1">
-              <div className="font-bold text-xl">{nftLoading ? "..." : standard}</div>
-              <div className="text-xs text-[#8c9097] dark:text-white/50">Total Standard NFTs</div>
+        <div className="flex flex-col md:flex-row gap-3 mb-6 justify-between">
+          {/* Left side - Three NFT cards */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Standard Card */}
+            <div className="flex items-center border border-[#ededeb] dark:border-secondary/30 rounded-md h-[78px] px-4 w-full sm:w-[220px]">
+              <span className="avatar avatar-md avatar-rounded me-2 flex-shrink-0">
+                <img src="../../../assets/images/brand-logos/Standard.svg" alt="" />
+              </span>
+              <div className="ml-1 flex flex-col gap-1 min-w-0">
+                <div className="font-bold text-xl">{nftLoading ? "..." : standard}</div>
+                <div className="text-xs text-[#8c9097] dark:text-white/50 truncate">Standard NFTs</div>
+              </div>
+            </div>
+            {/* Premium Card */}
+            <div className="flex items-center border border-[#ededeb] dark:border-blue-400/30 rounded-md h-[78px] px-4 w-full sm:w-[220px]">
+              <span className="avatar avatar-md avatar-rounded me-2 flex-shrink-0">
+                <img src="../../../assets/images/brand-logos/Premium.svg" alt="" />
+              </span>
+              <div className="ml-1 flex flex-col gap-1 min-w-0">
+                <div className="font-bold text-xl">{nftLoading ? "..." : premium}</div>
+                <div className="text-xs text-[#8c9097] dark:text-white/50 truncate">Premium NFTs</div>
+              </div>
+            </div>
+            {/* Legendary Card */}
+            <div className="flex items-center border border-[#ededeb] dark:border-yellow-500/30 rounded-md h-[78px] px-4 w-full sm:w-[220px]">
+              <span className="avatar avatar-md avatar-rounded me-2 flex-shrink-0">
+                <img src="../../../assets/images/brand-logos/Legendary.svg" alt="" />
+              </span>
+              <div className="ml-1 flex flex-col gap-1 min-w-0">
+                <div className="font-bold text-xl">{nftLoading ? "..." : legendary}</div>
+                <div className="text-xs text-[#8c9097] dark:text-white/50 truncate">Legendary NFTs</div>
+              </div>
             </div>
           </div>
-          {/* Premium Card */}
-          <div className="flex items-center border border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-blue-400/30 px-4">
-            <span className="avatar avatar-md avatar-rounded me-2">
-              <img src="../../../assets/images/brand-logos/Premium.svg" alt="" />
-            </span>
-            <div className="ml-1">
-              <div className="font-bold text-xl">{nftLoading ? "..." : premium}</div>
-              <div className="text-xs text-[#8c9097] dark:text-white/50">Total Premium NFTs</div>
-            </div>
-          </div>
-          {/* Legendary Card */}
-          <div className="flex items-center border border-[#ededeb] rounded-md w-[220px] h-[78px] dark:border-yellow-500/30 px-4">
-            <span className="avatar avatar-md avatar-rounded me-2">
-              <img src="../../../assets/images/brand-logos/Legendary.svg" alt="" />
-            </span>
-            <div className="ml-1">
-              <div className="font-bold text-xl">{nftLoading ? "..." : legendary}</div>
-              <div className="text-xs text-[#8c9097] dark:text-white/50">Total Legendary NFTs</div>
+          
+          {/* Right side - Boost Pass card */}
+          <div className="w-full sm:w-[220px]">
+            <div className={`flex items-center border rounded-md h-[78px] px-4 ${
+              hasBoostPass 
+                ? 'border-secondary bg-secondary/10 electric-border' 
+                : 'border-[#ededeb] bg-body-bg dark:border-secondary/30 opacity-50'
+            }`}>
+              <span className="avatar avatar-md avatar-rounded me-2 flex-shrink-0">
+                <img src="../../../assets/images/brand-logos/Boost.svg" alt="" />
+              </span>
+              <div className="ml-1 flex flex-col gap-1 min-w-0">
+                <div className="font-bold text-xl">{boostPassLoading ? "..." : hasBoostPass ? "Claimed" : "Not Claimed"}</div>
+                <div className="text-xs text-[#8c9097] dark:text-white/50 truncate">Boost Pass</div>
+              </div>
             </div>
           </div>
         </div>

@@ -124,22 +124,29 @@ const CHAIN_ID = 8453;
 
 const chain = defineChain(CHAIN_ID);
 
-// CLAIM URL - Single claim URL that anyone in the leaderboard can use
-// Replace this with your actual Linkdrop claim URL
-const CLAIM_URL = "https://dev.claim.linkdrop.io/#/redeem/AdUTgB8dJTD5?src=d";
+// Array of claim links - add all your claim links from Excel here
+const CLAIM_LINKS = [
+    "https://claim.linkdrop.io/#/redeem/8xEagkDwERZU?src=d",
+    "https://claim.linkdrop.io/#/redeem/5Nqx5qgPpAKe?src=d",
+    "https://claim.linkdrop.io/#/redeem/FDrD6SifsVvk?src=d",
+    "https://claim.linkdrop.io/#/redeem/DNqP9MqDuemQ?src=d",
+    // Add all remaining links from your Excel file here
+];
 
-// Initialize Linkdrop SDK with required parameters
+// Initialize Linkdrop SDK helper
 const getRandomBytes = (length: number) => {
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
     return array;
 };
 
-const linkdropSDK = new LinkdropSDK({
-    apiKey: process.env.NEXT_PUBLIC_LINKDROP_API_KEY || "",
-    baseUrl: "https://claim.linkdrop.io",
-    getRandomBytes
-});
+const initLinkdropSDK = () => {
+    return new LinkdropSDK({
+        apiKey: process.env.NEXT_PUBLIC_LINKDROP_API_KEY || "",
+        baseUrl: "https://claim.linkdrop.io",
+        getRandomBytes
+    });
+};
 
 function useDOLeaderboard() {
     const [ranked, setRanked] = useState<any[]>([]);
@@ -204,6 +211,7 @@ const LeaderboardWithClaims = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [claiming, setClaiming] = useState(false);
     const [claimStatus, setClaimStatus] = useState<string | null>(null);
+    const [showApprovalModal, setShowApprovalModal] = useState(false);
     const ITEMS_PER_PAGE = 10;
 
     const totalPages = Math.ceil(ranked.length / ITEMS_PER_PAGE);
@@ -217,12 +225,12 @@ const LeaderboardWithClaims = () => {
         return ranked.find(h => h.address?.toLowerCase() === account.address.toLowerCase());
     }, [account, ranked]);
 
-    // Check if claim URL is configured
+    // Check if claim links are configured
     const hasClaimUrl = useMemo(() => {
-        return !!CLAIM_URL && CLAIM_URL.includes('claim.linkdrop.io');
+        return CLAIM_LINKS.length > 0;
     }, []);
 
-    const handleClaim = async () => {
+    const handleClaim = () => {
         // CRITICAL: Only allow claiming if address is in the leaderboard
         if (!account) {
             setClaimStatus("Please connect your wallet first");
@@ -249,6 +257,12 @@ const LeaderboardWithClaims = () => {
             return;
         }
 
+        // Show approval modal
+        setShowApprovalModal(true);
+    };
+
+    const handleApproveAndClaim = async () => {
+        setShowApprovalModal(false);
         setClaiming(true);
         setClaimStatus("Preparing claim...");
 
@@ -263,41 +277,80 @@ const LeaderboardWithClaims = () => {
             // Create ethers provider from window.ethereum (the user's wallet)
             const browserProvider = new ethers.BrowserProvider(window.ethereum as any);
             const signer = await browserProvider.getSigner();
-
-            setClaimStatus("Fetching claim link details...");
-            console.log("Cllllll1111")
-
-            // Get the claim link object - no authentication needed
-            const claimLink = await linkdropSDK.getClaimLink(CLAIM_URL);
-            console.log("Cllllll", claimLink)
-            setClaimStatus("Checking claim status...");
-
-            // Check status
-            const statusData = await claimLink.getStatus();
-
-            if (statusData.status === 'refunded') {
-                setClaimStatus('❌ This claim link has been refunded.');
-                setClaiming(false);
-                return;
+            
+            // Override the SDK's wallet selector to use the connected wallet
+            if (typeof window !== 'undefined') {
+                (window as any).evmAsk = {
+                    request: async () => window.ethereum,
+                    selectExtension: async () => window.ethereum
+                };
             }
 
-            if (statusData.status === 'redeemed') {
-                setClaimStatus('❌ This claim link has already been claimed.');
-                setClaiming(false);
-                return;
+            setClaimStatus("Finding available claim link...");
+
+            // Try each claim link until we find an unclaimed one
+            let claimedSuccessfully = false;
+            let txHash = null;
+
+            for (let i = 0; i < CLAIM_LINKS.length; i++) {
+                const claimUrl = CLAIM_LINKS[i];
+                
+                console.log(`Trying link ${i + 1}/${CLAIM_LINKS.length}: ${claimUrl}`);
+                setClaimStatus(`Checking link ${i + 1}/${CLAIM_LINKS.length}...`);
+
+                try {
+                    // Initialize SDK for each attempt
+                    const linkdropSDK = initLinkdropSDK();
+                    
+                    // Get the claim link object
+                    const claimLink = await linkdropSDK.getClaimLink(claimUrl);
+                    
+                    // Check status
+                    const statusData = await claimLink.getStatus();
+
+                    if (statusData.status === 'refunded') {
+                        console.log(`Link ${i + 1} - Refunded, trying next...`);
+                        continue;
+                    }
+
+                    if (statusData.status === 'redeemed') {
+                        console.log(`Link ${i + 1} - Already claimed, trying next...`);
+                        continue;
+                    }
+
+                    if (statusData.status !== 'deposited') {
+                        console.log(`Link ${i + 1} - Status: ${statusData.status}, trying next...`);
+                        continue;
+                    }
+
+                    // Found an available link!
+                    setClaimStatus(`Found available link! Initiating claim...`);
+                    
+                    console.log("Claiming with SDK for address:", account?.address);
+                    
+                    setClaimStatus("Submitting claim transaction...");
+                    
+                    // Use SDK's redeem method
+                    txHash = await claimLink.redeem(account?.address!);
+                    
+                    console.log("Claim transaction hash:", txHash);
+
+                    if (txHash) {
+                        claimedSuccessfully = true;
+                        console.log(`Successfully claimed with link ${i + 1}, tx: ${txHash}`);
+                        break; // Exit loop on success
+                    }
+
+                } catch (linkError: any) {
+                    console.log(`Link ${i + 1} - Error: ${linkError.message}, trying next...`);
+                    // Continue to next link
+                    continue;
+                }
             }
 
-            if (statusData.status !== 'deposited') {
-                setClaimStatus(`❌ Claim link is not ready. Status: ${statusData.status}`);
-                setClaiming(false);
-                return;
+            if (!claimedSuccessfully || !txHash) {
+                throw new Error('All claim links have been used or are unavailable. Please contact support.');
             }
-
-            setClaimStatus("Initiating claim transaction...");
-            setClaimStatus("Please approve the transaction in your wallet...");
-
-            // Redeem the claim link - pass the recipient address directly
-            const txHash = await claimLink.redeem(account.address);
 
             setClaimStatus(`✅ Claimed successfully! Transaction: ${txHash.slice(0, 10)}...`);
 
@@ -425,6 +478,28 @@ const LeaderboardWithClaims = () => {
                                     </svg>
                                     Export CSV
                                 </button>
+                                {account && (
+                                    <button
+                                        onClick={handleClaim}
+                                        disabled={!userInLeaderboard || claiming}
+                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors ${
+                                            userInLeaderboard
+                                                ? 'bg-secondary hover:bg-secondary/90 text-white cursor-pointer'
+                                                : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
+                                        }`}
+                                    >
+                                        {claiming ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                                Claiming...
+                                            </>
+                                        ) : userInLeaderboard ? (
+                                            '🎁 Claim NFTs'
+                                        ) : (
+                                            'Not Eligible'
+                                        )}
+                                    </button>
+                                )}
                                 <ConnectButton client={client} chain={chain} />
                             </div>
                         </div>
@@ -609,6 +684,56 @@ const LeaderboardWithClaims = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Approval Modal */}
+            {showApprovalModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-camel rounded-3xl p-6 max-w-md w-full border border-camel/20 shadow-xl">
+                        <div className="text-center mb-6">
+                            <div className="inline-flex items-center justify-center w-16 h-16 bg-secondary/20 rounded-full mb-4">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-secondary">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <h3 className="text-2xl font-bold text-primary mb-2">
+                                Approve Transaction
+                            </h3>
+                            <p className="text-primary/70 text-sm">
+                                You are about to claim your NFTs. Please approve this transaction in your wallet.
+                            </p>
+                        </div>
+
+                        <div className="bg-camel/20 rounded-xl p-4 mb-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-primary/70 text-sm">Wallet Address:</span>
+                                <span className="text-primary text-sm font-mono">
+                                    {account?.address?.slice(0, 6)}...{account?.address?.slice(-4)}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-primary/70 text-sm">Network:</span>
+                                <span className="text-primary text-sm font-medium">Base</span>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowApprovalModal(false)}
+                                className="flex-1 px-6 py-3 bg-camel10 hover:bg-camel10/80 text-primary font-medium rounded-md transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleApproveAndClaim}
+                                className="flex-1 px-6 py-3 bg-secondary hover:bg-secondary/90 text-white font-bold rounded-md transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+                            >
+                                Approve & Claim
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </PasskeyProtection>
     );
 

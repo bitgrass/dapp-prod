@@ -9,9 +9,37 @@ import { usePrivy } from '@privy-io/react-auth';
 import { nftInfo } from "@/shared/data/tokens/data";
 import axios from "axios";
 import { useConnectedAddress } from "../useConnectedAddress";
+import { LinkdropSDK } from 'linkdrop-sdk';
+import { ethers } from 'ethers';
 
 const Select = dynamic(() => import("react-select"), { ssr: false });
 const DO_BASE = "https://durable-object-starter.bitgrass-crypto.workers.dev";
+
+// Linkdrop configuration
+const CAMPAIGN_CHAIN_ID = 8453; // Base chain
+
+// Array of claim links from your Excel file - add all your claim links here
+const CLAIM_LINKS = [
+    "https://claim.linkdrop.io/#/redeem/F1nZMPztBpC6?src=d",
+    "https://claim.linkdrop.io/#/redeem/7WbPR1r2TFr3?src=d",
+    "https://claim.linkdrop.io/#/redeem/2mQvs3i9vCJu?src=d",
+    "https://claim.linkdrop.io/#/redeem/3k3xRnfd24Gj?src=d",
+];
+
+// Initialize Linkdrop SDK helper
+const getRandomBytes = (length: number) => {
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return array;
+};
+
+const initLinkdropSDK = () => {
+    return new LinkdropSDK({
+        apiKey: process.env.NEXT_PUBLIC_LINKDROP_API_KEY || "",
+        baseUrl: "https://claim.linkdrop.io",
+        getRandomBytes
+    });
+};
 
 function useDOLeaderboard() {
     const [ranked, setRanked] = useState<any[]>([]);
@@ -85,6 +113,40 @@ const Leaderboard = () => {
     };
     // Use the custom hook - this will prioritize Farcaster wallet in miniapp
     const { address: connectedAddress } = useConnectedAddress();
+    
+    const [hasBoostPass, setHasBoostPass] = useState<boolean>(false);
+    const [boostPassLoading, setBoostPassLoading] = useState<boolean>(false);
+    const BOOST_PASS_CONTRACT = "0xBd528427e8612ff27961cDdb819688aF5c7D8735";
+    const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
+
+    // Fetch Boost Pass NFT
+    useEffect(() => {
+        if (!connectedAddress) return;
+        const fetchBoostPass = async () => {
+            setBoostPassLoading(true);
+            try {
+                const response = await axios.get(
+                    `https://deep-index.moralis.io/api/v2.2/${connectedAddress}/nft?chain=base&token_addresses[]=${BOOST_PASS_CONTRACT}&limit=1`,
+                    {
+                        headers: {
+                            accept: "application/json",
+                            "X-API-Key": API_KEY!,
+                        },
+                    }
+                );
+                
+                const hasNFT = response.data.result && response.data.result.length > 0;
+                setHasBoostPass(hasNFT);
+            } catch (err) {
+                console.error("Error fetching Boost Pass NFT", err);
+                setHasBoostPass(false);
+            } finally {
+                setBoostPassLoading(false);
+            }
+        };
+
+        fetchBoostPass();
+    }, [connectedAddress]);
 
     const ITEMS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = useState(1);
@@ -142,6 +204,180 @@ const Leaderboard = () => {
             window.open('https://staking.bitgrass.com', '_blank');
         }
         // If userBTG is 0, button should be disabled and nothing happens
+    };
+
+    // Claim BoostPass state and logic
+    const [claiming, setClaiming] = useState(false);
+    const [claimStatus, setClaimStatus] = useState<string | null>(null);
+    const [showApprovalModal, setShowApprovalModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    const userInLeaderboard = useMemo(() => {
+        if (!connectedAddress) return null;
+        return ranked.find(h => h.address?.toLowerCase() === connectedAddress.toLowerCase());
+    }, [connectedAddress, ranked]);
+
+    const hasCampaignConfig = useMemo(() => {
+        return CLAIM_LINKS.length > 0 && !!CAMPAIGN_CHAIN_ID;
+    }, []);
+
+    const handleClaimBoostPass = () => {
+        if (!authenticated) {
+            login();
+            return;
+        }
+
+        if (!connectedAddress) {
+            setClaimStatus("Please connect your wallet first");
+            return;
+        }
+
+        if (!userInLeaderboard) {
+            setClaimStatus("❌ Your address is not in the leaderboard. You must hold NFTs to be eligible.");
+            return;
+        }
+
+        if (!hasCampaignConfig) {
+            setClaimStatus("No campaign configured. Please contact support.");
+            return;
+        }
+
+        const addressExists = ranked.some(
+            holder => holder.address?.toLowerCase() === connectedAddress.toLowerCase()
+        );
+
+        if (!addressExists) {
+            setClaimStatus("❌ Security check failed: Address not found in leaderboard data.");
+            return;
+        }
+
+        // Show approval modal
+        setShowApprovalModal(true);
+    };
+
+    const handleApproveAndClaim = async () => {
+        setShowApprovalModal(false);
+        setClaiming(true);
+        setClaimStatus("Preparing claim...");
+
+        try {
+            if (!window.ethereum) {
+                throw new Error("No Ethereum provider found. Please use a Web3 wallet.");
+            }
+
+            setClaimStatus("Connecting to your wallet...");
+
+            const browserProvider = new ethers.BrowserProvider(window.ethereum as any);
+            const signer = await browserProvider.getSigner();
+            
+            // Request account access if needed
+            // Override the SDK's wallet selector to use the connected wallet
+            if (typeof window !== 'undefined') {
+                (window as any).evmAsk = {
+                    request: async () => window.ethereum,
+                    selectExtension: async () => window.ethereum
+                };
+            }
+
+            setClaimStatus("Finding available claim link...");
+
+            // Try each claim link until we find an unclaimed one
+            let claimedSuccessfully = false;
+            let txHash = null;
+
+            for (let i = 0; i < CLAIM_LINKS.length; i++) {
+                const claimUrl = CLAIM_LINKS[i];
+                
+                console.log(`Trying link ${i + 1}/${CLAIM_LINKS.length}: ${claimUrl}`);
+                setClaimStatus(`Checking link ${i + 1}/${CLAIM_LINKS.length}...`);
+
+                try {
+                    // Initialize SDK for each attempt
+                    const linkdropSDK = initLinkdropSDK();
+                    
+                    // Get the claim link object using SDK
+                    const claimLink = await linkdropSDK.getClaimLink(claimUrl);
+                    
+                    // Check status
+                    const statusData = await claimLink.getStatus();
+
+                    if (statusData.status === 'refunded') {
+                        console.log(`Link ${i + 1} - Refunded, trying next...`);
+                        continue;
+                    }
+
+                    if (statusData.status === 'redeemed') {
+                        console.log(`Link ${i + 1} - Already claimed, trying next...`);
+                        continue;
+                    }
+
+                    if (statusData.status !== 'deposited') {
+                        console.log(`Link ${i + 1} - Status: ${statusData.status}, trying next...`);
+                        continue;
+                    }
+
+                    // Found an available link!
+                    setClaimStatus(`Found available link! Initiating claim...`);
+                    
+                    console.log("Claiming with SDK for address:", connectedAddress);
+                    
+                    setClaimStatus("Submitting claim transaction...");
+                    
+                    // Use SDK's redeem method
+                    txHash = await claimLink.redeem(connectedAddress as any);
+                    
+                    console.log("Claim transaction hash:", txHash);
+
+                    if (txHash) {
+                        claimedSuccessfully = true;
+                        console.log(`Successfully claimed with link ${i + 1}, tx: ${txHash}`);
+                        break; // Exit loop on success
+                    }
+
+                } catch (linkError: any) {
+                    console.log(`Link ${i + 1} - Error: ${linkError.message}, trying next...`);
+                    // Continue to next link
+                    continue;
+                }
+            }
+
+            if (!claimedSuccessfully || !txHash) {
+                throw new Error('All claim links have been used or are unavailable. Please contact support.');
+            }
+
+            setClaimStatus(`✅ Claimed successfully! Transaction: ${txHash.slice(0, 10)}...`);
+            
+            // Show success modal
+            setShowSuccessModal(true);
+            setHasBoostPass(true); // Update state to show claimed status
+
+            if (txHash) {
+                setTimeout(() => {
+                    window.open(`https://basescan.org/tx/${txHash}`, '_blank');
+                }, 1500);
+            }
+
+        } catch (err: any) {
+            console.error('Claim error:', err);
+
+            if (err.code === 4001 || err.message?.includes('User denied')) {
+                setClaimStatus('❌ Transaction rejected by user.');
+            } else if (err.message?.includes('already claimed') || err.message?.includes('redeemed')) {
+                setClaimStatus('❌ This link has already been claimed.');
+            } else if (err.message?.includes('expired')) {
+                setClaimStatus('❌ This link has expired.');
+            } else if (err.message?.includes('deactivated')) {
+                setClaimStatus('❌ This link has been deactivated.');
+            } else if (err.message?.includes('insufficient funds')) {
+                setClaimStatus('❌ Insufficient funds for gas fees.');
+            } else if (err.message?.includes('401') || err.message?.includes('403')) {
+                setClaimStatus('❌ Authentication error. Please check API key configuration.');
+            } else {
+                setClaimStatus(`❌ Claim failed: ${err.message || 'Unknown error'}`);
+            }
+        } finally {
+            setClaiming(false);
+        }
     };
 
 
@@ -366,33 +602,60 @@ const Leaderboard = () => {
                                     </>
                                 )}
                                 {/* Connect Wallet Button */}
-                                <div className="flex">
-                                    <button
-                                        className={`w-180 text-white !font-medium btn px-8 py-2 rounded-sm mt-2 ${!authenticated
-                                            ? 'bg-secondary btn-primary cursor-pointer'
-                                            : userBTG > 0
-                                                ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
-                                                : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
-                                            }`}
-                                        onClick={!authenticated ? login : authenticated && userBTG > 0 ? handleClaimBTG : undefined}
-                                        disabled={authenticated && userBTG === 0}
-                                        style={{
-                                            userSelect: 'none',
-                                            cursor: !authenticated
-                                                ? 'pointer'
-                                                : userBTG > 0
-                                                    ? 'pointer'
-                                                    : 'not-allowed'
-                                        }}
-                                    >
-                                        {!authenticated
-                                            ? 'Connect Wallet'
-                                            : userBTG > 0
-                                                ? 'Claim $BTG'
-                                                : 'No $BTG to Claim'
-                                        }
-                                    </button>
+                                <div className="flex gap-3">
+                                    {!authenticated ? (
+                                        <button
+                                            className="w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 bg-secondary btn-primary cursor-pointer whitespace-nowrap"
+                                            onClick={login}
+                                            style={{ userSelect: 'none' }}
+                                        >
+                                            Connect Wallet
+                                        </button>
+                                    ) : (
+                                        <>
+                                            <button
+                                                className={`w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${
+                                                    userBTG > 0
+                                                        ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
+                                                        : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
+                                                }`}
+                                                onClick={userBTG > 0 ? handleClaimBTG : undefined}
+                                                disabled={userBTG === 0}
+                                                style={{
+                                                    userSelect: 'none',
+                                                    cursor: userBTG > 0 ? 'pointer' : 'not-allowed'
+                                                }}
+                                            >
+                                                {userBTG > 0 ? 'Claim $BTG' : 'No $BTG to Claim'}
+                                            </button>
+                                            
+                                            <button
+                                                className={`w-180 !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${
+                                                    hasBoostPass
+                                                        ? 'border-secondary bg-secondary/10 electric-border cursor-default text-secondary dark:text-white'
+                                                        : userInLeaderboard
+                                                            ? 'cursor-pointer hover:opacity-90 text-white'
+                                                            : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
+                                                }`}
+                                                onClick={hasBoostPass ? undefined : userInLeaderboard ? handleClaimBoostPass : undefined}
+                                                disabled={hasBoostPass || !userInLeaderboard}
+                                                style={{
+                                                    userSelect: 'none',
+                                                    cursor: hasBoostPass ? 'default' : userInLeaderboard ? 'pointer' : 'not-allowed',
+                                                    background: hasBoostPass ? undefined : userInLeaderboard ? 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)' : undefined
+                                                }}
+                                            >
+                                                {boostPassLoading ? '...' : hasBoostPass ? 'BoostPass Claimed' : userInLeaderboard ? 'Claim BoostPass' : 'Not Eligible'}
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
+                                
+                                {claimStatus && authenticated && (
+                                    <div className="mt-3 p-3 bg-camel/10 rounded-lg text-xs text-primary">
+                                        {claimStatus}
+                                    </div>
+                                )}
 
                             </div>
                         </div>
@@ -533,6 +796,129 @@ const Leaderboard = () => {
 
 
             </div>
+
+            {/* Approval Modal */}
+            {showApprovalModal && (
+                <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 dark:bg-black/50 z-50 p-4">
+                    <div className="w-[95%] max-w-md bg-camel rounded-lg shadow-2xl p-6 relative">
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setShowApprovalModal(false)}
+                            className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-red-500 text-xl font-bold"
+                            aria-label="Close"
+                        >
+                            ×
+                        </button>
+
+                        {/* Header */}
+                        <div className="flex flex-col items-center gap-4 mb-4">
+                            <span className="font-semibold text-lg text-gray-900 dark:text-white text-center">
+                                Claim Your BoostPass!
+                            </span>
+                        </div>
+
+                        <hr className="border-t border-gray-200 dark:border-gray-700 my-4" />
+
+                        {/* Image */}
+                        <div className="flex justify-center mb-6">
+                            <div className="relative w-80 h-80 rounded-md overflow-hidden">
+                                <img
+                                    src="../../../assets/images/brand-logos/BoostCard.png"
+                                    alt="BoostPass"
+                                    className="object-cover w-full h-full"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex flex-col items-center gap-4 text-center mb-6">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                You are about to claim your{' '}
+                                <span className="text-sm text-secondary">BoostPass NFT.</span>
+                                <br />
+                                <span className="inline-flex items-center gap-1">
+                                    You can now boost your APY
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline">
+                                        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="rgb(127, 196, 71)" stroke="rgb(127, 196, 71)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </span>
+                            </p>
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="flex flex-row gap-2">
+                            <button
+                                onClick={() => setShowApprovalModal(false)}
+                                className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-camel10 dark:bg-[#FFFFFF0D] text-gray-900 dark:text-gray-300 hover:bg-camel20 dark:hover:bg-[#FFFFFF1A] transition text-sm font-medium text-center"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleApproveAndClaim}
+                                className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
+                            >
+                                Approve & Claim
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 dark:bg-black/50 z-50 p-4">
+                    <div className="w-[95%] max-w-md bg-camel rounded-lg shadow-2xl p-6 relative">
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setShowSuccessModal(false)}
+                            className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-red-500 text-xl font-bold"
+                            aria-label="Close"
+                        >
+                            ×
+                        </button>
+
+                        {/* Header */}
+                        <div className="flex flex-col items-center gap-4 mb-4">
+                            <span className="font-semibold text-lg text-gray-900 dark:text-white text-center">
+                                Congratulations on Your Claim!
+                            </span>
+                        </div>
+
+                        <hr className="border-t border-gray-200 dark:border-gray-700 my-4" />
+
+                        {/* Image */}
+                        <div className="flex justify-center mb-6">
+                            <div className="relative w-40 h-40 rounded-md overflow-hidden">
+                                <img
+                                    src="../../../assets/images/brand-logos/BoostCard.png"
+                                    alt="BoostPass"
+                                    className="object-cover w-full h-full"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex flex-col items-center gap-4 text-center mb-6">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                You just claimed your{' '}
+                                <span className="text-sm text-secondary">BoostPass NFT!</span>
+                                <br />
+                                Check your portfolio to see it.
+                            </p>
+                        </div>
+
+                        {/* Button */}
+                        <div className="flex flex-row gap-2">
+                            <button
+                                onClick={() => window.location.href = "/portfolio"}
+                                className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
+                            >
+                                View in Portfolio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </Fragment>
     )
 
