@@ -33,6 +33,7 @@ function Layout({ children, local_varaiable, ThemeChanger }: any) {
           name="keywords"
           content="nextjs app router, nextjs template, tailwind nextjs, next js themes, next js tailwind,  tailwind, admin, tailwindcss nextjs, nextjs admin templates, tailwind admin template, nextjs admin template, nextjs typescript, admin template, tailwind dashboard, tailwind css dashboard"
         />
+
       </Head>
 
       <div

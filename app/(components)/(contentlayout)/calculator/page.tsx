@@ -623,10 +623,11 @@ const CarbonCalculator = () => {
               </p>
             </div>
             <button
-              className="bg-secondary text-white px-6 py-2 rounded-sm text-sm font-medium w-full"
-              onClick={() => alert("Claim $BTG or mint NFT")}
+              className="bg-secondary text-white px-6 py-2 rounded-sm text-sm font-medium w-full opacity-50 cursor-not-allowed"
+              disabled
+              style={{ cursor: 'not-allowed', userSelect: 'none' }}
             >
-              Offset with Bitgrass NFT
+              Offset Carbon (Soon)
             </button>
           </div>
         </div>

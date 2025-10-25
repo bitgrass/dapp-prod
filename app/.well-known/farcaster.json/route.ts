@@ -30,24 +30,27 @@ export async function GET() {
         "https://ik.imagekit.io/cafu/bitgrass/100m2Share.webp?updatedAt=1751037776589&ik-s=a2715b2b9d2a1d53e36830c47212d2fcc58f28bf",
         "https://ik.imagekit.io/cafu/bitgrass/500m2Share.webp?updatedAt=1751037775707&ik-s=0a4a436924505de65a90c3c7f6075d0e132426da",
         "https://ik.imagekit.io/cafu/bitgrass/1000m2Share.webp?updatedAt=1751037779175&ik-s=aaa06f48d035369ec9782a489ea3b2c59fc7753e"],
-      iconUrl: process.env.NEXT_PUBLIC_APP_ICON,
-      splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE,
+      iconUrl: "https://beta.bitgrass.com/profile-pic.png",
+      splashImageUrl: "https://beta.bitgrass.com/splashLogo.png",
       splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR,
       homeUrl: URL,
       webhookUrl: "https://api.neynar.com/f/app/32b4dae1-c174-43b4-a30d-cf6aceaf3f10/event",
       primaryCategory: process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY,
+      imageUrl:"https://beta.bitgrass.com/BitgrassFarcaster.png",
+      castShareUrl:"https://beta.bitgrass.com",
+            buttonTitle:"Start Carbon Investment ",
+
       tags: [
         "rewards",
         "leaderboard",
         "warpcast",
         "earn"
       ],
-      heroImageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE,
+      heroImageUrl: "https://beta.bitgrass.com/profile-pic.png",
       tagline: process.env.NEXT_PUBLIC_APP_TAGLINE,
       ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE,
       ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION,
-      ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE,
-      noindex: "true"
+      ogImageUrl: "https://beta.bitgrass.com/BitgrassFarcaster.png",
 
     }),
     baseBuilder: {

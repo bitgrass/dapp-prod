@@ -773,26 +773,26 @@ const Dashboard = () => {
                                                             <div className="text-[0.65rem] text-default ">Swap shows BTG but actually uses USDC.</div>                                                    </div>
                                                     </div> */}
                                                     <div className="box-body crypto-data" style={{ paddingTop: 0 }}>
-
-                                                        <Swap className='swapContainer'>
-                                                            <SwapAmountInput
-                                                                label="Sell"
-                                                                swappableTokens={swappableTokens}
-                                                                token={ETHToken}
-                                                                type="from"
-                                                            />
-                                                            <SwapToggleButton className='swapButton' />
-                                                            <SwapAmountInput
-                                                                label="Buy"
-                                                                swappableTokens={swappableTokens}
-                                                                token={btgToken}
-                                                                type="to"
-                                                            />
-                                                            <SwapButton />
-                                                            <SwapMessage />
-                                                            <SwapToast />
-                                                        </Swap>
-
+                                                        <div className="pointer-events-none opacity-50">
+                                                            <Swap className='swapContainer'>
+                                                                <SwapAmountInput
+                                                                    label="Sell"
+                                                                    swappableTokens={swappableTokens}
+                                                                    token={ETHToken}
+                                                                    type="from"
+                                                                />
+                                                                <SwapToggleButton className='swapButton' />
+                                                                <SwapAmountInput
+                                                                    label="Buy"
+                                                                    swappableTokens={swappableTokens}
+                                                                    token={btgToken}
+                                                                    type="to"
+                                                                />
+                                                                <SwapButton />
+                                                                <SwapMessage />
+                                                                <SwapToast />
+                                                            </Swap>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

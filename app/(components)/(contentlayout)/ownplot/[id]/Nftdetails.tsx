@@ -111,7 +111,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     useEffect(() => {
         console.log('🛒 Ownplot Address Debug:', {
             userAddress,
-            priorityUsed: _debug?.priorityUsed,
             walletsCount: _debug?.walletsCount,
             hasExternalWallet,
             hasEmbeddedWallet
@@ -227,7 +226,8 @@ useEffect(() => {
         setActiveTab(tabName);
     }, [initialTabId]);
 
-    const handleMintAbi = async (quantity: number) => {
+    // DISABLED: Mint function
+    /* const handleMintAbi = async (quantity: number) => {
     try {
         setLoading(true);
         console.log("Address for minting:", userAddress);
@@ -351,7 +351,7 @@ useEffect(() => {
     } finally {
         setLoading(false);
     }
-};
+}; */
 
     const initPrices = async () => {
         try {
@@ -619,8 +619,8 @@ useEffect(() => {
     useEffect(() => {
         fetchAvailableNfts();
     }, [isModalOpen, isFailureModalOpen]);
-   // Updated handleBuy function for web-based Farcaster
-async function handleBuy(order: any, tier: "Legendary" | "Premium") {
+   // DISABLED: Updated handleBuy function for web-based Farcaster
+/* async function handleBuy(order: any, tier: "Legendary" | "Premium") {
     if (!userAddress || !ready || !authenticated) {
         login();
         return;
@@ -772,7 +772,7 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
     } finally {
         setIsBuying(false);
     }
-}
+} */
 
 
     useEffect(() => {
@@ -909,14 +909,11 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                     </button>
                                                 </div>
                                                 <button
-                                                    className=" w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
-                                                    onClick={() => handleMintAbi(quantity)}
-                                                    disabled={loading}
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 opacity-50 cursor-not-allowed"
+                                                    disabled
+                                                    style={{ cursor: 'not-allowed', userSelect: 'none' }}
                                                 >
-                                                    {loading && (
-                                                        <span className="btn-spinner"></span>
-                                                    )}
-                                                    {loading ? "Processing..." : "Buy Tokenized Plot"}
+                                                    Buy Tokenized Plot
                                                 </button>
 
                                             </div>
@@ -1049,18 +1046,14 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 opacity-50 cursor-not-allowed"
+                                                    disabled
                                                     style={{
-                                                        cursor: isBuying ? "not-allowed" : "pointer",
-                                                        userSelect: isBuying ? "none" : "auto"
+                                                        cursor: "not-allowed",
+                                                        userSelect: "none"
                                                     }}
-                                                    disabled={isLoadingFetchAvailable}
                                                 >
-                                                    {isBuying && (
-                                                        <span className="btn-spinner"></span>
-                                                    )}
-                                                    {isBuying ? "Processing..." : "Buy Tokenized Plot"}
+                                                    Buy Tokenized Plot
                                                 </button>
 
 
@@ -1194,19 +1187,14 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 opacity-50 cursor-not-allowed"
+                                                    disabled
                                                     style={{
-                                                        cursor: isLoadingFetchAvailable ? "not-allowed" : "pointer",
-                                                        userSelect: isLoadingFetchAvailable ? "none" : "auto"
+                                                        cursor: "not-allowed",
+                                                        userSelect: "none"
                                                     }}
-                                                    disabled={isLoadingFetchAvailable}
                                                 >
-                                                    {isBuying && (
-                                                        <span className="btn-spinner"></span>
-                                                    )}
-                                                    {isBuying ? "Processing..." : "Buy Tokenized Plot"}
-
+                                                    Buy Tokenized Plot
                                                 </button>
 
                                             </div>

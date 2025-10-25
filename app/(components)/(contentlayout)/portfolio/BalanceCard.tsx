@@ -37,7 +37,9 @@ const BalanceCard = ({ totalBalance, btgBalance, btgToken }: BalanceCardProps) =
                     </small>
                   </div>
                   <div className="mt-4 md:mt-0 md:ml-6 w-full md:w-auto">
-                    <Buy className="border-none buyToken w-full md:w-auto" toToken={btgToken} />
+                    <div className="pointer-events-none opacity-50">
+                      <Buy className="border-none buyToken w-full md:w-auto" toToken={btgToken} />
+                    </div>
                   </div>
                 </div>
                 {/* Optionally add spacing/margin below */}
