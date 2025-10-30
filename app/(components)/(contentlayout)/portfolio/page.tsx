@@ -78,6 +78,33 @@ const Crypto = () => {
   const [transactionCursor, setTransactionCursor] = useState(null);
   const [nftTransactionCursor, setNftTransactionCursor] = useState(null);
   const [nftData, setNftData] = useState<any[]>([]);
+  
+  // ✅ Cache for API responses (5 minute TTL)
+  const apiCache = useRef<Map<string, { data: any; timestamp: number }>>(new Map());
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+  const getCachedOrFetch = useCallback(async (url: string, headers: any) => {
+    const now = Date.now();
+    const cached = apiCache.current.get(url);
+    
+    if (cached && (now - cached.timestamp) < CACHE_TTL) {
+      console.log('💾 Cache hit:', url.slice(0, 80));
+      return cached.data;
+    }
+    
+    console.log('🌐 API call:', url.slice(0, 80));
+    const response = await axios.get(url, { headers });
+    apiCache.current.set(url, { data: response.data, timestamp: now });
+    
+    // Clean old cache entries (keep last 50)
+    if (apiCache.current.size > 50) {
+      const entries = Array.from(apiCache.current.entries());
+      entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
+      apiCache.current = new Map(entries.slice(0, 50));
+    }
+    
+    return response.data;
+  }, []);
   const [nftCursor, setNftCursor] = useState(null);
   const [activeTab, setActiveTab] = useState("crypto-tab-pane");
   const [currentTransactionPage, setCurrentTransactionPage] = useState(1);
@@ -241,12 +268,12 @@ const Crypto = () => {
       });
       if (cursor) params.append("cursor", cursor);
 
-      const response = await axios.get(
-        `https://deep-index.moralis.io/api/v2.2/wallets/${address}/swaps?${params.toString()}`,
-        {
-          headers: { accept: "application/json", "X-API-Key": API_KEY },
-        }
-      );
+      const url = `https://deep-index.moralis.io/api/v2.2/wallets/${address}/swaps?${params.toString()}`;
+      const data = await getCachedOrFetch(url, { 
+        accept: "application/json", 
+        "X-API-Key": API_KEY 
+      });
+      const response = { data };
 
       const fetchedCryptoTxs = response.data.result.map((tx: any) => {
         const baseToken = tx.bought;
@@ -287,7 +314,7 @@ const Crypto = () => {
     } finally {
       setLoadingTx(false);
     }
-  }, [address]);
+  }, [address, getCachedOrFetch]);
 
   // ✅ CRITICAL FIX: Fetch NFT with Map-based deduplication
   const fetchNftTransactions = useCallback(async (cursor = null, limit = 10) => {
@@ -312,12 +339,12 @@ const Crypto = () => {
       });
       if (cursor) params.append("cursor", cursor);
 
-      const response = await axios.get(
-        `https://deep-index.moralis.io/api/v2.2/${address}/nft/transfers?${params.toString()}`,
-        {
-          headers: { accept: "application/json", "X-API-Key": API_KEY },
-        }
-      );
+      const url = `https://deep-index.moralis.io/api/v2.2/${address}/nft/transfers?${params.toString()}`;
+      const data = await getCachedOrFetch(url, { 
+        accept: "application/json", 
+        "X-API-Key": API_KEY 
+      });
+      const response = { data };
 
       const transactionsWithValue = await Promise.all(
         response.data.result
@@ -395,7 +422,7 @@ const Crypto = () => {
     } finally {
       setLoadingNFTs(false);
     }
-  }, [address]);
+  }, [address, getCachedOrFetch]);
 
   // Fetch NFTs
   const fetchNfts = useCallback(async (cursor = null, limit = 4) => {
@@ -418,76 +445,79 @@ const Crypto = () => {
       });
       if (cursor) params.append("cursor", cursor);
 
-      const response = await axios.get(
-        `https://deep-index.moralis.io/api/v2.2/${address}/nft?${params.toString()}`,
-        {
-          headers: {
-            accept: "application/json",
-            "X-API-Key": API_KEY,
-          },
-        }
-      );
+      const url = `https://deep-index.moralis.io/api/v2.2/${address}/nft?${params.toString()}`;
+      const data = await getCachedOrFetch(url, {
+        accept: "application/json",
+        "X-API-Key": API_KEY,
+      });
+      const response = { data };
 
-      // ✅ Fetch transfer history for each NFT to get real purchase timestamp
-      const nftsWithTimestamps = await Promise.all(
-        response.data.result.map(async (nft: any) => {
-          const tokenId = parseInt(nft.token_id);
-          let actualTimestamp = tokenId * 1000000; // Fallback
-          let purchaseDate = new Date(nft.last_token_uri_sync || nft.last_metadata_sync).toLocaleString();
+      // ✅ OPTIMIZED: Batch fetch transfer history for all NFTs at once
+      let transfersMap = new Map();
+      
+      try {
+        // Fetch ALL transfers for this contract in one call
+        const transferParams = new URLSearchParams({
+          chain: "base",
+          format: "decimal",
+          limit: "100", // Get more transfers in one call
+          order: "DESC",
+        });
 
-          try {
-            // Fetch transfer history for this specific token
-            const transferParams = new URLSearchParams({
-              chain: "base",
-              format: "decimal",
-              token_addresses: nftInfo.address,
-              limit: "1",
-              order: "DESC",
-            });
+        const transferUrl = `https://deep-index.moralis.io/api/v2.2/nft/${nftInfo.address}/transfers?${transferParams.toString()}`;
+        const transferData = await getCachedOrFetch(transferUrl, {
+          accept: "application/json",
+          "X-API-Key": API_KEY,
+        });
+        const transferResponse = { data: transferData };
 
-            const transferResponse = await axios.get(
-              `https://deep-index.moralis.io/api/v2.2/nft/${nftInfo.address}/${tokenId}/transfers?${transferParams.toString()}`,
-              {
-                headers: {
-                  accept: "application/json",
-                  "X-API-Key": API_KEY,
-                },
-              }
-            );
-
-            // Get the most recent transfer TO this address
-            const userTransfer = transferResponse.data.result.find(
-              (transfer: any) => transfer.to_address?.toLowerCase() === address.toLowerCase()
-            );
-
-            if (userTransfer?.block_timestamp) {
-              actualTimestamp = new Date(userTransfer.block_timestamp).getTime();
-              purchaseDate = new Date(userTransfer.block_timestamp).toLocaleString();
+        // Build a map of tokenId -> most recent transfer to this address
+        transferResponse.data.result.forEach((transfer: any) => {
+          if (transfer.to_address?.toLowerCase() === address.toLowerCase()) {
+            const tokenId = parseInt(transfer.token_id);
+            if (!transfersMap.has(tokenId)) {
+              transfersMap.set(tokenId, transfer);
             }
-          } catch (error) {
-            console.warn(`Could not fetch transfer history for token ${tokenId}:`, error);
           }
+        });
 
-          return {
-            type: "nft",
-            transaction: "NFT Minted",
-            value: `+${nft.amount || 1} NFT`,
-            grayValue: `NFT ID: ${nft.token_id}`,
-            date: purchaseDate,
-            timestamp: actualTimestamp,
-            transactionHash: "",
-            contract_address: nft.token_address,
-            name: nft.normalized_metadata?.name || nft.name || "Unnamed NFT",
-            slug: nft.symbol || null,
-            description: nft.normalized_metadata?.description || "No description available",
-            image: nft.normalized_metadata?.image?.replace("ipfs://", "https://ipfs.io/ipfs/"),
-            floor_price: null,
-            symbol: nft.symbol || "N/A",
-            tokenId: nft.token_id,
-            collectionName: nft.name || "Greener Future",
-          };
-        })
-      );
+        console.log(`📦 Batch fetched transfers for ${transfersMap.size} NFTs`);
+      } catch (error) {
+        console.warn('Could not batch fetch transfer history:', error);
+      }
+
+      // Map NFTs with timestamps from batch data
+      const nftsWithTimestamps = response.data.result.map((nft: any) => {
+        const tokenId = parseInt(nft.token_id);
+        let actualTimestamp = tokenId * 1000000; // Fallback
+        let purchaseDate = new Date(nft.last_token_uri_sync || nft.last_metadata_sync).toLocaleString();
+
+        // Use batch-fetched transfer data
+        const transfer = transfersMap.get(tokenId);
+        if (transfer?.block_timestamp) {
+          actualTimestamp = new Date(transfer.block_timestamp).getTime();
+          purchaseDate = new Date(transfer.block_timestamp).toLocaleString();
+        }
+
+        return {
+          type: "nft",
+          transaction: "NFT Minted",
+          value: `+${nft.amount || 1} NFT`,
+          grayValue: `NFT ID: ${nft.token_id}`,
+          date: purchaseDate,
+          timestamp: actualTimestamp,
+          transactionHash: "",
+          contract_address: nft.token_address,
+          name: nft.normalized_metadata?.name || nft.name || "Unnamed NFT",
+          slug: nft.symbol || null,
+          description: nft.normalized_metadata?.description || "No description available",
+          image: nft.normalized_metadata?.image?.replace("ipfs://", "https://ipfs.io/ipfs/"),
+          floor_price: null,
+          symbol: nft.symbol || "N/A",
+          tokenId: nft.token_id,
+          collectionName: nft.name || "Greener Future",
+        };
+      });
 
       setNftData((prev) => {
         const combined = [...prev, ...nftsWithTimestamps];
@@ -500,7 +530,7 @@ const Crypto = () => {
     } finally {
       setLoadingNftGrid(false);
     }
-  }, [address]);
+  }, [address, getCachedOrFetch]);
 
   const allTransactions = useMemo(() => {
     const cryptoArray = Array.from(cryptoTxMap.values());
@@ -599,7 +629,7 @@ const Crypto = () => {
   }, [allTransactions.length, currentTransactionPage]);
 
 
-  // Initial data fetch
+  // ✅ OPTIMIZED: Prioritized data fetch with progressive loading
   useEffect(() => {
     if (!ready || addressLoading) {
       console.log("⏳ Waiting for initialization...");
@@ -627,10 +657,6 @@ const Crypto = () => {
         prevAddressRef.current = address;
         isInitialMount.current = false;
 
-        setLoadingTx(true);
-        setLoadingNFTs(true);
-        setLoadingNftGrid(true);
-
         // Reset everything on new address
         if (isNewAddress) {
           setCryptoTxMap(new Map());
@@ -646,24 +672,32 @@ const Crypto = () => {
         setHasInitialNftLoad(false);
         setHasInitialTransaction(false);
 
-        // Fetch smaller initial batch for faster loading, then fetch more in background
-        Promise.all([
-          fetchCryptoTransactions(null, 20), // Reduced from 100
-          fetchNftTransactions(null, 20),    // Reduced from 100
-          fetchNfts(null, 20),               // Reduced from 100
-        ]).finally(() => {
-          setHasInitialNftLoad(true);
+        // ✅ OPTIMIZED: Fetch all data but with prioritized display
+        console.log('🚀 Fetching all data with progressive display...');
+        
+        setLoadingTx(true);
+        setLoadingNFTs(true);
+        setLoadingNftGrid(true);
+
+        // Start all fetches immediately (non-blocking)
+        const cryptoPromise = fetchCryptoTransactions(null, 100).then(() => {
           setHasInitialTransaction(true);
+          console.log('✅ Crypto transactions loaded');
+        });
+
+        const nftTxPromise = fetchNftTransactions(null, 100).then(() => {
+          console.log('✅ NFT transactions loaded');
+        });
+
+        const nftGridPromise = fetchNfts(null, 100).then(() => {
+          setHasInitialNftLoad(true);
+          console.log('✅ NFT grid loaded');
+        });
+
+        // Wait for all to complete
+        Promise.all([cryptoPromise, nftTxPromise, nftGridPromise]).finally(() => {
           initialFetchComplete.current = true;
-          console.log('✅ Initial fetch complete (fast load)');
-          
-          // Fetch remaining data in background (non-blocking)
-          setTimeout(() => {
-            console.log('📥 Fetching remaining data in background...');
-            if (transactionCursor) fetchCryptoTransactions(transactionCursor, 80);
-            if (nftTransactionCursor) fetchNftTransactions(nftTransactionCursor, 80);
-            if (nftCursor) fetchNfts(nftCursor, 80);
-          }, 1000);
+          console.log('✅ All data loaded');
         });
       }
     } else {

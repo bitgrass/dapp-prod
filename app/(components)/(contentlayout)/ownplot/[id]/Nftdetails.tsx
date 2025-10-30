@@ -111,7 +111,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     useEffect(() => {
         console.log('🛒 Ownplot Address Debug:', {
             userAddress,
-            priorityUsed: _debug?.priorityUsed,
             walletsCount: _debug?.walletsCount,
             hasExternalWallet,
             hasEmbeddedWallet
@@ -432,7 +431,7 @@ useEffect(() => {
                     if (
                         nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
                         parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 1 &&
-                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 400
+                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 40
                     ) {
                         return [parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria)];
                     }
@@ -442,8 +441,8 @@ useEffect(() => {
                 const newPremium: number[] = nfts.flatMap((nft: any) => {
                     if (
                         nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
-                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 401 &&
-                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 1200
+                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 41 &&
+                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 120
                     ) {
                         return [parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria)];
                     }
@@ -464,10 +463,10 @@ useEffect(() => {
         } while (nextCursor);
 
         if (legendaryNftDispo.length === 0) {
-            console.log("No legendary NFTs found in range 1-400");
+            console.log("No legendary NFTs found in range 1-40");
         }
         if (primaryNftDispo.length === 0) {
-            console.log("No premium NFTs found in range 401-1200");
+            console.log("No premium NFTs found in range 41-120");
         }
 
         if (legendaryNftDispo.length > 0) {
@@ -645,6 +644,10 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
         const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
         const buyerAddress = userAddress;
 
+        // Check user balance
+        const balance = await provider.getBalance(buyerAddress);
+        console.log("💳 User balance:", ethers.formatEther(balance), "ETH");
+
         // Get fulfillment data from OpenSea
         const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
             method: "POST",
@@ -687,6 +690,26 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
             .filter((i: any) => i.token === ethers.ZeroAddress)
             .reduce((sum: bigint, i: any) => sum + BigInt(i.startAmount), BigInt(0));
 
+        console.log("💰 Purchase details:", {
+            value: ethers.formatEther(value),
+            buyerAddress,
+            seaportContract: seaport.contract.target,
+            orderHash: order.order_hash,
+            endTime: parameters.endTime,
+            currentTime: Math.floor(Date.now() / 1000)
+        });
+
+        // Check if order is expired
+        if (parameters.endTime && Number(parameters.endTime) < Math.floor(Date.now() / 1000)) {
+            throw new Error("This listing has expired. Please refresh the page.");
+        }
+
+        // Warn about low price
+        const priceInEth = Number(ethers.formatEther(value));
+        if (priceInEth < 0.0001) {
+            console.warn("⚠️ Very low price detected. Gas fees will be higher than NFT price.");
+        }
+
         const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
             advancedOrder,
             [],
@@ -714,6 +737,7 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                         to: seaport.contract.target as `0x${string}`,
                         value: "0x" + value.toString(16) as `0x${string}`,
                         data: calldata as `0x${string}`,
+                        gas: "0x" + (300000).toString(16) as `0x${string}`, // 300k gas limit
                     } ,
                 ],
             });
@@ -729,6 +753,7 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                         to: seaport.contract.target as string,
                         value: "0x" + value.toString(16),
                         data: calldata,
+                        gas: "0x" + (300000).toString(16), // 300k gas limit
                     },
                 ],
             });
@@ -1297,7 +1322,7 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                             <tbody>
                                                                 <tr><th className="font-semibold text-start">Type</th><td>ERC-721</td></tr>
                                                                 <tr><th className="font-semibold text-start">Rarity</th><td>Legendary</td></tr>
-                                                                <tr><th className="font-semibold text-start">Legendary Supply</th><td>400 NFTs</td></tr>
+                                                                <tr><th className="font-semibold text-start">Legendary Supply</th><td>40 NFTs</td></tr>
                                                                 <tr><th className="font-semibold text-start">Covered Area</th><td>1000 m² (each NFT corresponds to a real land plot)</td></tr>
                                                             </tbody>
                                                         </table>

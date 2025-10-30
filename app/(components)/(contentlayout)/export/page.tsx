@@ -126,11 +126,11 @@ const chain = defineChain(CHAIN_ID);
 
 // Array of claim links - add all your claim links from Excel here
 const CLAIM_LINKS = [
-    "https://claim.linkdrop.io/#/redeem/8xEagkDwERZU?src=d",
-    "https://claim.linkdrop.io/#/redeem/5Nqx5qgPpAKe?src=d",
-    "https://claim.linkdrop.io/#/redeem/FDrD6SifsVvk?src=d",
-    "https://claim.linkdrop.io/#/redeem/DNqP9MqDuemQ?src=d",
-    // Add all remaining links from your Excel file here
+    "https://claim.linkdrop.io/#/redeem/84jkLk3nENEd?src=d",
+    "https://claim.linkdrop.io/#/redeem/GuZBaGy8SUFS?src=d",
+    "https://claim.linkdrop.io/#/redeem/HbUnN3yyuvnP?src=d",
+    "https://claim.linkdrop.io/#/redeem/HzPf4ydocMrq?src=d",
+    "https://claim.linkdrop.io/#/redeem/EP8Z9gc2RZp1?src=d",
 ];
 
 // Initialize Linkdrop SDK helper
@@ -230,7 +230,7 @@ const LeaderboardWithClaims = () => {
         return CLAIM_LINKS.length > 0;
     }, []);
 
-    const handleClaim = () => {
+    const handleClaim = async () => {
         // CRITICAL: Only allow claiming if address is in the leaderboard
         if (!account) {
             setClaimStatus("Please connect your wallet first");
@@ -257,6 +257,35 @@ const LeaderboardWithClaims = () => {
             return;
         }
 
+        // Quick check: see if any links are available
+        setClaimStatus("Checking claim availability...");
+        let hasAvailableLink = false;
+        
+        try {
+            const linkdropSDK = initLinkdropSDK();
+            for (const claimUrl of CLAIM_LINKS) {
+                try {
+                    const claimLink = await linkdropSDK.getClaimLink(claimUrl);
+                    const statusData = await claimLink.getStatus();
+                    if (statusData.status === 'deposited') {
+                        hasAvailableLink = true;
+                        break;
+                    }
+                } catch (e) {
+                    // Skip this link
+                    continue;
+                }
+            }
+        } catch (e) {
+            console.error("Error checking link availability:", e);
+        }
+
+        if (!hasAvailableLink) {
+            setClaimStatus("❌ No available claim links. All links have been used or your address has already claimed.");
+            return;
+        }
+
+        setClaimStatus("");
         // Show approval modal
         setShowApprovalModal(true);
     };
@@ -267,23 +296,8 @@ const LeaderboardWithClaims = () => {
         setClaimStatus("Preparing claim...");
 
         try {
-            // Get the Ethereum provider from the browser
-            if (!window.ethereum) {
-                throw new Error("No Ethereum provider found. Please use a Web3 wallet.");
-            }
-
-            setClaimStatus("Connecting to your wallet...");
-
-            // Create ethers provider from window.ethereum (the user's wallet)
-            const browserProvider = new ethers.BrowserProvider(window.ethereum as any);
-            const signer = await browserProvider.getSigner();
-            
-            // Override the SDK's wallet selector to use the connected wallet
-            if (typeof window !== 'undefined') {
-                (window as any).evmAsk = {
-                    request: async () => window.ethereum,
-                    selectExtension: async () => window.ethereum
-                };
+            if (!account?.address) {
+                throw new Error("No wallet connected. Please connect your wallet first.");
             }
 
             setClaimStatus("Finding available claim link...");
@@ -291,6 +305,7 @@ const LeaderboardWithClaims = () => {
             // Try each claim link until we find an unclaimed one
             let claimedSuccessfully = false;
             let txHash = null;
+            let allLinksAlreadyClaimed = true;
 
             for (let i = 0; i < CLAIM_LINKS.length; i++) {
                 const claimUrl = CLAIM_LINKS[i];
@@ -307,6 +322,7 @@ const LeaderboardWithClaims = () => {
                     
                     // Check status
                     const statusData = await claimLink.getStatus();
+                    console.log(`Link ${i + 1} - Status:`, statusData);
 
                     if (statusData.status === 'refunded') {
                         console.log(`Link ${i + 1} - Refunded, trying next...`);
@@ -326,30 +342,59 @@ const LeaderboardWithClaims = () => {
                     // Found an available link!
                     setClaimStatus(`Found available link! Initiating claim...`);
                     
-                    console.log("Claiming with SDK for address:", account?.address);
+                    console.log("Claiming with SDK for address:", account.address);
+                    console.log("Link details:", claimLink);
                     
                     setClaimStatus("Submitting claim transaction...");
                     
-                    // Use SDK's redeem method
-                    txHash = await claimLink.redeem(account?.address!);
-                    
-                    console.log("Claim transaction hash:", txHash);
+                    // Try to get more info about why it's failing
+                    try {
+                        // Use SDK's redeem method - it handles the transaction automatically
+                        // No wallet popup needed, Linkdrop uses gasless transactions
+                        txHash = await claimLink.redeem(account.address);
+                        
+                        console.log("Claim transaction hash:", txHash);
 
-                    if (txHash) {
-                        claimedSuccessfully = true;
-                        console.log(`Successfully claimed with link ${i + 1}, tx: ${txHash}`);
-                        break; // Exit loop on success
+                        if (txHash) {
+                            claimedSuccessfully = true;
+                            console.log(`Successfully claimed with link ${i + 1}, tx: ${txHash}`);
+                            break; // Exit loop on success
+                        }
+                    } catch (redeemError: any) {
+                        console.error(`Link ${i + 1} - Redeem error details:`, {
+                            message: redeemError.message,
+                            code: redeemError.code,
+                            response: redeemError.response,
+                            stack: redeemError.stack
+                        });
+                        throw redeemError;
                     }
 
                 } catch (linkError: any) {
-                    console.log(`Link ${i + 1} - Error: ${linkError.message}, trying next...`);
+                    const errorMsg = linkError.message || String(linkError);
+                    console.log(`Link ${i + 1} - Error: ${errorMsg}`);
+                    
+                    // Check if it's the "already claimed" error
+                    if (errorMsg.includes('already claimed') || errorMsg.includes('Multiple claims forbidden')) {
+                        console.log(`Link ${i + 1} - This address has already claimed from this campaign`);
+                        console.log(`Link ${i + 1} - Campaign enforces one claim per address`);
+                        // Don't set allLinksAlreadyClaimed to false - this is a user-specific error
+                    } else {
+                        // Other errors mean the link might be available for other users
+                        allLinksAlreadyClaimed = false;
+                    }
+                    
                     // Continue to next link
                     continue;
                 }
             }
 
             if (!claimedSuccessfully || !txHash) {
-                throw new Error('All claim links have been used or are unavailable. Please contact support.');
+                if (allLinksAlreadyClaimed) {
+                    throw new Error(`Your wallet address (${account.address.slice(0, 6)}...${account.address.slice(-4)}) has already claimed from this campaign. Each wallet can only claim once per campaign. To claim again, please use a different wallet address.`);
+                } else {
+                    throw new Error('All claim links have been used or are unavailable. Please contact support.');
+                }
             }
 
             setClaimStatus(`✅ Claimed successfully! Transaction: ${txHash.slice(0, 10)}...`);
@@ -367,20 +412,59 @@ const LeaderboardWithClaims = () => {
             // Handle specific error cases
             if (err.code === 4001 || err.message?.includes('User denied')) {
                 setClaimStatus('❌ Transaction rejected by user.');
-            } else if (err.message?.includes('already claimed') || err.message?.includes('redeemed')) {
-                setClaimStatus('❌ This link has already been claimed.');
+            } else if (err.message?.includes('already claimed') || err.message?.includes('redeemed') || err.message?.includes('Multiple claims forbidden')) {
+                setClaimStatus('❌ Your address has already claimed. Each wallet can only claim once.');
             } else if (err.message?.includes('expired')) {
                 setClaimStatus('❌ This claim link has expired.');
             } else if (err.message?.includes('insufficient funds')) {
                 setClaimStatus('❌ Insufficient funds for gas fees.');
             } else if (err.message?.includes('No Authorization Header')) {
                 setClaimStatus('❌ Authentication error with Linkdrop. Please check your claim URL.');
+            } else if (err.message?.includes('All claim links have been used')) {
+                setClaimStatus('❌ All claim links have been used or your address has already claimed. Each wallet can only claim once.');
             } else {
                 setClaimStatus(`❌ Claim failed: ${err.message || 'Unknown error'}`);
             }
         } finally {
             setClaiming(false);
         }
+    };
+
+    // Debug function to check link status
+    const checkLinkStatus = async () => {
+        if (!account?.address) {
+            console.log("No wallet connected");
+            return;
+        }
+
+        console.log("=== Checking all claim links ===");
+        console.log("Wallet address:", account.address);
+        
+        const linkdropSDK = initLinkdropSDK();
+        
+        for (let i = 0; i < CLAIM_LINKS.length; i++) {
+            const claimUrl = CLAIM_LINKS[i];
+            console.log(`\n--- Link ${i + 1}/${CLAIM_LINKS.length} ---`);
+            console.log("URL:", claimUrl);
+            
+            try {
+                const claimLink = await linkdropSDK.getClaimLink(claimUrl);
+                const statusData = await claimLink.getStatus();
+                
+                console.log("Status:", statusData.status);
+                console.log("Full status data:", statusData);
+                
+                // Try to get campaign info
+                if (claimLink.campaignId) {
+                    console.log("Campaign ID:", claimLink.campaignId);
+                }
+                
+            } catch (error: any) {
+                console.error("Error checking link:", error.message);
+            }
+        }
+        
+        console.log("\n=== Check complete ===");
     };
 
     const exportToExcel = () => {
