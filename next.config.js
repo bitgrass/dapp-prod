@@ -31,3 +31,9 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
+// Initialize OpenNext Cloudflare for local development
+if (process.env.NODE_ENV === 'development') {
+  const { initOpenNextCloudflareForDev } = require('@opennextjs/cloudflare');
+  initOpenNextCloudflareForDev();
+}

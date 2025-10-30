@@ -667,24 +667,27 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
         });
 
         if (!fulfillmentRes.ok) {
-            throw new Error("Failed to get fulfillment data");
+            const errorText = await fulfillmentRes.text();
+            console.error("❌ Fulfillment API error:", fulfillmentRes.status, errorText);
+            throw new Error("Failed to get fulfillment data from OpenSea");
         }
 
-        const { fulfillment_data } = await fulfillmentRes.json();
-        if (!fulfillment_data?.orders?.length) throw new Error("Invalid fulfillment data");
+        const fulfillmentResponse = await fulfillmentRes.json();
+        
+        const { fulfillment_data } = fulfillmentResponse;
+        if (!fulfillment_data?.transaction?.input_data?.advancedOrder) {
+            throw new Error("Invalid fulfillment data from OpenSea");
+        }
 
-        const { parameters, signature } = fulfillment_data.orders[0];
+        // Use the advancedOrder directly from OpenSea's fulfillment response
+        // This includes the correct extraData required by the zone contract
+        const advancedOrder = fulfillment_data.transaction.input_data.advancedOrder;
+        
         const seaport = new Seaport(provider, {
             overrides: { contractAddress: order.protocol_address },
         });
 
-        const advancedOrder = {
-            parameters,
-            signature,
-            numerator: BigInt(1),
-            denominator: BigInt(1),
-            extraData: "0x",
-        };
+        const { parameters, signature } = advancedOrder;
 
         const value = parameters.consideration
             .filter((i: any) => i.token === ethers.ZeroAddress)
@@ -693,29 +696,115 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
         console.log("💰 Purchase details:", {
             value: ethers.formatEther(value),
             buyerAddress,
-            seaportContract: seaport.contract.target,
             orderHash: order.order_hash,
-            endTime: parameters.endTime,
-            currentTime: Math.floor(Date.now() / 1000)
         });
+
+        // Check if user has enough balance (NFT price + estimated gas)
+        const estimatedGas = ethers.parseEther("0.0002"); // ~0.0002 ETH for gas on Base (reduced estimate)
+        const totalNeeded = value + estimatedGas;
+        if (balance < totalNeeded) {
+            throw new Error(
+                `Insufficient balance. Need ${ethers.formatEther(totalNeeded)} ETH total ` +
+                `(${ethers.formatEther(value)} for NFT + ~${ethers.formatEther(estimatedGas)} for gas). ` +
+                `Current balance: ${ethers.formatEther(balance)} ETH`
+            );
+        }
+
+        // Verify NFT ownership and approval
+        const nftContract = new ethers.Contract(
+            parameters.offer[0].token,
+            [
+                'function ownerOf(uint256 tokenId) view returns (address)',
+                'function getApproved(uint256 tokenId) view returns (address)',
+                'function isApprovedForAll(address owner, address operator) view returns (bool)'
+            ],
+            provider
+        );
+
+        try {
+            const tokenId = parameters.offer[0].identifierOrCriteria;
+            const currentOwner = await nftContract.ownerOf(tokenId);
+            
+            if (currentOwner.toLowerCase() !== parameters.offerer.toLowerCase()) {
+                throw new Error("NFT is no longer owned by the seller. The listing is invalid.");
+            }
+
+            // Check if Seaport is approved
+            const approvedAddress = await nftContract.getApproved(tokenId);
+            const isApprovedForAll = await nftContract.isApprovedForAll(parameters.offerer, seaport.contract.target);
+            
+            // Check if using a conduit (OpenSea's transfer proxy)
+            const usingConduit = parameters.conduitKey !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+            
+            if (!isApprovedForAll && approvedAddress.toLowerCase() !== seaport.contract.target.toString().toLowerCase()) {
+                if (!usingConduit) {
+                    throw new Error(
+                        "This listing cannot be fulfilled because the seller has not approved the marketplace contract. " +
+                        "The seller needs to approve the transfer before this NFT can be purchased. " +
+                        "Please try a different listing or contact the seller."
+                    );
+                }
+            }
+        } catch (verifyError: any) {
+            if (verifyError.message.includes("owned") || verifyError.message.includes("approved")) {
+                throw verifyError;
+            }
+            // If it's a contract call error, continue anyway
+        }
+
+        // Prepare the calldata using the exact parameters from OpenSea
+        const criteriaResolvers = fulfillment_data.transaction.input_data.criteriaResolvers || [];
+        const fulfillerConduitKey = fulfillment_data.transaction.input_data.fulfillerConduitKey;
+        const recipient = fulfillment_data.transaction.input_data.recipient;
+
+        const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
+            advancedOrder,
+            criteriaResolvers,
+            fulfillerConduitKey,
+            recipient,
+        ]);
+
+        // Try to estimate gas using eth_estimateGas
+        try {
+            await client.request({
+                method: "eth_estimateGas",
+                params: [
+                    {
+                        from: buyerAddress,
+                        to: seaport.contract.target as string,
+                        value: "0x" + value.toString(16),
+                        data: calldata,
+                    },
+                ],
+            });
+        } catch (estimateError: any) {
+            console.error("❌ Gas estimation failed:", estimateError.message);
+            
+            throw new Error(
+                "Unable to estimate gas for this transaction. " +
+                "The listing may be expired, already sold, or invalid. " +
+                "Please refresh the page and try again."
+            );
+        }
 
         // Check if order is expired
         if (parameters.endTime && Number(parameters.endTime) < Math.floor(Date.now() / 1000)) {
             throw new Error("This listing has expired. Please refresh the page.");
         }
 
-        // Warn about low price
-        const priceInEth = Number(ethers.formatEther(value));
-        if (priceInEth < 0.0001) {
-            console.warn("⚠️ Very low price detected. Gas fees will be higher than NFT price.");
+        // Validate order parameters
+        if (!parameters.offerer || !parameters.zone || !parameters.offer || !parameters.consideration) {
+            console.error("Invalid order parameters:", parameters);
+            throw new Error("Invalid order data from OpenSea. Please try refreshing the page.");
         }
 
-        const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
-            advancedOrder,
-            [],
-            parameters.conduitKey,
-            buyerAddress,
-        ]);
+        // Validate Seaport contract address
+        if (!order.protocol_address || order.protocol_address === ethers.ZeroAddress) {
+            console.error("Invalid protocol address:", order.protocol_address);
+            throw new Error("Invalid Seaport contract address.");
+        }
+
+
 
         let txHash: string;
 
@@ -737,27 +826,35 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                         to: seaport.contract.target as `0x${string}`,
                         value: "0x" + value.toString(16) as `0x${string}`,
                         data: calldata as `0x${string}`,
-                        gas: "0x" + (300000).toString(16) as `0x${string}`, // 300k gas limit
                     } ,
                 ],
             });
             console.log("✅ Farcaster provider transaction submitted:", txHash);
         } else {
             // Standard EIP-1193 for other environments
-            console.log("Using standard EIP-1193 provider");
-            txHash = await client.request({
-                method: "eth_sendTransaction",
-                params: [
-                    {
-                        from: buyerAddress,
-                        to: seaport.contract.target as string,
-                        value: "0x" + value.toString(16),
-                        data: calldata,
-                        gas: "0x" + (300000).toString(16), // 300k gas limit
-                    },
-                ],
-            });
-            console.log("✅ Standard transaction submitted:", txHash);
+            try {
+                // Send transaction (gas estimation already done above)
+                txHash = await client.request({
+                    method: "eth_sendTransaction",
+                    params: [
+                        {
+                            from: buyerAddress,
+                            to: seaport.contract.target as string,
+                            value: "0x" + value.toString(16),
+                            data: calldata,
+                        },
+                    ],
+                });
+                console.log("✅ Transaction submitted:", txHash);
+            } catch (txError: any) {
+                console.error("❌ Transaction error:", txError);
+                
+                if (txError.message?.includes("insufficient funds")) {
+                    throw new Error(`Insufficient ETH for gas + NFT price. Need ${ethers.formatEther(value)} ETH + gas fees.`);
+                } else {
+                    throw new Error("Transaction failed: " + (txError.message || "Unknown error"));
+                }
+            }
         }
 
         // Wait for confirmation
