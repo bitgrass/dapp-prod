@@ -201,7 +201,6 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
     }
     else {
       if (theme.dataToggled === "close") {
-        console.log('📱 Opening mobile menu');
         ThemeChanger({ ...theme, "dataToggled": "open" });
 
         setTimeout(() => {
@@ -249,7 +248,6 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
           window.addEventListener("resize", resizeHandlerRef.current);
         }, 100);
       } else if (theme.dataToggled === "open") {
-        console.log('📱 Closing mobile menu');
         ThemeChanger({ ...theme, "dataToggled": "close" });
       }
     }

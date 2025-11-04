@@ -59,25 +59,42 @@ function useFarcasterWallet(fid?: number) {
 
     const fetchWallet = async () => {
       try {
+        const apiKey = process.env.NEXT_PUBLIC_NEYNAR_API_KEY
+        
+        if (!apiKey) {
+          console.error('❌ NEXT_PUBLIC_NEYNAR_API_KEY is not set')
+          setAddress(null)
+          return
+        }
+
+        console.log('🔍 Fetching Neynar data for FID:', fid)
+        console.log('🔑 API Key present:', !!apiKey, 'Length:', apiKey?.length)
+
         const res = await fetch(
           `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`,
           {
             headers: {
-              'Content-Type': 'application/json',
-              api_key: process.env.NEXT_PUBLIC_NEYNAR_API_KEY!,
+              'accept': 'application/json',
+              'x-api-key': apiKey,
             },
           }
         )
 
+        console.log('📡 Neynar response status:', res.status)
+
         if (!res.ok) {
-          console.error('Failed Neynar response:', res.status, await res.text())
+          const errorText = await res.text()
+          console.error('❌ Neynar API error:', res.status, errorText)
           setAddress(null)
           return
         }
 
         const data = await res.json()
+        console.log('✅ Neynar data received:', data)
+        
         const user = data?.users?.[0]
         if (!user) {
+          console.warn('⚠️ No user found in Neynar response')
           setAddress(null)
           return
         }
@@ -89,10 +106,13 @@ function useFarcasterWallet(fid?: number) {
           obj.address.toLowerCase()
         )
 
+
+
         const intersection = verified.find((addr: any) => auth.includes(addr))
+        console.log('✅ Resolved Farcaster wallet:', intersection)
         setAddress(intersection || null)
       } catch (err) {
-        console.error('Failed to fetch Farcaster wallet via Neynar:', err)
+        console.error('❌ Neynar fetch error:', err)
         setAddress(null)
       }
     }
@@ -159,7 +179,6 @@ function useFarcasterProvider(farcasterWallet: string | null) {
         setProviderError('Farcaster wallet requires manual connection for signing')
 
       } catch (error) {
-        console.error('❌ Failed to setup Farcaster provider:', error)
         setProviderError(error instanceof Error ? error.message : 'Unknown error')
         setProvider(null)
       } finally {
@@ -193,7 +212,6 @@ function useEnsureEmbeddedWallet() {
     const ensureWallet = async () => {
       // Prevent concurrent creation attempts
       if (creatingWallet.current) {
-        console.log('⏳ Already creating wallet, skipping...')
         return
       }
 
@@ -207,13 +225,7 @@ function useEnsureEmbeddedWallet() {
       // Detect when external wallet was disconnected
       const externalWalletWasDisconnected = hadExternalWallet.current && !currentlyHasExternal
 
-      console.log('🔍 Wallet state check:', {
-        hasExternal: currentlyHasExternal,
-        hasEmbedded: currentlyHasEmbedded,
-        hadExternal: hadExternalWallet.current,
-        disconnected: externalWalletWasDisconnected,
-        walletsCount: wallets.length
-      })
+
 
       // Update tracking
       hadExternalWallet.current = currentlyHasExternal
@@ -230,16 +242,12 @@ function useEnsureEmbeddedWallet() {
         creatingWallet.current = true
         
         if (externalWalletWasDisconnected) {
-          console.log('🔄 External wallet disconnected, creating embedded wallet fallback...')
         } else {
-          console.log('🔧 No wallet found, creating embedded wallet...')
         }
 
         try {
           await createWallet()
-          console.log('✅ Embedded wallet created successfully')
         } catch (error) {
-          console.error('❌ Failed to create embedded wallet:', error)
         } finally {
           creatingWallet.current = false
         }
@@ -291,13 +299,13 @@ export function useConnectedAddress() {
   const [walletClient, setWalletClient] = useState<any>(null)
   const [clientReady, setClientReady] = useState(false)
   const [clientError, setClientError] = useState<string | null>(null)
+  const resolveInProgress = useRef(false)
   
   // Clear cached wallet address on mount - force fresh resolution
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         sessionStorage.removeItem('preferredWalletAddress')
-        console.log('🗑️ Cleared cached wallet on mount - will resolve fresh')
       } catch {}
     }
   }, [])
@@ -306,7 +314,6 @@ export function useConnectedAddress() {
     if (!authenticated) {
       try {
         sessionStorage.removeItem('preferredWalletAddress')
-        console.log('🗑️ Cleared preferred wallet on disconnect')
       } catch {}
     }
   }, [authenticated])
@@ -318,9 +325,7 @@ export function useConnectedAddress() {
     }
 
     if (wallets.length > 0) {
-      console.log('✅ Wallets detected, waiting for initialization...')
       const timer = setTimeout(() => {
-        console.log('✅ Wallets fully loaded')
         setIsWalletsLoading(false)
       }, 500)
       
@@ -328,48 +333,32 @@ export function useConnectedAddress() {
     }
 
     const timer = setTimeout(() => {
-      console.log('✅ No wallets detected, marking as loaded')
       setIsWalletsLoading(false)
     }, 300)
 
     return () => clearTimeout(timer)
   }, [ready, wallets.length])
 
-  console.log("wallets---", wallets)
 
   useEffect(() => {
     if (isWalletsLoading) {
-      console.log('⏳ Waiting for wallets to load...')
       return
     }
 
     if (!authenticated) {
-      console.log('❌ Not authenticated - clearing address')
       setStableAddress(undefined)
       return
     }
 
     const resolveAddress = () => {
-      console.log('🔍 Resolving address...', {
-        isMinitapp,
-        farcasterWallet,
-        walletsCount: wallets.length,
-        wagmiAddress,
-        forceExternal: FORCE_EXTERNAL_PRIORITY,
-        allWallets: wallets.map(w => ({
-          address: w.address?.slice(0, 10) + '...',
-          type: w.walletClientType,
-        }))
-      })
+
 
       // PRIORITY 1: Farcaster miniapp
       if (isMinitapp) {
         if (farcasterWallet) {
-          console.log('🎯 Using Farcaster wallet in miniapp:', farcasterWallet)
           setStableAddress(farcasterWallet as `0x${string}`)
           return
         } else {
-          console.log('⚠️ In miniapp but no Farcaster wallet found')
           setStableAddress(undefined)
           return
         }
@@ -382,7 +371,6 @@ export function useConnectedAddress() {
 
       if (externalWallets.length > 0) {
         const externalWallet = externalWallets[0]
-        console.log('🎯 Using ACTIVE external wallet:', externalWallet.address)
         setStableAddress(externalWallet.address as `0x${string}`)
         return
       }
@@ -391,11 +379,9 @@ export function useConnectedAddress() {
       // Do NOT check linkedAccounts for external wallets
       // linkedAccounts may contain disconnected wallets
 
-      console.log('✅ No active external wallet, falling back to embedded wallet')
 
       // PRIORITY 3: Embedded wallet via wagmi
       if (wagmiAddress) {
-        console.log('🎯 Using embedded wallet via wagmi:', wagmiAddress)
         setStableAddress(wagmiAddress)
         return
       }
@@ -406,7 +392,6 @@ export function useConnectedAddress() {
       )
       
       if (embeddedWallet?.address) {
-        console.log('🎯 Using embedded wallet from wallets array:', embeddedWallet.address)
         setStableAddress(embeddedWallet.address as `0x${string}`)
         return
       }
@@ -417,19 +402,16 @@ export function useConnectedAddress() {
       )
 
       if (embeddedWalletAccount) {
-        console.log('🎯 Using embedded wallet from linkedAccounts:', (embeddedWalletAccount as any).address)
         setStableAddress((embeddedWalletAccount as any).address as `0x${string}`)
         return
       }
 
       // PRIORITY 6: User wallet fallback
       if ((user as any)?.wallet?.address) {
-        console.log('🎯 Using user wallet fallback:', (user as any).wallet.address)
         setStableAddress((user as any).wallet.address as `0x${string}`)
         return
       }
 
-      console.log('⏳ No wallet available')
       setStableAddress(undefined)
     }
 
@@ -446,22 +428,24 @@ export function useConnectedAddress() {
   ])
 
   useEffect(() => {
+    if (resolveInProgress.current) return
+    
     const resolveWalletClient = async () => {
+      if (resolveInProgress.current) return
+      resolveInProgress.current = true
+      
       try {
         setClientReady(false)
         setClientError(null)
 
-        console.log('🔍 Resolving wallet client for:', stableAddress)
 
         // Farcaster miniapp
         if (isMinitapp && farcasterWallet && stableAddress === farcasterWallet) {
           if (fcProviderLoading) {
-            console.log('⏳ Waiting for Farcaster provider...')
             return
           }
 
           if (fcProvider) {
-            console.log('✅ Using Farcaster wallet provider')
             setWalletClient(ensureSendTransaction(fcProvider))
             setClientError(fcProviderError)
             setClientReady(true)
@@ -469,14 +453,12 @@ export function useConnectedAddress() {
           }
 
           if (fcProviderError) {
-            console.error('❌ Farcaster provider error:', fcProviderError)
             setWalletClient(null)
             setClientError(`Cannot access Farcaster wallet: ${fcProviderError}`)
             setClientReady(true)
             return
           }
 
-          console.log('❌ No Farcaster provider available')
           setWalletClient(null)
           setClientError('Farcaster wallet not accessible for signing')
           setClientReady(true)
@@ -491,7 +473,6 @@ export function useConnectedAddress() {
 
           // For EXTERNAL wallets, use their provider directly
           if (matchingWallet?.walletClientType !== 'privy') {
-            console.log('🎯 Found external wallet, getting its provider...')
             
             if (matchingWallet?.getEthereumProvider) {
               try {
@@ -499,18 +480,15 @@ export function useConnectedAddress() {
                 if (provider) {
                   setWalletClient(ensureSendTransaction(provider))
                   setClientReady(true)
-                  console.log('✅ Got provider from external wallet')
                   return
                 }
               } catch (err) {
-                console.error('Failed to get external wallet provider:', err)
               }
             }
 
             if ((matchingWallet as any)?.walletClient) {
               setWalletClient(ensureSendTransaction((matchingWallet as any).walletClient))
               setClientReady(true)
-              console.log('✅ Got walletClient from external wallet')
               return
             }
           }
@@ -518,25 +496,28 @@ export function useConnectedAddress() {
 
         // Use wagmi client for embedded wallets
         if (wagmiClient) {
-          console.log('✅ Using wagmi client for embedded wallet')
           setWalletClient(wagmiClient)
           setClientReady(true)
           return
         }
 
-        console.log('❌ No client found')
         setWalletClient(null)
         setClientReady(true)
       } catch (error) {
-        console.error('❌ Error resolving wallet client:', error)
         setWalletClient(null)
         setClientError(error instanceof Error ? error.message : 'Unknown error')
         setClientReady(true)
+      } finally {
+        resolveInProgress.current = false
       }
     }
 
     if (stableAddress !== undefined) {
       resolveWalletClient()
+    }
+    
+    return () => {
+      resolveInProgress.current = false
     }
   }, [stableAddress, isMinitapp, farcasterWallet, wallets, wagmiClient, fcProvider, fcProviderError, fcProviderLoading])
 

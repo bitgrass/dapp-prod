@@ -13,7 +13,8 @@ import { LinkdropSDK } from 'linkdrop-sdk';
 import { ethers } from 'ethers';
 
 const Select = dynamic(() => import("react-select"), { ssr: false });
-const DO_BASE = "https://durable-object-starter.bitgrass-crypto.workers.dev";
+// DISABLED: Durable Object URL
+// const DO_BASE = "https://durable-object-starter.bitgrass-crypto.workers.dev";
 
 // Linkdrop configuration
 const CAMPAIGN_CHAIN_ID = 8453; // Base chain
@@ -56,6 +57,8 @@ function useDOLeaderboard() {
         const abort = new AbortController();
 
         const fetchOnce = async () => {
+            // DISABLED: Durable Object fetch
+            /*
             try {
                 setLoading(true);
                 const res = await fetch(`${DO_BASE}/leaderboard`, {
@@ -74,6 +77,13 @@ function useDOLeaderboard() {
                     setError(String(e?.message || e));
                     setLoading(false);
                 }
+            }
+            */
+            // Return empty data instead
+            if (!closed) {
+                setVersion(null);
+                setRanked([]);
+                setLoading(false);
             }
         };
 
@@ -147,7 +157,6 @@ const Leaderboard = () => {
                 const hasNFT = response.data.result && response.data.result.length > 0;
                 setHasBoostPass(hasNFT);
             } catch (err) {
-                console.error("Error fetching Boost Pass NFT", err);
                 setHasBoostPass(false);
             } finally {
                 setBoostPassLoading(false);
@@ -171,10 +180,8 @@ const Leaderboard = () => {
     // Create wallet addresses array from the useConnectedAddress hook
     const walletAddresses = useMemo(() => {
         if (!connectedAddress) {
-            console.log("No connected address for wallet addresses");
             return [];
         }
-        console.log("Using connected address for leaderboard:", connectedAddress);
         return [connectedAddress.toLowerCase()];
     }, [connectedAddress]);
 
@@ -183,9 +190,7 @@ const Leaderboard = () => {
         if (!walletAddresses.length || !ranked.length) return -1;
         const foundIndex = ranked.findIndex((row) => walletAddresses.includes((row.address || "").toLowerCase()));
         if (foundIndex >= 0) {
-            console.log("User found in leaderboard at index:", foundIndex, "for address:", walletAddresses[0]);
         } else {
-            console.log("User not found in leaderboard for address:", walletAddresses[0]);
         }
         return foundIndex;
     }, [walletAddresses, ranked]);
@@ -197,7 +202,6 @@ const Leaderboard = () => {
         if (!walletAddresses.length) return null;
         const foundRow = ranked.find((r) => walletAddresses.includes((r.address || "").toLowerCase()));
         if (foundRow) {
-            console.log("User row found:", foundRow);
         }
         return foundRow || null;
     }, [walletAddresses, ranked]);
@@ -280,7 +284,6 @@ const Leaderboard = () => {
                 }
             }
         } catch (e) {
-            console.error("Error checking link availability:", e);
         }
 
         if (!hasAvailableLink) {
@@ -313,7 +316,6 @@ const Leaderboard = () => {
             for (let i = 0; i < CLAIM_LINKS.length; i++) {
                 const claimUrl = CLAIM_LINKS[i];
                 
-                console.log(`Trying link ${i + 1}/${CLAIM_LINKS.length}: ${claimUrl}`);
                 setClaimStatus(`Checking link ${i + 1}/${CLAIM_LINKS.length}...`);
 
                 try {
@@ -325,27 +327,22 @@ const Leaderboard = () => {
                     
                     // Check status
                     const statusData = await claimLink.getStatus();
-                    console.log(`Link ${i + 1} - Status:`, statusData);
 
                     if (statusData.status === 'refunded') {
-                        console.log(`Link ${i + 1} - Refunded, trying next...`);
                         continue;
                     }
 
                     if (statusData.status === 'redeemed') {
-                        console.log(`Link ${i + 1} - Already claimed, trying next...`);
                         continue;
                     }
 
                     if (statusData.status !== 'deposited') {
-                        console.log(`Link ${i + 1} - Status: ${statusData.status}, trying next...`);
                         continue;
                     }
 
                     // Found an available link!
                     setClaimStatus(`Found available link! Initiating claim...`);
                     
-                    console.log("Claiming with SDK for address:", connectedAddress);
                     
                     setClaimStatus("Submitting claim transaction...");
                     
@@ -353,22 +350,17 @@ const Leaderboard = () => {
                     // No wallet popup needed, Linkdrop uses gasless transactions
                     txHash = await claimLink.redeem(connectedAddress);
                     
-                    console.log("Claim transaction hash:", txHash);
 
                     if (txHash) {
                         claimedSuccessfully = true;
-                        console.log(`Successfully claimed with link ${i + 1}, tx: ${txHash}`);
                         break; // Exit loop on success
                     }
 
                 } catch (linkError: any) {
                     const errorMsg = linkError.message || String(linkError);
-                    console.log(`Link ${i + 1} - Error: ${errorMsg}`);
                     
                     // Check if it's the "already claimed" error
                     if (errorMsg.includes('already claimed') || errorMsg.includes('Multiple claims forbidden')) {
-                        console.log(`Link ${i + 1} - This address has already claimed from this campaign`);
-                        console.log(`Link ${i + 1} - Campaign enforces one claim per address`);
                     } else {
                         // Other errors mean the link might be available for other users
                         allLinksAlreadyClaimed = false;
@@ -400,7 +392,6 @@ const Leaderboard = () => {
             }
 
         } catch (err: any) {
-            console.error('Claim error:', err);
 
             if (err.code === 4001 || err.message?.includes('User denied')) {
                 setClaimStatus('❌ Transaction rejected by user.');
@@ -670,7 +661,7 @@ const Leaderboard = () => {
                                                     cursor: userBTG > 0 ? 'pointer' : 'not-allowed'
                                                 }}
                                             >
-                                                {userBTG > 0 ? 'Claim $BTG' : 'No $BTG to Claim'}
+                                                {userBTG > 0 ? 'Claim $BTG' : 'Claim $BTG '}
                                             </button>
                                             
                                             <button
@@ -689,7 +680,7 @@ const Leaderboard = () => {
                                                     background: hasBoostPass ? undefined : userInLeaderboard ? 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)' : undefined
                                                 }}
                                             >
-                                                {boostPassLoading ? '...' : hasBoostPass ? 'BoostPass Claimed' : userInLeaderboard ? 'Claim BoostPass' : 'Not Eligible'}
+                                                {boostPassLoading ? '...' : hasBoostPass ? 'BoostPass Activated' : userInLeaderboard ? 'BoostPass' : 'BoostPass'}
                                             </button>
                                         </>
                                     )}
@@ -747,12 +738,26 @@ const Leaderboard = () => {
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody style={{ height: "420px" }}>
+                                        <tbody style={{ height: "280px" }}>
                                             {loading ? (
                                                 <tr>
                                                     <td colSpan={6}>
                                                         <div className="flex justify-center items-center h-[420px]">
                                                             <div className="animate-spin rounded-full h-8 w-8 border-4 border-secondary border-t-transparent"></div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ) : ranked.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={6}>
+                                                        <div className="flex flex-col justify-center items-center h-[280px] text-center px-4">
+                                                            <svg width="48" height="48" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-4">
+                                                                <path d="M19.6664 7.44917C19.6664 7.45819 19.6664 7.46639 19.6606 7.47542L17.8002 15.996C17.7429 16.296 17.5828 16.5667 17.3474 16.7614C17.112 16.956 16.8161 17.0625 16.5106 17.0624H4.48732C4.18201 17.0623 3.88629 16.9557 3.65107 16.7611C3.41586 16.5665 3.25585 16.2959 3.19861 15.996L1.33814 7.47542C1.33814 7.46639 1.33404 7.45819 1.3324 7.44917C1.28148 7.16706 1.32432 6.87605 1.45437 6.62058C1.58442 6.36512 1.79454 6.15925 2.05261 6.03445C2.31068 5.90965 2.60251 5.87277 2.88352 5.92944C3.16452 5.98612 3.41924 6.13323 3.60876 6.34831L6.37076 9.32522L9.30747 2.73893C9.30761 2.7362 9.30761 2.73346 9.30747 2.73073C9.41249 2.50297 9.58056 2.31006 9.79179 2.17485C10.003 2.03963 10.2486 1.96777 10.4994 1.96777C10.7502 1.96777 10.9957 2.03963 11.207 2.17485C11.4182 2.31006 11.5863 2.50297 11.6913 2.73073C11.6912 2.73346 11.6912 2.7362 11.6913 2.73893L14.628 9.32522L17.39 6.34831C17.5799 6.13483 17.8343 5.98915 18.1146 5.9334C18.3948 5.87765 18.6856 5.91487 18.9427 6.03942C19.1999 6.16396 19.4094 6.36902 19.5394 6.62345C19.6694 6.87789 19.7128 7.1678 19.6631 7.44917H19.6664Z" fill="#9CA3AF" />
+                                                            </svg>
+                                                            <h3 className="text-xl font-semibold text-hights mb-2">Leaderboard Data Coming Soon</h3>
+                                                            <p className="text-[#8c9097] dark:text-white/50 max-w-md">
+                                                                The leaderboard rankings will be available soon.
+                                                            </p>
                                                         </div>
                                                     </td>
                                                 </tr>

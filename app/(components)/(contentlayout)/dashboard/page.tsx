@@ -21,60 +21,14 @@ import Moralis from 'moralis';
 import axios from 'axios';
 import { btgToken, ETHToken, btgInfo } from "@/shared/data/tokens/data";
 import TokenizedLandCube from './TokenizedLandCarousel';
-
-async function initializeMoralis() {
-    try {
-        await Moralis.start({
-            apiKey: process.env.MORALIS_APY_KEY,
-        });
-    } catch (error) {
-        console.error("Error starting Moralis:", error);
-    }
-}
-const getTailwindBgColor = () => {
-    const tempDiv = document.createElement('div');
-    tempDiv.className = 'bg-camel';
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.visibility = 'hidden';
-    tempDiv.style.pointerEvents = 'none';
-    document.body.appendChild(tempDiv);
-
-    const computedStyle = getComputedStyle(tempDiv);
-    const bgColor = computedStyle.backgroundColor;
-
-    document.body.removeChild(tempDiv);
-    return bgColor || '#e9e2e2'; // fallback color
-};
+import PriceChart from './PriceChart';
 
 declare global {
     interface Window {
-        createMyWidget?: (
-            elementId: string,
-            options: {
-                autoSize?: boolean;
-                chainId?: string;
-                pairAddress?: string;
-                showHoldersChart?: boolean;
-                defaultInterval?: string;
-                timeZone?: string;
-                theme?: string;
-                locale?: string;
-                hideLeftToolbar?: boolean;
-                hideTopToolbar?: boolean;
-                hideBottomToolbar?: boolean;
-                backgroundColor?: any;
-                showGrid?: boolean;
-                gridColor?: string
-            }
-        ) => void;
+        moralisInitialized?: boolean;
     }
 }
-const PRICE_CHART_ID = "my-price-chart";
-const SCRIPT_ID = "moralis-chart-widget";
-const WIDGET_SRC = "https://moralis.com/static/embed/chart.js";
 
-// Initialize Moralis only once in the app lifecycle
-initializeMoralis();
 import { ApexOptions } from "apexcharts";
 const Dashboard = () => {
     const [showAlert, setShowAlert] = useState(false)
@@ -99,6 +53,23 @@ const Dashboard = () => {
 
     // add other tokens here to display them as options in the swap
     const swappableTokens: Token[] = [ETHToken, btgToken];
+
+    useEffect(() => {
+        const initMoralis = async () => {
+            if (typeof window !== 'undefined' && !window.moralisInitialized) {
+                try {
+                    await Moralis.start({
+                        apiKey: process.env.NEXT_PUBLIC_MORALIS_APY_KEY,
+                    });
+                    window.moralisInitialized = true;
+                } catch (error) {
+                    // Silently handle initialization errors
+                }
+            }
+        };
+        initMoralis();
+    }, []);
+
     useEffect(() => {
         const tab = searchParams.get('tab');
         if (tab && tab !== activeTab) {
@@ -107,7 +78,7 @@ const Dashboard = () => {
     }, [searchParams, activeTab]);
 
 
-    const containerRef = useRef<HTMLDivElement | null>(null);
+
 
 
 
@@ -143,75 +114,7 @@ const Dashboard = () => {
     }, []);
     const [loadingChart, setLoadingChart] = useState(true);
 
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        const bgColor = getTailwindBgColor();
 
-        const tz =
-            Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC";
-
-        // Ensure container is empty before (re)mounting the widget
-        const clearContainer = () => {
-            if (containerRef.current) {
-                containerRef.current.innerHTML = "";
-            }
-        };
-
-        const loadWidget = () => {
-            if (typeof window.createMyWidget === "function") {
-                clearContainer();
-                window.createMyWidget(PRICE_CHART_ID, {
-                    autoSize: true,
-                    chainId: "0x2105", // Base chain
-                    pairAddress: "0x2a0F410422951F53CD2F3E9F6d0f29FccB1426E9",
-                    showHoldersChart: false,
-                    defaultInterval: "1D",
-                    timeZone: tz,
-                    theme: theme,
-                    locale: "en",
-                    hideLeftToolbar: true,
-                    hideTopToolbar: true,
-                    hideBottomToolbar: true,
-                    showGrid: false, // Hide grid
-                    gridColor: 'transparent', // Make grid transparent
-                    backgroundColor: bgColor,
-                });
-            } else {
-                console.error("createMyWidget function is not defined.");
-            }
-        };
-
-        // If script already present
-        const existing = document.getElementById(SCRIPT_ID) as
-            | HTMLScriptElement
-            | null;
-
-        if (existing) {
-            // If widget function is ready, load immediately; otherwise wait for load
-            if (typeof window.createMyWidget === "function") {
-                loadWidget();
-            } else {
-                existing.addEventListener("load", loadWidget, { once: true });
-            }
-        } else {
-            // Inject script
-            const script = document.createElement("script");
-            script.id = SCRIPT_ID;
-            script.src = WIDGET_SRC;
-            script.type = "text/javascript";
-            script.async = true;
-            script.onload = loadWidget;
-            script.onerror = () => {
-                console.error("Failed to load the chart widget script.");
-            };
-            document.body.appendChild(script);
-        }
-
-        // Cleanup: clear container on unmount to avoid duplicate embeds
-        return () => {
-            clearContainer();
-        };
-    }, [theme]);
 
     const nftDataChart = [
         { name: "Standard", value: 2000, color: "#084D08", land: "100m²" },
@@ -223,64 +126,66 @@ const Dashboard = () => {
 
     const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
 
-    useEffect(() => {
-        async function fetchPrice() {
-            try {
-                const response = await axios.get(
-                    `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
-                    {
-                        headers: {
-                            accept: "application/json",
-                            "X-API-Key": API_KEY!,
-                        },
-                    }
-                )
-                const prices = response.data.usdPrice;
-                const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
+    // Disabled Moralis price API - returns 404
+    // useEffect(() => {
+    //     async function fetchPrice() {
+    //         try {
+    //             const response = await axios.get(
+    //                 `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
+    //                 {
+    //                     headers: {
+    //                         accept: "application/json",
+    //                         "X-API-Key": API_KEY!,
+    //                     },
+    //                 }
+    //             )
+    //             const prices = response.data.usdPrice;
+    //             const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
 
 
 
 
-                if (prices) {
-                    setBtgPrice(prices.toFixed(6)); // Set the price as a string
-                } else {
-                    console.warn('Uniswap V3 0.30% price not found');
-                }
+    //             if (prices) {
+    //                 setBtgPrice(prices.toFixed(6)); // Set the price as a string
+    //             } else {
+    //                 console.warn('Uniswap V3 0.30% price not found');
+    //             }
 
 
-            } catch (error) {
-                console.error("Error fetching Degen price:", error);
-            }
-        }
+    //         } catch (error) {
+    //             console.error("Error fetching Degen price:", error);
+    //         }
+    //     }
 
-        fetchPrice();
-    }, []);
+    //     fetchPrice();
+    // }, []);
 
-    useEffect(() => {
-        async function fetchPrice24H() {
-            try {
-                const response = await axios.get(
-                    `https://deep-index.moralis.io/api/v2.2/tokens/${btgToken.address}/analytics?chain=base`,
-                    {
-                        headers: {
-                            accept: "application/json",
-                            "X-API-Key": API_KEY!,
-                        },
-                    }
-                );
+    // Disabled Moralis analytics API
+    // useEffect(() => {
+    //     async function fetchPrice24H() {
+    //         try {
+    //             const response = await axios.get(
+    //                 `https://deep-index.moralis.io/api/v2.2/tokens/${btgToken.address}/analytics?chain=base`,
+    //                 {
+    //                     headers: {
+    //                         accept: "application/json",
+    //                         "X-API-Key": API_KEY!,
+    //                     },
+    //                 }
+    //             );
 
-                const volume24h =
-                    (response.data?.totalBuyVolume?.["24h"] || 0) +
-                    (response.data?.totalSellVolume?.["24h"] || 0);
-                setBtgPercentChange(volume24h.toFixed(2)); // You can create this state to store it
+    //             const volume24h =
+    //                 (response.data?.totalBuyVolume?.["24h"] || 0) +
+    //                 (response.data?.totalSellVolume?.["24h"] || 0);
+    //             setBtgPercentChange(volume24h.toFixed(2)); // You can create this state to store it
 
-            } catch (error) {
-                console.error("Error fetching BTG analytics:", error);
-            }
-        }
+    //         } catch (error) {
+    //             console.error("Error fetching BTG analytics:", error);
+    //         }
+    //     }
 
-        fetchPrice24H();
-    }, []);
+    //     fetchPrice24H();
+    // }, []);
 
 
 
@@ -504,7 +409,7 @@ const Dashboard = () => {
                                                             <div className="mb-6">
                                                                 <p className="text-[.9375rem] mb-2 font-semibold">Description :</p>
                                                                 <p className="text-[0.75rem]">
-                                                                    Bitgrass will tokenize <b className="text-defaulttextcolor">100 hectares of farmland</b>  into a limited collection of <b className="text-defaulttextcolor"> 3,200 NFTs</b>, launching on <b className="text-defaulttextcolor">November 3, 2025.</b>
+                                                                    Bitgrass will tokenize <b className="text-defaulttextcolor">100 hectares of farmland</b>  into a limited collection of <b className="text-defaulttextcolor"> 3,200 NFTs</b>, launching on <b className="text-defaulttextcolor">November 2025.</b>
 
                                                                 </p><br /> Each NFT represents a tokenized farmland plot with multiple use cases:<br />
                                                                 <ul className="text-[0.75rem] list-disc list-inside ml-4">
@@ -738,13 +643,9 @@ const Dashboard = () => {
                                                 </div>
                                                 <div className="box-body !p-0">
                                                     <div id="crypto" className="p-4">
-                                                        <div
-                                                            id={PRICE_CHART_ID}
-                                                            ref={containerRef}
-                                                            style={{
-                                                                width: "100%",
-                                                                height: "420px", // ensure visible height
-                                                            }}
+                                                        <PriceChart 
+                                                            pairAddress="0x96d4b53a38337a5733179751781178a2613306063c511b78cd02684739288c0a"
+                                                            theme={theme}
                                                         />
                                                     </div>
                                                 </div>
@@ -772,7 +673,7 @@ const Dashboard = () => {
                                                             <div className="text-[0.875rem] mb-1">You’re on testnet!</div>
                                                             <div className="text-[0.65rem] text-default ">Swap shows BTG but actually uses USDC.</div>                                                    </div>
                                                     </div> */}
-                                                    <div className="box-body crypto-data" style={{ paddingTop: 0 }}>
+                                                    <div className="box-body crypto-data" style={{ paddingTop: 0, opacity: 0.5, pointerEvents: 'none' }}>
 
                                                         <Swap className='swapContainer'>
                                                             <SwapAmountInput
@@ -887,7 +788,7 @@ const Dashboard = () => {
 
                                                         <div>
                                                             <span className="block text-[#8c9097] dark:text-white/50 text-[0.75rem]">Launch Date</span>
-                                                            <span className="block text-[.875rem] font-semibold">November 3, 2025</span>
+                                                            <span className="block text-[.875rem] font-semibold">November 2025</span>
                                                         </div>
                                                         <div>
                                                             <span className="block text-[#8c9097] dark:text-white/50 text-[0.75rem]">Live on</span>

@@ -19,7 +19,6 @@ export default function PrelineScript() {
 
       window.HSStaticMethods?.autoInit();
     } catch (error) {
-      console.error("Error initializing Preline:", error);
     }
   };
     loadPreline();

@@ -2,7 +2,7 @@ import type { Token } from '@coinbase/onchainkit/token';
 
 export const btgToken : Token = {
   name: "BTG",
-  address: "0x20429F731096e359910921994A267d32ef576720",
+  address: "0xF0D560f492CE0DBb3B5BEa7f003030c71ff4b2E4",
   symbol: "BTG",
   decimals: 18,
   image: "/assets/images/brand-logos/logo-btg.svg", // or use `import` if using static import
@@ -14,7 +14,7 @@ export const btgInfo = {
 }
 
 export const nftInfo = {
-   address: "0x346877b6755530b308b4e537efe4c1c052c09953"
+   address: "0x2c2d999d3ebe71f8a393d48214d1b119a495a1b7"
 }
 
 export const EthInfo = {
@@ -44,7 +44,7 @@ export const rangesLegendary = [
 ];
 
 
-   export  const CONTRACT_ADDRESS_INFO = "0x346877b6755530b308b4e537efe4c1c052c09953";
+   export  const CONTRACT_ADDRESS_INFO = "0x2c2d999d3ebe71f8a393d48214d1b119a495a1b7";
    export const SEADROP_ADDRESS_INFO = "0x00005EA00Ac477B1030CE78506496e8C2dE24bf5";
    export const SEADROP_CONDUIT_INFO = "0x0000a26b00c1F0DF003000390027140000fAa719";
 

@@ -24,6 +24,8 @@ function Layout({ children, local_varaiable, ThemeChanger }: any) {
     }
   }, []);
 
+
+
   return (
     <>
       <Head>

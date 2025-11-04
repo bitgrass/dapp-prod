@@ -120,15 +120,7 @@ const Crypto = () => {
 
 
 
-  // Debug logging
-  useEffect(() => {
-    console.log('📍 Portfolio Address Debug:', {
-      address,
-      addressLoading,
-      walletsCount: _debug?.walletsCount,
-      isWalletsLoading: _debug?.isWalletsLoading
-    });
-  }, [address, addressLoading, _debug]);
+
 
   // Fetch ETH Data
   useEffect(() => {
@@ -208,13 +200,15 @@ const Crypto = () => {
 
       try {
         const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
+        // Disabled BTG price API - returns 404
         const [priceRes, balanceRes] = await Promise.all([
-          axios.get(
-            `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
-            {
-              headers: { accept: "application/json", "X-API-Key": API_KEY },
-            }
-          ),
+          // axios.get(
+          //   `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
+          //   {
+          //     headers: { accept: "application/json", "X-API-Key": API_KEY },
+          //   }
+          // ),
+          Promise.resolve({ data: { usdPrice: 0 } }),
           axios.get(
             `https://deep-index.moralis.io/api/v2.2/${address}/erc20?chain=base&token_addresses%5B0%5D=${btgToken.address}`,
             {

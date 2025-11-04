@@ -50,7 +50,7 @@ const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
 
   const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
 
-  // Fetch totals directly from Durable Object
+  // DISABLED: Fetch totals directly from Durable Object
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -58,6 +58,8 @@ const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
 
       let totals = DEFAULT_TOTALS;
 
+      // DISABLED: Durable Object fetch
+      /*
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -78,8 +80,8 @@ const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
           totals = { ...DEFAULT_TOTALS, ...data };
         }
       } catch (err) {
-        console.warn("Failed to fetch totals, using defaults:", err);
       }
+      */
 
       // Build project object inline
       const projects = [
@@ -168,12 +170,10 @@ const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
         setError(`Project with ID "${params.id}" not found in the database`);
         setProject(null);
       } else {
-        console.log(`Found project:`, found.name);
         setProject(found);
       }
 
     } catch (error) {
-      console.error('Error fetching project:', error);
       setError(error instanceof Error ? error.message : 'Failed to load project data');
       setProject(null);
     } finally {

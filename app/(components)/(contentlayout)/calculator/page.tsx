@@ -619,14 +619,15 @@ const CarbonCalculator = () => {
                 * CO₂e = carbon-dioxide equivalent
               </div>
               <p className="text-center mt-6">
-                Reduce what you can, <br /> offset the rest with a Bitgrass NFT.
+                This is an approximate estimation, <br /> based on average emission factors.
               </p>
             </div>
             <button
-              className="bg-secondary text-white px-6 py-2 rounded-sm text-sm font-medium w-full"
-              onClick={() => alert("Claim $BTG or mint NFT")}
+              className="bg-secondary text-white px-6 py-2 rounded-sm text-sm font-medium w-full opacity-50 cursor-not-allowed"
+              disabled
+              style={{ cursor: 'not-allowed', userSelect: 'none' }}
             >
-              Offset with Bitgrass NFT
+              Offset Carbon (Soon)
             </button>
           </div>
         </div>

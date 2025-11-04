@@ -46,13 +46,7 @@ const TransactionTable = ({
   // ✅ CRITICAL: Memoize with stable identity
   const validTransactions = useMemo(() => {
     const txs = Array.isArray(transactions) ? transactions : [];
-    console.log('🔄 TransactionTable render:', {
-      txCount: txs.length,
-      currentPage,
-      totalPages,
-      firstTx: txs[0]?._key,
-      lastTx: txs[txs.length - 1]?._key
-    });
+    // Debug logging removed
     return txs;
   }, [transactions, currentPage, totalPages]);
 
@@ -101,7 +95,6 @@ const TransactionTable = ({
       return; // Ignore invalid clicks
     }
     
-    console.log('🖱️ Page click:', { from: currentPage, to: newPage });
     onPageChange(newPage);
   }, [currentPage, totalPages, onPageChange]);
 

@@ -211,7 +211,6 @@ export function useNFTLeaderboard() {
 
         setRanked(arr);
       } catch (e) {
-        console.error("useNFTLeaderboard error:", e);
         setRanked([]);
       } finally {
         setLoading(false);

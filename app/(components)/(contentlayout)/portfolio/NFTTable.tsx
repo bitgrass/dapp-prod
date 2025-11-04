@@ -122,19 +122,11 @@ const NFTTable = ({
           <div className="box text-center">
             <div className="box-body">
               <p className="mb-4 inline-flex">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 64 64"
-                  className="w-12 h-12"
-                >
-                  <linearGradient id="a" x1="32" x2="32" y1="63.7" y2="0.8" gradientUnits="userSpaceOnUse">
-                    <stop offset="0" stopColor="#2ab793" />
-                    <stop offset="1" stopColor="#2c98b5" />
-                  </linearGradient>
-                  <path
-                    fill="url(#a)"
-                    d="M53 26V13.4L32 1.9 11 13.4v25.2l21 11.6 21-11.5V33h-2v4.4L32 47.9l-13-7.2V19l12-6.6V45h2V25.6l18-9.9V26h2z"
-                  />
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="40" height="40" rx="20" fill="#EAECF0" />
+                  <path d="M7.00391 19.3687C7.00391 26.2995 12.8215 31.9179 19.9981 31.9179C19.9981 24.987 14.1805 19.3687 7.00391 19.3687Z" fill="#98A2B3" />
+                  <path d="M33.0039 19.3687C25.8274 19.3687 20.0098 24.987 20.0098 31.9179C27.1863 31.9179 33.0039 26.2995 33.0039 19.3687Z" fill="#98A2B3" />
+                  <path d="M20.0039 8.3999C18.4636 11.4804 16.0844 13.8596 13.0039 15.3999C16.0844 16.9402 18.4636 19.3194 20.0039 22.3999C21.5442 19.3194 23.9234 16.9402 27.0039 15.3999C23.9234 13.8596 21.5442 11.4804 20.0039 8.3999Z" fill="#98A2B3" />
                 </svg>
               </p>
               <p className="box-title font-semibold">Still missing your NFT?</p>

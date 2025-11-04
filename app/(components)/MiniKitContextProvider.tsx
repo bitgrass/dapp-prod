@@ -7,14 +7,61 @@ import { base } from 'viem/chains';
 import { NEXT_PUBLIC_CDP_API_KEY } from './config';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { PrivyProvider } from '@privy-io/react-auth';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { useWagmiConfig } from './wagmi';
+import { useEffect, useState } from 'react';
+import { addRpcUrlOverrideToChain } from '@privy-io/chains';
 
 type Props = { children: ReactNode };
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-function PrivyWrapper({ children }: { children: ReactNode }) {
+function WagmiWrapper({ children }: { children: ReactNode }) {
+  const wagmiConfig = useWagmiConfig();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
+        <MiniKitProvider
+          apiKey={NEXT_PUBLIC_CDP_API_KEY}
+          chain={base as any}
+          projectId="55dd698a-0763-4455-9c13-3db125f81623"
+          config={{
+            appearance: { theme: 'base', mode: 'light' },
+            wallet: {
+              display: 'modal',
+              termsUrl: '#',
+              privacyUrl: '#',
+            },
+          }}
+        >
+          {children}
+        </MiniKitProvider>
+      </WagmiProvider>
+    </QueryClientProvider>
+  );
+}
+
+// Configure Base chain with custom RPC - using Cloudflare's public Base RPC
+const baseWithRpc = addRpcUrlOverrideToChain(base, 'https://base.llamarpc.com');
+
+function OnchainProviders({ children }: Props) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
   return (
     <PrivyProvider
       appId="cmbqbbsqm00kljy0n1yzjeij7"
@@ -43,41 +90,14 @@ function PrivyWrapper({ children }: { children: ReactNode }) {
           showWalletUIs: false,
           ethereum: { createOnLogin: 'off' },
         },
-        supportedChains: [base],
+        supportedChains: [baseWithRpc],
+        defaultChain: baseWithRpc,
       }}
     >
-      {children}
+      <WagmiWrapper>
+        {children}
+      </WagmiWrapper>
     </PrivyProvider>
-  );
-}
-
-function OnchainProviders({ children }: Props) {
-  const wagmiConfig = useWagmiConfig();
-
-  return (
-    <PrivyWrapper>
-      <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>
-          <MiniKitProvider
-            apiKey={NEXT_PUBLIC_CDP_API_KEY}
-            chain={base as any}
-            projectId="55dd698a-0763-4455-9c13-3db125f81623"
-            config={{
-              appearance: { theme: 'base', mode: 'light' },
-              wallet: {
-                display: 'modal',
-                termsUrl: '#',
-                privacyUrl: '#',
-              },
-            }}
-          >
-            <RainbowKitProvider modalSize="compact">
-              {children}
-            </RainbowKitProvider>
-          </MiniKitProvider>
-        </WagmiProvider>
-      </QueryClientProvider>
-    </PrivyWrapper>
   );
 }
 

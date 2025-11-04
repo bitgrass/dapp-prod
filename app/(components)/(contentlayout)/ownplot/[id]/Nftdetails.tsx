@@ -16,7 +16,7 @@ import { ethers } from "ethers";
 import { nftInfo, SeaDropABIData, CONTRACT_ADDRESS_INFO, SEADROP_ADDRESS_INFO, SEADROP_CONDUIT_INFO } from "@/shared/data/tokens/data";
 import { usePrivy, useLogin } from '@privy-io/react-auth';
 import { useConnectedAddress } from "../../useConnectedAddress"; // Update this import path
-import sdk from "@farcaster/frame-sdk";
+import { sdk } from "@farcaster/miniapp-sdk";
 
 type OrderData = {
     parameters: any;
@@ -107,22 +107,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         _debug
     } = useConnectedAddress();
     
-    // Debug logging to track address being used for transactions
-    useEffect(() => {
-        console.log('🛒 Ownplot Address Debug:', {
-            userAddress,
-            walletsCount: _debug?.walletsCount,
-            hasExternalWallet,
-            hasEmbeddedWallet
-        });
-    }, [userAddress, _debug, hasExternalWallet, hasEmbeddedWallet]);
-
+ 
     const { switchChainAsync } = useSwitchChain();
     const [isMinting, setIsMinting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [toastTitle, setToastTitle] = useState<string | null>(null);
-    const STATIC_MINT_PRICE_ETH = 0.00001; // adjust as needed
+    const STATIC_MINT_PRICE_ETH = 0.05; // adjust as needed
     const [isBuying, setIsBuying] = useState(false);
 
     // Use isConnected from wagmi, but also check if we have an address from our hook
@@ -226,7 +217,10 @@ useEffect(() => {
         setActiveTab(tabName);
     }, [initialTabId]);
 
+    // Disabled - Coming Soon
     const handleMintAbi = async (quantity: number) => {
+        return; // Function disabled
+        /*
     try {
         setLoading(true);
         console.log("Address for minting:", userAddress);
@@ -350,6 +344,7 @@ useEffect(() => {
     } finally {
         setLoading(false);
     }
+    */
 };
 
     const initPrices = async () => {
@@ -399,25 +394,29 @@ useEffect(() => {
         let nextCursor: string | null = null;
 
         const getListings = async (cursor: string | null = null) => {
-            const params = new URLSearchParams({ collection });
-            if (cursor) params.set("next", cursor);
-            const res = await fetch(`https://muddy-forest-4e3a.bitgrass-crypto.workers.dev/api/opensea-listings?${params}`, {
-                headers: {
-                    'api-key': `${apiKey}`
-                }
-            });
-            const text = await res.text();
+            // Disabled OpenSea API - invalid API key
+            console.warn('OpenSea listings disabled - invalid API key');
+            return { listings: [], next: null };
+            
+            // const params = new URLSearchParams({ collection });
+            // if (cursor) params.set("next", cursor);
+            // const res = await fetch(`https://muddy-forest-4e3a.bitgrass-crypto.workers.dev/api/opensea-listings?${params}`, {
+            //     headers: {
+            //         'api-key': `${apiKey}`
+            //     }
+            // });
+            // const text = await res.text();
 
-            if (!res.ok) {
-                console.error('OpenSea proxy failed', {
-                    status: res.status,
-                    url: res.url,
-                    body: text.slice(0, 2000)
-                });
-                throw new Error(`API error ${res.status}`);
-            }
+            // if (!res.ok) {
+            //     console.error('OpenSea proxy failed', {
+            //         status: res.status,
+            //         url: res.url,
+            //         body: text.slice(0, 2000)
+            //     });
+            //     throw new Error(`API error ${res.status}`);
+            // }
 
-            return JSON.parse(text);
+            // return JSON.parse(text);
         };
 
         do {
@@ -618,8 +617,11 @@ useEffect(() => {
     useEffect(() => {
         fetchAvailableNfts();
     }, [isModalOpen, isFailureModalOpen]);
+   // Disabled - Coming Soon
    // Updated handleBuy function for web-based Farcaster
 async function handleBuy(order: any, tier: "Legendary" | "Premium") {
+    return; // Function disabled
+    /*
     if (!userAddress || !ready || !authenticated) {
         login();
         return;
@@ -894,6 +896,7 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
     } finally {
         setIsBuying(false);
     }
+    */
 }
 
 
@@ -1031,14 +1034,10 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                     </button>
                                                 </div>
                                                 <button
-                                                    className=" w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
-                                                    onClick={() => handleMintAbi(quantity)}
-                                                    disabled={loading}
+                                                    className=" w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 cursor-not-allowed opacity-60"
+                                                    disabled={true}
                                                 >
-                                                    {loading && (
-                                                        <span className="btn-spinner"></span>
-                                                    )}
-                                                    {loading ? "Processing..." : "Buy Tokenized Plot"}
+                                                    Buy Tokenized Plot
                                                 </button>
 
                                             </div>
@@ -1171,18 +1170,10 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
-                                                    style={{
-                                                        cursor: isBuying ? "not-allowed" : "pointer",
-                                                        userSelect: isBuying ? "none" : "auto"
-                                                    }}
-                                                    disabled={isLoadingFetchAvailable}
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 cursor-not-allowed opacity-60"
+                                                    disabled={true}
                                                 >
-                                                    {isBuying && (
-                                                        <span className="btn-spinner"></span>
-                                                    )}
-                                                    {isBuying ? "Processing..." : "Buy Tokenized Plot"}
+                                                    Buy Tokenized Plot
                                                 </button>
 
 
@@ -1316,19 +1307,10 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
-                                                    style={{
-                                                        cursor: isLoadingFetchAvailable ? "not-allowed" : "pointer",
-                                                        userSelect: isLoadingFetchAvailable ? "none" : "auto"
-                                                    }}
-                                                    disabled={isLoadingFetchAvailable}
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 cursor-not-allowed opacity-60"
+                                                    disabled={true}
                                                 >
-                                                    {isBuying && (
-                                                        <span className="btn-spinner"></span>
-                                                    )}
-                                                    {isBuying ? "Processing..." : "Buy Tokenized Plot"}
-
+                                                    Buy Tokenized Plot
                                                 </button>
 
                                             </div>

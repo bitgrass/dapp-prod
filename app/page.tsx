@@ -1,66 +1,110 @@
 'use client'
  
-import { useMiniKit } from '@coinbase/onchainkit/minikit';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { sdk as frameSdk } from '@farcaster/miniapp-sdk';
+import { useEffect, useState } from 'react';
+import { sdk } from '@farcaster/miniapp-sdk';
 import { usePrivy } from '@privy-io/react-auth';
-import { useLoginToFrame } from '@privy-io/react-auth/farcaster';
+import { useLoginToMiniApp } from '@privy-io/react-auth/farcaster';
+import { useMiniKit } from '@coinbase/onchainkit/minikit';
  
 export default function Home() {
-  const { setFrameReady, isFrameReady } = useMiniKit();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
  
   const { ready, authenticated } = usePrivy();
-  const { initLoginToFrame, loginToFrame } = useLoginToFrame();
- 
+  const { initLoginToMiniApp, loginToMiniApp } = useLoginToMiniApp();
+
   useEffect(() => {
-    const doLogin = async () => {
-      if (!isFrameReady) setFrameReady();
-      frameSdk.actions.ready();
- 
-      const isMiniApp = await frameSdk.isInMiniApp();
- 
-      // 👉 Before auto-login: prompt to add Mini App (ignore errors/rejections)
+    try {
+      sdk.actions.ready();
+    } catch (err) {
+      console.warn('SDK ready call failed:', err);
+    }
+
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !ready || hasRedirected) return;
+    const init = async () => {
+
+      const isMiniApp = await sdk.isInMiniApp();
+
       if (isMiniApp) {
         try {
-          await frameSdk.actions.addMiniApp();
+          await sdk.actions.addMiniApp();
         } catch (err) {
-          // RejectedByUser / NotAllowed / manifest/domain issues → continue to login
-          console.warn('addMiniApp skipped:', (err as any)?.message ?? err);
+          console.warn('addMiniApp skipped:', err);
         }
       }
- 
+
       if (ready && !authenticated) {
         try {
           if (!isMiniApp) {
-            // Web: just go straight to dashboard
+            // For web, just redirect
+            setHasRedirected(true);
             router.push('/dashboard?tab=overview');
             return;
           }
- 
-          const { nonce } = await initLoginToFrame();
-          const result = await frameSdk.actions.signIn({ nonce });
-          console.log("SignIn result:", result);
- 
-          await loginToFrame({
+
+          // Farcaster login for Mini App
+          const { nonce } = await initLoginToMiniApp();
+          const result = await sdk.actions.signIn({ nonce });
+
+          await loginToMiniApp({
             message: result.message,
             signature: result.signature,
           });
- 
-          console.log("✅ Farcaster auto-login successful");
+
+          // After successful login, redirect
+          setHasRedirected(true);
           router.push('/dashboard?tab=overview');
         } catch (err) {
-          console.error("❌ Farcaster login failed:", err);
+          console.error('Login failed:', err);
+          setHasRedirected(true);
           router.push('/dashboard?tab=overview');
         }
       } else if (authenticated) {
+        setHasRedirected(true);
         router.push('/dashboard?tab=overview');
       }
+
+      setIsLoading(false);
     };
- 
-    doLogin();
-  }, [isFrameReady, setFrameReady, ready, authenticated, initLoginToFrame, loginToFrame, router]);
+
+    init();
+  }, [mounted, ready, authenticated, hasRedirected, initLoginToMiniApp, loginToMiniApp, router]);
+
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '1rem'
+      }}>
+        <div style={{ 
+          width: '40px', 
+          height: '40px', 
+          border: '4px solid #f3f3f3',
+          borderTop: '4px solid #7fc447',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+        <div>Loading Bitgrass...</div>
+      </div>
+    );
+  }
  
   return null;
 }

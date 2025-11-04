@@ -12,7 +12,7 @@ import {
 } from '@coinbase/onchainkit/swap';
 import type { Token } from '@coinbase/onchainkit/token';
 import { btgToken, ETHToken } from "@/shared/data/tokens/data";
-
+import PriceChart from '../dashboard/PriceChart';
 
 import { ApexOptions } from "apexcharts";
 const Dashboard = () => {
@@ -34,9 +34,6 @@ const Dashboard = () => {
 
     const container = useRef<HTMLDivElement | null>(null);
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
-const PRICE_CHART_ID = "my-price-chart";
-const SCRIPT_ID = "moralis-chart-widget";
-const WIDGET_SRC = "https://moralis.com/static/embed/chart.js";
 
     useEffect(() => {
         const handleThemeChange = () => {
@@ -58,94 +55,7 @@ const WIDGET_SRC = "https://moralis.com/static/embed/chart.js";
             observer.disconnect();
         };
     }, []);
-    const containerRef = useRef<HTMLDivElement | null>(null);
-// Function to get Tailwind color by creating a temporary element
-const getTailwindBgColor = () => {
-    const tempDiv = document.createElement('div');
-    tempDiv.className = 'bg-camel';
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.visibility = 'hidden';
-    tempDiv.style.pointerEvents = 'none';
-    document.body.appendChild(tempDiv);
-    
-    const computedStyle = getComputedStyle(tempDiv);
-    const bgColor = computedStyle.backgroundColor;
-    
-    document.body.removeChild(tempDiv);
-    return bgColor || '#e9e2e2'; // fallback color
-};
 
-     useEffect(() => {
-            if (typeof window === "undefined") return;
-     const bgColor = getTailwindBgColor();
-
-            const tz =
-                Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC";
-    
-            // Ensure container is empty before (re)mounting the widget
-            const clearContainer = () => {
-                if (containerRef.current) {
-                    containerRef.current.innerHTML = "";
-                }
-            };
-    
-            const loadWidget = () => {
-                if (typeof window.createMyWidget === "function") {
-                    clearContainer();
-                    window.createMyWidget(PRICE_CHART_ID, {
-                        autoSize: true,
-                        chainId: "0x2105", // Base chain
-                        pairAddress: "0x2a0F410422951F53CD2F3E9F6d0f29FccB1426E9",
-                        showHoldersChart: false,
-                        defaultInterval: "1D",
-                        timeZone: tz,
-                        theme: theme,
-                        locale: "en",
-                        hideLeftToolbar: true,
-                        hideTopToolbar: true,
-                        hideBottomToolbar: true,
-                        showGrid: false, // Hide grid
-                          gridColor: 'transparent', // Make grid transparent
-                        backgroundColor: bgColor,
-
-                    });
-                } else {
-                    console.error("createMyWidget function is not defined.");
-                }
-            };
-    
-            // If script already present
-            const existing = document.getElementById(SCRIPT_ID) as
-                | HTMLScriptElement
-                | null;
-    
-            if (existing) {
-                // If widget function is ready, load immediately; otherwise wait for load
-                if (typeof window.createMyWidget === "function") {
-                    loadWidget();
-                } else {
-                    existing.addEventListener("load", loadWidget, { once: true });
-                }
-            } else {
-                // Inject script
-                const script = document.createElement("script");
-                script.id = SCRIPT_ID;
-                script.src = WIDGET_SRC;
-                script.type = "text/javascript";
-                script.async = true;
-                script.onload = loadWidget;
-                script.onerror = () => {
-                    console.error("Failed to load the chart widget script.");
-                };
-                document.body.appendChild(script);
-            }
-    
-            // Cleanup: clear container on unmount to avoid duplicate embeds
-            return () => {
-                clearContainer();
-            };
-        }, [theme]);
-    
 
     useEffect(() => {
         if (container.current) {
@@ -226,20 +136,15 @@ const getTailwindBgColor = () => {
                                         <div className="box">
                                             <div className="box-header justify-between flex-wrap">
                                                 <div className="box-title">$BTG Chart</div>
-
                                             </div>
-                                             <div className="box-body !p-0">
-                                                    <div id="crypto" className="p-4">
-                                                        <div
-                                                            id={PRICE_CHART_ID}
-                                                            ref={containerRef}
-                                                            style={{
-                                                                width: "100%",
-                                                                height: "420px", // ensure visible height
-                                                            }}
-                                                        />
-                                                    </div>
+                                            <div className="box-body !p-0">
+                                                <div id="crypto" className="p-4">
+                                                    <PriceChart 
+                                                        pairAddress="0x96d4b53a38337a5733179751781178a2613306063c511b78cd02684739288c0a"
+                                                        theme={theme}
+                                                    />
                                                 </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="xl:col-span-4 col-span-12">
@@ -249,23 +154,8 @@ const getTailwindBgColor = () => {
                                                     <h5 className="box-title">Swap $BTG</h5>
                                                 </div>
 
-                                                {/* <div className="alert alert-warning flex items-start m-4 mb-0" role="alert">
-                                                        <svg
-                                                            className="custom-alert-icon fill-warning inline-flex mt-1 me-2"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            height="1.5rem"
-                                                            viewBox="0 0 24 24"
-                                                            width="1.5rem"
-                                                            fill="#0F382B"
-                                                        >
-                                                            <path d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-                                                        </svg>
-                                                        <div>
-                                                            <div className="text-[0.875rem] mb-1">You’re on testnet!</div>
-                                                            <div className="text-[0.65rem] text-default ">Swap shows BTG but actually uses USDC.</div>                                                    </div>
-                                                    </div> */}
-                                                <div className="box-body crypto-data" style={{ paddingTop: 0 }}>
+                                
+                                                <div className="box-body crypto-data" style={{ paddingTop: 0, opacity: 0.5, pointerEvents: 'none' }}>
 
                                                     <Swap className='swapContainer'>
                                                         <SwapAmountInput

@@ -7,7 +7,7 @@ import { base } from 'wagmi/chains';
 import { Fragment } from 'react';
 import { btgToken, ETHToken } from "@/shared/data/tokens/data";
 import { useSetActiveWallet } from '@privy-io/wagmi';
-import { useConnectedAddress } from "./useConnectedAddress"; // Update this import path
+import { useConnectedAddress } from "@/app/(components)/(contentlayout)/useConnectedAddress";
 
 const WalletMenu: React.FC = () => {
   const { ready, authenticated, user, linkWallet, exportWallet, createWallet } = usePrivy();
@@ -44,7 +44,6 @@ const WalletMenu: React.FC = () => {
   }
 
   useEffect(() => {
-    console.log("userrr--", user)
     if (farcasterWallet) {
       // Force Farcaster primary as external
       setActivePrivyWallet({

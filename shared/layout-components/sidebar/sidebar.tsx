@@ -116,14 +116,12 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 		// Check if sidebar is disabled (e.g., wallet menu is open)
 		const sidebar = document.querySelector(".app-sidebar");
 		if (sidebar?.classList.contains("disabled")) {
-			console.log('🚫 Sidebar disabled, skipping menuClose');
 			return;
 		}
 		
 		// Prevent duplicate calls within 100ms (from multiple handlers)
 		const now = Date.now();
 		if (now - lastMenuCloseTime.current < 100) {
-			console.log('🚫 Ignoring duplicate menuClose call');
 			return;
 		}
 		lastMenuCloseTime.current = now;
@@ -138,10 +136,8 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 			const theme = store.getState();
 			// Only close if menu is actually open
 			if (window.innerWidth <= 992 && theme.dataToggled === "open") {
-				console.log('✅ Closing menu');
 				ThemeChanger({ ...theme, dataToggled: "close" });
 			} else {
-				console.log('ℹ️ Menu already closed, skipping');
 			}
 			const overlayElement = document.querySelector("#responsive-overlay") as HTMLElement | null;
 			if (overlayElement) {
@@ -502,7 +498,6 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 
 				// New logic: Handle query parameters
 				else if (item.path && item.path.includes('?')) {
-					console.log
 					const itemBasePath = item.path.split('?')[0]; // Base path of the menu item
 					const currentBasePath = currentPath.split('?')[0]; // Base path of the current URL
 

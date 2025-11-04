@@ -123,16 +123,6 @@ export const MenuItems: any = [
   },
 
   {
-    title: "X402 Payment",
-    icon: <i className="bx bx-dollar-circle side-menu__icon"></i>,
-    path: "/x402-payment",
-    type: "link",
-    active: false,
-    selected: false,
-    dirchange: false,
-  },
-
-  {
     menutitle: "UTILITIES",
   },
   {
@@ -208,31 +198,6 @@ export const MenuItems: any = [
     dirchange: false,
 
 
-  },
-
-  {
-    menutitle: "",
-  },
-
-  {
-    title: "Climate Agent",
-    icon: (
-      <div className="relative">
-        <i className="bx bx-bot side-menu__icon text-secondary"></i>
-        <span className="absolute -top-1 -right-1 w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
-      </div>
-    ),
-    path: "/climate-agent",
-    type: "link",
-    active: false,
-    selected: false,
-    dirchange: false,
-    className: "!mt-8 !mb-4 !bg-gradient-to-r !from-secondary/20 !to-transparent hover:!from-secondary/30 hover:!to-transparent !border-l-4 !border-secondary !rounded-r-lg !shadow-lg",
-    badge: (
-      <span className="badge !bg-secondary !text-white !py-[0.25rem] !px-[0.45rem] !text-[0.65em] ms-2 animate-pulse">
-        AI
-      </span>
-    ),
   },
 
 

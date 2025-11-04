@@ -25,6 +25,7 @@ const BalanceCard = ({ totalBalance, btgBalance, btgToken }: BalanceCardProps) =
         <div className="grid grid-cols-12 gap-x-6">
           <div className="xl:col-span-12 col-span-12">
             <div className="box mt-6">
+        
               <div className="box-body">
                 {/* Responsive flex direction */}
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
@@ -36,7 +37,7 @@ const BalanceCard = ({ totalBalance, btgBalance, btgToken }: BalanceCardProps) =
                       ~  ${totalBalance || "0.00"} USD
                     </small>
                   </div>
-                  <div className="mt-4 md:mt-0 md:ml-6 w-full md:w-auto">
+                  <div className="mt-4 md:mt-0 md:ml-6 w-full md:w-auto" style={{ opacity: 0.5, pointerEvents: 'none' }}>
                     <Buy className="border-none buyToken w-full md:w-auto" toToken={btgToken} />
                   </div>
                 </div>
