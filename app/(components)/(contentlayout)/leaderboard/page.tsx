@@ -13,8 +13,7 @@ import { LinkdropSDK } from 'linkdrop-sdk';
 import { ethers } from 'ethers';
 
 const Select = dynamic(() => import("react-select"), { ssr: false });
-// DISABLED: Durable Object URL
-// const DO_BASE = "https://durable-object-starter.bitgrass-crypto.workers.dev";
+const DO_BASE = "https://durable-object-starter.bitgrass-crypto.workers.dev";
 
 // Linkdrop configuration
 const CAMPAIGN_CHAIN_ID = 8453; // Base chain
@@ -57,8 +56,6 @@ function useDOLeaderboard() {
         const abort = new AbortController();
 
         const fetchOnce = async () => {
-            // DISABLED: Durable Object fetch
-            /*
             try {
                 setLoading(true);
                 const res = await fetch(`${DO_BASE}/leaderboard`, {
@@ -77,13 +74,6 @@ function useDOLeaderboard() {
                     setError(String(e?.message || e));
                     setLoading(false);
                 }
-            }
-            */
-            // Return empty data instead
-            if (!closed) {
-                setVersion(null);
-                setRanked([]);
-                setLoading(false);
             }
         };
 

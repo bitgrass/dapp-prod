@@ -37,7 +37,7 @@ const BalanceCard = ({ totalBalance, btgBalance, btgToken }: BalanceCardProps) =
                       ~  ${totalBalance || "0.00"} USD
                     </small>
                   </div>
-                  <div className="mt-4 md:mt-0 md:ml-6 w-full md:w-auto" style={{ opacity: 0.5, pointerEvents: 'none' }}>
+                  <div className="mt-4 md:mt-0 md:ml-6 w-full md:w-auto">
                     <Buy className="border-none buyToken w-full md:w-auto" toToken={btgToken} />
                   </div>
                 </div>

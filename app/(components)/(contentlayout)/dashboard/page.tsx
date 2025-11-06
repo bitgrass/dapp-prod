@@ -126,66 +126,64 @@ const Dashboard = () => {
 
     const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
 
-    // Disabled Moralis price API - returns 404
-    // useEffect(() => {
-    //     async function fetchPrice() {
-    //         try {
-    //             const response = await axios.get(
-    //                 `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
-    //                 {
-    //                     headers: {
-    //                         accept: "application/json",
-    //                         "X-API-Key": API_KEY!,
-    //                     },
-    //                 }
-    //             )
-    //             const prices = response.data.usdPrice;
-    //             const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
+    useEffect(() => {
+        async function fetchPrice() {
+            try {
+                const response = await axios.get(
+                    `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
+                    {
+                        headers: {
+                            accept: "application/json",
+                            "X-API-Key": API_KEY!,
+                        },
+                    }
+                )
+                const prices = response.data.usdPrice;
+                const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
 
 
 
 
-    //             if (prices) {
-    //                 setBtgPrice(prices.toFixed(6)); // Set the price as a string
-    //             } else {
-    //                 console.warn('Uniswap V3 0.30% price not found');
-    //             }
+                if (prices) {
+                    setBtgPrice(prices.toFixed(6)); // Set the price as a string
+                } else {
+                    console.warn('Uniswap V3 0.30% price not found');
+                }
 
 
-    //         } catch (error) {
-    //             console.error("Error fetching Degen price:", error);
-    //         }
-    //     }
+            } catch (error) {
+                console.error("Error fetching Degen price:", error);
+            }
+        }
 
-    //     fetchPrice();
-    // }, []);
+        fetchPrice();
+    }, []);
 
-    // Disabled Moralis analytics API
-    // useEffect(() => {
-    //     async function fetchPrice24H() {
-    //         try {
-    //             const response = await axios.get(
-    //                 `https://deep-index.moralis.io/api/v2.2/tokens/${btgToken.address}/analytics?chain=base`,
-    //                 {
-    //                     headers: {
-    //                         accept: "application/json",
-    //                         "X-API-Key": API_KEY!,
-    //                     },
-    //                 }
-    //             );
+    useEffect(() => {
+        async function fetchPrice24H() {
+            try {
+                const response = await axios.get(
+                    `https://deep-index.moralis.io/api/v2.2/tokens/${btgToken.address}/analytics?chain=base`,
+                    {
+                        headers: {
+                            accept: "application/json",
+                            "X-API-Key": API_KEY!,
+                        },
+                    }
+                );
 
-    //             const volume24h =
-    //                 (response.data?.totalBuyVolume?.["24h"] || 0) +
-    //                 (response.data?.totalSellVolume?.["24h"] || 0);
-    //             setBtgPercentChange(volume24h.toFixed(2)); // You can create this state to store it
+                const volume24h =
+                    (response.data?.totalBuyVolume?.["24h"] || 0) +
+                    (response.data?.totalSellVolume?.["24h"] || 0);
+                setBtgPercentChange(volume24h.toFixed(2)); // You can create this state to store it
 
-    //         } catch (error) {
-    //             console.error("Error fetching BTG analytics:", error);
-    //         }
-    //     }
+            } catch (error) {
+                console.error("Error fetching BTG analytics:", error);
+            }
+        }
 
-    //     fetchPrice24H();
-    // }, []);
+        fetchPrice24H();
+    }, []);
 
 
 
@@ -673,7 +671,7 @@ const Dashboard = () => {
                                                             <div className="text-[0.875rem] mb-1">You’re on testnet!</div>
                                                             <div className="text-[0.65rem] text-default ">Swap shows BTG but actually uses USDC.</div>                                                    </div>
                                                     </div> */}
-                                                    <div className="box-body crypto-data" style={{ paddingTop: 0, opacity: 0.5, pointerEvents: 'none' }}>
+                                                    <div className="box-body crypto-data" style={{ paddingTop: 0 }}>
 
                                                         <Swap className='swapContainer'>
                                                             <SwapAmountInput

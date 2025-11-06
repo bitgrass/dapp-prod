@@ -50,7 +50,6 @@ const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
 
   const twitterUrl = `https://x.com/intent/post?text=${encodedTextTwitter}%0A%0A${encodedLink}?ref=twitter_1`;
 
-  // DISABLED: Fetch totals directly from Durable Object
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -58,8 +57,6 @@ const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
 
       let totals = DEFAULT_TOTALS;
 
-      // DISABLED: Durable Object fetch
-      /*
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -81,7 +78,6 @@ const imageUrl = getAbsoluteUrl('/assets/images/brand-logos/farShare.jpg');
         }
       } catch (err) {
       }
-      */
 
       // Build project object inline
       const projects = [

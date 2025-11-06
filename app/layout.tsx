@@ -16,28 +16,8 @@ export const viewport = {
   initialScale: 1.0,
 };
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: 'Bitgrass - Tokenized Carbon Credits',
-    description: 'Carbon Credit and RWA',
-    other: {
-      'fc:miniapp': JSON.stringify({
-        version: 'next',
-        imageUrl: 'https://app.bitgrass.com/image.png',
-        button: {
-          title: 'Launch Bitgrass',
-          action: {
-            type: 'launch_miniapp',
-            name: 'Bitgrass',
-            url: 'https://app.bitgrass.com',
-            splashImageUrl: 'https://app.bitgrass.com/splash.png',
-            splashBackgroundColor: '#ffffff',
-          },
-        },
-      }),
-    },
-  };
-}
+
+
 
 export default function RootLayout({
   children,

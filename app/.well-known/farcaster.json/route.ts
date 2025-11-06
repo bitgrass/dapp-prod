@@ -25,35 +25,33 @@ export async function GET() {
       version: "1",
       name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME,
       subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE,
-      description:"Carbon Credit and RWA",
-      screenshotUrls: [],
-      iconUrl: "https://app.bitgrass.com/icon.png",
-      splashImageUrl: "https://app.bitgrass.com/splash.png",
+      description: process.env.NEXT_PUBLIC_APP_DESCRIPTION,
+      screenshotUrls: [
+        "https://ik.imagekit.io/cafu/bitgrass/100m2Share.webp?updatedAt=1751037776589&ik-s=a2715b2b9d2a1d53e36830c47212d2fcc58f28bf",
+        "https://ik.imagekit.io/cafu/bitgrass/500m2Share.webp?updatedAt=1751037775707&ik-s=0a4a436924505de65a90c3c7f6075d0e132426da",
+        "https://ik.imagekit.io/cafu/bitgrass/1000m2Share.webp?updatedAt=1751037779175&ik-s=aaa06f48d035369ec9782a489ea3b2c59fc7753e"],
+      iconUrl: process.env.NEXT_PUBLIC_APP_ICON,
+      splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE,
       splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR,
       homeUrl: URL,
       webhookUrl: "https://api.neynar.com/f/app/32b4dae1-c174-43b4-a30d-cf6aceaf3f10/event",
       primaryCategory: process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY,
-      imageUrl:"https://app.bitgrass.com/image.png",
-      castShareUrl:"https://app.bitgrass.com",
-      buttonTitle:"Carbon Credit and RWA",
-
       tags: [
         "rewards",
         "leaderboard",
         "warpcast",
         "earn"
       ],
-      heroImageUrl: "https://app.bitgrass.com/icon.png",
-      tagline:"Carbon Credit and RWA",
+      heroImageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE,
+      tagline: process.env.NEXT_PUBLIC_APP_TAGLINE,
       ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE,
-      ogDescription: "Carbon Credit and RWA",
-      ogImageUrl: "https://app.bitgrass.com/image.png",
+      ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION,
+      ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE,
+      noindex: "true"
 
     }),
     baseBuilder: {
-      ownerAddress: ["0x7c3cd19af38436d079D866b6F2F6d169f244Fb7A"],
+      allowedAddresses: ["0x7c3cd19af38436d079D866b6F2F6d169f244Fb7A"],
     },
-      noIndex: "false",
-
   });
 }

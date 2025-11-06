@@ -155,7 +155,7 @@ const Dashboard = () => {
                                                 </div>
 
                                 
-                                                <div className="box-body crypto-data" style={{ paddingTop: 0, opacity: 0.5, pointerEvents: 'none' }}>
+                                                <div className="box-body crypto-data" style={{ paddingTop: 0 }}>
 
                                                     <Swap className='swapContainer'>
                                                         <SwapAmountInput

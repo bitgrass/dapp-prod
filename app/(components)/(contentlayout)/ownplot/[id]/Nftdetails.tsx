@@ -106,14 +106,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         isMinitapp,
         _debug
     } = useConnectedAddress();
-    
- 
+
+
     const { switchChainAsync } = useSwitchChain();
     const [isMinting, setIsMinting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [toastTitle, setToastTitle] = useState<string | null>(null);
-    const STATIC_MINT_PRICE_ETH = 0.05; // adjust as needed
+    const STATIC_MINT_PRICE_ETH = 0.00001; // adjust as needed
     const [isBuying, setIsBuying] = useState(false);
 
     // Use isConnected from wagmi, but also check if we have an address from our hook
@@ -158,20 +158,20 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     };
 
 
-useEffect(() => {
-    const initSDK = async () => {
-        if (isMinitapp) {
-            try {
-                await sdk.actions.ready();
-                console.log("Farcaster SDK initialized");
-            } catch (error) {
-                console.error("Failed to initialize Farcaster SDK:", error);
+    useEffect(() => {
+        const initSDK = async () => {
+            if (isMinitapp) {
+                try {
+                    await sdk.actions.ready();
+                    console.log("Farcaster SDK initialized");
+                } catch (error) {
+                    console.error("Failed to initialize Farcaster SDK:", error);
+                }
             }
-        }
-    };
-    
-    initSDK();
-}, [isMinitapp]);
+        };
+
+        initSDK();
+    }, [isMinitapp]);
 
 
 
@@ -219,133 +219,130 @@ useEffect(() => {
 
     // Disabled - Coming Soon
     const handleMintAbi = async (quantity: number) => {
-        return; // Function disabled
-        /*
-    try {
-        setLoading(true);
-        console.log("Address for minting:", userAddress);
-        console.log("Is miniapp:", isMinitapp);
+        try {
+            setLoading(true);
+            console.log("Address for minting:", userAddress);
+            console.log("Is miniapp:", isMinitapp);
 
-        if (!userAddress || !ready || !authenticated) {
-            login();
-            return;
-        }
-
-        // For non-Farcaster environments, we still need a client
-        if (!isMinitapp && !client) {
-            login();
-            return;
-        }
-
-        const onBase = await ensureBaseChain();
-        if (!onBase) {
-            setLoading(false);
-            return;
-        }
-
-        // Read mint price from SeaDrop
-        const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-        const readSeaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, publicProvider);
-        const publicDrop = await readSeaDrop.getPublicDrop(CONTRACT_ADDRESS);
-        const mintPrice = publicDrop.mintPrice;
-        const totalPrice = mintPrice * BigInt(quantity);
-
-        // Prepare calldata
-        const iface = new ethers.Interface(SeaDropABI);
-        const calldata = iface.encodeFunctionData("mintPublic", [
-            CONTRACT_ADDRESS,
-            SEADROP_CONDUIT,
-            userAddress,
-            quantity,
-        ]) as `0x${string}`;
-
-        let txHash: string;
-
-        // Use Farcaster SDK's Ethereum provider for miniapp
-        if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
-            console.log("Using Farcaster SDK Ethereum provider for mint");
-            
-            const farcasterProvider = await getFarcasterProvider();
-            if (!farcasterProvider) {
-                throw new Error("Failed to get Farcaster Ethereum provider");
+            if (!userAddress || !ready || !authenticated) {
+                login();
+                return;
             }
 
-            txHash = await farcasterProvider.request({
-                method: "eth_sendTransaction",
-                params: [
-                    {
-                        from: userAddress as `0x${string}`,
-                        to: SEADROP_ADDRESS,
-                        value: "0x" + totalPrice.toString(16) as `0x${string}`,
-                        data: calldata,
-                    },
-                ],
-            });
-            console.log("✅ Farcaster provider mint submitted:", txHash);
-        } else {
-            // Standard EIP-1193 for other environments
-            console.log("Using standard EIP-1193 provider for mint");
-            txHash = await client.request({
-                method: "eth_sendTransaction",
-                params: [
-                    {
-                        from: userAddress,
-                        to: SEADROP_ADDRESS,
-                        value: "0x" + totalPrice.toString(16),
-                        data: calldata,
-                    },
-                ],
-            });
-            console.log("✅ Standard mint transaction submitted:", txHash);
-        }
+            // For non-Farcaster environments, we still need a client
+            if (!isMinitapp && !client) {
+                login();
+                return;
+            }
 
-        // Wait for confirmation and parse events
-        const receipt = await publicProvider.waitForTransaction(txHash);
-        const transferTopic = ethers.id("Transfer(address,address,uint256)");
-        const mintedTokenIds: string[] = [];
+            const onBase = await ensureBaseChain();
+            if (!onBase) {
+                setLoading(false);
+                return;
+            }
 
-        if (receipt) {
-            for (const log of receipt.logs) {
-                if (
-                    log.address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() &&
-                    log.topics[0] === transferTopic &&
-                    log.topics.length === 4
-                ) {
-                    mintedTokenIds.push(BigInt(log.topics[3]).toString());
+            // Read mint price from SeaDrop
+            const publicProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+            const readSeaDrop = new ethers.Contract(SEADROP_ADDRESS, SeaDropABI, publicProvider);
+            const publicDrop = await readSeaDrop.getPublicDrop(CONTRACT_ADDRESS);
+            const mintPrice = publicDrop.mintPrice;
+            const totalPrice = mintPrice * BigInt(quantity);
+
+            // Prepare calldata
+            const iface = new ethers.Interface(SeaDropABI);
+            const calldata = iface.encodeFunctionData("mintPublic", [
+                CONTRACT_ADDRESS,
+                SEADROP_CONDUIT,
+                userAddress,
+                quantity,
+            ]) as `0x${string}`;
+
+            let txHash: string;
+
+            // Use Farcaster SDK's Ethereum provider for miniapp
+            if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
+                console.log("Using Farcaster SDK Ethereum provider for mint");
+
+                const farcasterProvider = await getFarcasterProvider();
+                if (!farcasterProvider) {
+                    throw new Error("Failed to get Farcaster Ethereum provider");
+                }
+
+                txHash = await farcasterProvider.request({
+                    method: "eth_sendTransaction",
+                    params: [
+                        {
+                            from: userAddress as `0x${string}`,
+                            to: SEADROP_ADDRESS,
+                            value: "0x" + totalPrice.toString(16) as `0x${string}`,
+                            data: calldata,
+                        },
+                    ],
+                });
+                console.log("✅ Farcaster provider mint submitted:", txHash);
+            } else {
+                // Standard EIP-1193 for other environments
+                console.log("Using standard EIP-1193 provider for mint");
+                txHash = await client.request({
+                    method: "eth_sendTransaction",
+                    params: [
+                        {
+                            from: userAddress,
+                            to: SEADROP_ADDRESS,
+                            value: "0x" + totalPrice.toString(16),
+                            data: calldata,
+                        },
+                    ],
+                });
+                console.log("✅ Standard mint transaction submitted:", txHash);
+            }
+
+            // Wait for confirmation and parse events
+            const receipt = await publicProvider.waitForTransaction(txHash);
+            const transferTopic = ethers.id("Transfer(address,address,uint256)");
+            const mintedTokenIds: string[] = [];
+
+            if (receipt) {
+                for (const log of receipt.logs) {
+                    if (
+                        log.address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase() &&
+                        log.topics[0] === transferTopic &&
+                        log.topics.length === 4
+                    ) {
+                        mintedTokenIds.push(BigInt(log.topics[3]).toString());
+                    }
                 }
             }
-        }
 
-        if (mintedTokenIds.length > 0) {
-            setModalData({
-                id: mintedTokenIds.join(", "),
-                image: "/assets/images/apps/100m2.webp",
-                name: `Bitgrass - Standard Collection`,
-            });
-            setIsStandardMintModalOpen(true);
-        }
-    } catch (error: any) {
-        console.error("❌ Mint failed:", error);
+            if (mintedTokenIds.length > 0) {
+                setModalData({
+                    id: mintedTokenIds.join(", "),
+                    image: "/assets/images/apps/100m2.webp",
+                    name: `Bitgrass - Standard Collection`,
+                });
+                setIsStandardMintModalOpen(true);
+            }
+        } catch (error: any) {
+            console.error("❌ Mint failed:", error);
 
-        if (error?.code === 4001 || error?.message?.toLowerCase().includes("user rejected")) {
-            setToastTitle("Transaction Rejected");
-            setToastMessage("You missed your plot.");
-        } else if (
-            error?.code === "INSUFFICIENT_FUNDS" ||
-            error?.message?.toLowerCase().includes("insufficient funds")
-        ) {
-            setToastTitle("Insufficient Funds");
-            setToastMessage("You need more ETH in your wallet to complete your mint.");
-        } else {
-            setToastTitle("Transaction Failed");
-            setToastMessage("⚠️ Something went wrong. Please try again.");
+            if (error?.code === 4001 || error?.message?.toLowerCase().includes("user rejected")) {
+                setToastTitle("Transaction Rejected");
+                setToastMessage("You missed your plot.");
+            } else if (
+                error?.code === "INSUFFICIENT_FUNDS" ||
+                error?.message?.toLowerCase().includes("insufficient funds")
+            ) {
+                setToastTitle("Insufficient Funds");
+                setToastMessage("You need more ETH in your wallet to complete your mint.");
+            } else {
+                setToastTitle("Transaction Failed");
+                setToastMessage("⚠️ Something went wrong. Please try again.");
+            }
+            setShowToast(true);
+        } finally {
+            setLoading(false);
         }
-        setShowToast(true);
-    } finally {
-        setLoading(false);
-    }
-    */
-};
+    };
 
     const initPrices = async () => {
         try {
@@ -394,29 +391,25 @@ useEffect(() => {
         let nextCursor: string | null = null;
 
         const getListings = async (cursor: string | null = null) => {
-            // Disabled OpenSea API - invalid API key
-            console.warn('OpenSea listings disabled - invalid API key');
-            return { listings: [], next: null };
-            
-            // const params = new URLSearchParams({ collection });
-            // if (cursor) params.set("next", cursor);
-            // const res = await fetch(`https://muddy-forest-4e3a.bitgrass-crypto.workers.dev/api/opensea-listings?${params}`, {
-            //     headers: {
-            //         'api-key': `${apiKey}`
-            //     }
-            // });
-            // const text = await res.text();
+            const params = new URLSearchParams({ collection });
+            if (cursor) params.set("next", cursor);
+            const res = await fetch(`https://muddy-forest-4e3a.bitgrass-crypto.workers.dev/api/opensea-listings?${params}`, {
+                headers: {
+                    'api-key': `${apiKey}`
+                }
+            });
+            const text = await res.text();
 
-            // if (!res.ok) {
-            //     console.error('OpenSea proxy failed', {
-            //         status: res.status,
-            //         url: res.url,
-            //         body: text.slice(0, 2000)
-            //     });
-            //     throw new Error(`API error ${res.status}`);
-            // }
+            if (!res.ok) {
+                console.error('OpenSea proxy failed', {
+                    status: res.status,
+                    url: res.url,
+                    body: text.slice(0, 2000)
+                });
+                throw new Error(`API error ${res.status}`);
+            }
 
-            // return JSON.parse(text);
+            return JSON.parse(text);
         };
 
         do {
@@ -482,7 +475,6 @@ useEffect(() => {
 
         setIsLoadingFetchAvailable(false);
     }
-
     async function fetchListedLegendaryItems(tokenIds: any) {
         if (!userAddress || !isConnected || !apiKey) {
             console.log("Missing wallet connection or API key, skipping fetch...");
@@ -617,227 +609,155 @@ useEffect(() => {
     useEffect(() => {
         fetchAvailableNfts();
     }, [isModalOpen, isFailureModalOpen]);
-   // Disabled - Coming Soon
-   // Updated handleBuy function for web-based Farcaster
-async function handleBuy(order: any, tier: "Legendary" | "Premium") {
-    return; // Function disabled
-    /*
-    if (!userAddress || !ready || !authenticated) {
-        login();
-        return;
-    }
+    async function handleBuy(order: any, tier: "Legendary" | "Premium") {
+        if (!userAddress || !ready || !authenticated) {
+            login();
+            return;
+        }
 
-    console.log("=== WALLET DEBUG INFO ===");
-    console.log("userAddress:", userAddress);
-    console.log("farcasterWallet:", farcasterWallet);
-    console.log("isMinitapp:", isMinitapp);
+        console.log("=== WALLET DEBUG INFO ===");
+        console.log("userAddress:", userAddress);
+        console.log("farcasterWallet:", farcasterWallet);
+        console.log("isMinitapp:", isMinitapp);
 
-    if (!order) {
-        const modalDataFailed: any = await getModalData();
-        setFailureImage(modalDataFailed.image);
-        setActiveOrder(false);
-        setFailureModalOpen(true);
-        return;
-    }
+        if (!order) {
+            const modalDataFailed: any = await getModalData();
+            setFailureImage(modalDataFailed.image);
+            setActiveOrder(false);
+            setFailureModalOpen(true);
+            return;
+        }
 
-    try {
-        setIsBuying(true);
+        try {
+            setIsBuying(true);
 
-        const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
-        const buyerAddress = userAddress;
+            const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+            const buyerAddress = userAddress;
 
-        // Check user balance
-        const balance = await provider.getBalance(buyerAddress);
-        console.log("💳 User balance:", ethers.formatEther(balance), "ETH");
+            // Check user balance
+            const balance = await provider.getBalance(buyerAddress);
+            console.log("💳 User balance:", ethers.formatEther(balance), "ETH");
 
-        // Get fulfillment data from OpenSea
-        const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
-            method: "POST",
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-                "x-api-key": `${apiKey}`,
-            },
-            body: JSON.stringify({
-                listing: {
-                    hash: order.order_hash,
-                    chain: "base",
-                    protocol_address: order.protocol_address,
+            // Get fulfillment data from OpenSea
+            const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
+                method: "POST",
+                headers: {
+                    accept: "application/json",
+                    "content-type": "application/json",
+                    "x-api-key": `${apiKey}`,
                 },
-                fulfiller: { address: buyerAddress },
-            }),
-        });
-
-        if (!fulfillmentRes.ok) {
-            const errorText = await fulfillmentRes.text();
-            console.error("❌ Fulfillment API error:", fulfillmentRes.status, errorText);
-            throw new Error("Failed to get fulfillment data from OpenSea");
-        }
-
-        const fulfillmentResponse = await fulfillmentRes.json();
-        
-        const { fulfillment_data } = fulfillmentResponse;
-        if (!fulfillment_data?.transaction?.input_data?.advancedOrder) {
-            throw new Error("Invalid fulfillment data from OpenSea");
-        }
-
-        // Use the advancedOrder directly from OpenSea's fulfillment response
-        // This includes the correct extraData required by the zone contract
-        const advancedOrder = fulfillment_data.transaction.input_data.advancedOrder;
-        
-        const seaport = new Seaport(provider, {
-            overrides: { contractAddress: order.protocol_address },
-        });
-
-        const { parameters, signature } = advancedOrder;
-
-        const value = parameters.consideration
-            .filter((i: any) => i.token === ethers.ZeroAddress)
-            .reduce((sum: bigint, i: any) => sum + BigInt(i.startAmount), BigInt(0));
-
-        console.log("💰 Purchase details:", {
-            value: ethers.formatEther(value),
-            buyerAddress,
-            orderHash: order.order_hash,
-        });
-
-        // Check if user has enough balance (NFT price + estimated gas)
-        const estimatedGas = ethers.parseEther("0.0002"); // ~0.0002 ETH for gas on Base (reduced estimate)
-        const totalNeeded = value + estimatedGas;
-        if (balance < totalNeeded) {
-            throw new Error(
-                `Insufficient balance. Need ${ethers.formatEther(totalNeeded)} ETH total ` +
-                `(${ethers.formatEther(value)} for NFT + ~${ethers.formatEther(estimatedGas)} for gas). ` +
-                `Current balance: ${ethers.formatEther(balance)} ETH`
-            );
-        }
-
-        // Verify NFT ownership and approval
-        const nftContract = new ethers.Contract(
-            parameters.offer[0].token,
-            [
-                'function ownerOf(uint256 tokenId) view returns (address)',
-                'function getApproved(uint256 tokenId) view returns (address)',
-                'function isApprovedForAll(address owner, address operator) view returns (bool)'
-            ],
-            provider
-        );
-
-        try {
-            const tokenId = parameters.offer[0].identifierOrCriteria;
-            const currentOwner = await nftContract.ownerOf(tokenId);
-            
-            if (currentOwner.toLowerCase() !== parameters.offerer.toLowerCase()) {
-                throw new Error("NFT is no longer owned by the seller. The listing is invalid.");
-            }
-
-            // Check if Seaport is approved
-            const approvedAddress = await nftContract.getApproved(tokenId);
-            const isApprovedForAll = await nftContract.isApprovedForAll(parameters.offerer, seaport.contract.target);
-            
-            // Check if using a conduit (OpenSea's transfer proxy)
-            const usingConduit = parameters.conduitKey !== "0x0000000000000000000000000000000000000000000000000000000000000000";
-            
-            if (!isApprovedForAll && approvedAddress.toLowerCase() !== seaport.contract.target.toString().toLowerCase()) {
-                if (!usingConduit) {
-                    throw new Error(
-                        "This listing cannot be fulfilled because the seller has not approved the marketplace contract. " +
-                        "The seller needs to approve the transfer before this NFT can be purchased. " +
-                        "Please try a different listing or contact the seller."
-                    );
-                }
-            }
-        } catch (verifyError: any) {
-            if (verifyError.message.includes("owned") || verifyError.message.includes("approved")) {
-                throw verifyError;
-            }
-            // If it's a contract call error, continue anyway
-        }
-
-        // Prepare the calldata using the exact parameters from OpenSea
-        const criteriaResolvers = fulfillment_data.transaction.input_data.criteriaResolvers || [];
-        const fulfillerConduitKey = fulfillment_data.transaction.input_data.fulfillerConduitKey;
-        const recipient = fulfillment_data.transaction.input_data.recipient;
-
-        const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
-            advancedOrder,
-            criteriaResolvers,
-            fulfillerConduitKey,
-            recipient,
-        ]);
-
-        // Try to estimate gas using eth_estimateGas
-        try {
-            await client.request({
-                method: "eth_estimateGas",
-                params: [
-                    {
-                        from: buyerAddress,
-                        to: seaport.contract.target as string,
-                        value: "0x" + value.toString(16),
-                        data: calldata,
+                body: JSON.stringify({
+                    listing: {
+                        hash: order.order_hash,
+                        chain: "base",
+                        protocol_address: order.protocol_address,
                     },
-                ],
+                    fulfiller: { address: buyerAddress },
+                }),
             });
-        } catch (estimateError: any) {
-            console.error("❌ Gas estimation failed:", estimateError.message);
-            
-            throw new Error(
-                "Unable to estimate gas for this transaction. " +
-                "The listing may be expired, already sold, or invalid. " +
-                "Please refresh the page and try again."
-            );
-        }
 
-        // Check if order is expired
-        if (parameters.endTime && Number(parameters.endTime) < Math.floor(Date.now() / 1000)) {
-            throw new Error("This listing has expired. Please refresh the page.");
-        }
-
-        // Validate order parameters
-        if (!parameters.offerer || !parameters.zone || !parameters.offer || !parameters.consideration) {
-            console.error("Invalid order parameters:", parameters);
-            throw new Error("Invalid order data from OpenSea. Please try refreshing the page.");
-        }
-
-        // Validate Seaport contract address
-        if (!order.protocol_address || order.protocol_address === ethers.ZeroAddress) {
-            console.error("Invalid protocol address:", order.protocol_address);
-            throw new Error("Invalid Seaport contract address.");
-        }
-
-
-
-        let txHash: string;
-
-        // Use Farcaster SDK's Ethereum provider for miniapp
-        if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
-            console.log("Using Farcaster SDK Ethereum provider");
-            
-            const farcasterProvider = await getFarcasterProvider();
-            if (!farcasterProvider) {
-                throw new Error("Failed to get Farcaster Ethereum provider");
+            if (!fulfillmentRes.ok) {
+                const errorText = await fulfillmentRes.text();
+                console.error("❌ Fulfillment API error:", fulfillmentRes.status, errorText);
+                throw new Error("Failed to get fulfillment data from OpenSea");
             }
 
-            // Use the Farcaster provider directly
-            txHash = await farcasterProvider.request({
-                method: "eth_sendTransaction",
-                params: [
-                    {
-                        from: buyerAddress as `0x${string}`,
-                        to: seaport.contract.target as `0x${string}`,
-                        value: "0x" + value.toString(16) as `0x${string}`,
-                        data: calldata as `0x${string}`,
-                    } ,
-                ],
+            const fulfillmentResponse = await fulfillmentRes.json();
+
+            const { fulfillment_data } = fulfillmentResponse;
+            if (!fulfillment_data?.transaction?.input_data?.advancedOrder) {
+                throw new Error("Invalid fulfillment data from OpenSea");
+            }
+
+            // Use the advancedOrder directly from OpenSea's fulfillment response
+            // This includes the correct extraData required by the zone contract
+            const advancedOrder = fulfillment_data.transaction.input_data.advancedOrder;
+
+            const seaport = new Seaport(provider, {
+                overrides: { contractAddress: order.protocol_address },
             });
-            console.log("✅ Farcaster provider transaction submitted:", txHash);
-        } else {
-            // Standard EIP-1193 for other environments
+
+            const { parameters, signature } = advancedOrder;
+
+            const value = parameters.consideration
+                .filter((i: any) => i.token === ethers.ZeroAddress)
+                .reduce((sum: bigint, i: any) => sum + BigInt(i.startAmount), BigInt(0));
+
+            console.log("💰 Purchase details:", {
+                value: ethers.formatEther(value),
+                buyerAddress,
+                orderHash: order.order_hash,
+            });
+
+            // Check if user has enough balance (NFT price + estimated gas)
+            const estimatedGas = ethers.parseEther("0.0002"); // ~0.0002 ETH for gas on Base (reduced estimate)
+            const totalNeeded = value + estimatedGas;
+            if (balance < totalNeeded) {
+                throw new Error(
+                    `Insufficient balance. Need ${ethers.formatEther(totalNeeded)} ETH total ` +
+                    `(${ethers.formatEther(value)} for NFT + ~${ethers.formatEther(estimatedGas)} for gas). ` +
+                    `Current balance: ${ethers.formatEther(balance)} ETH`
+                );
+            }
+
+            // Verify NFT ownership and approval
+            const nftContract = new ethers.Contract(
+                parameters.offer[0].token,
+                [
+                    'function ownerOf(uint256 tokenId) view returns (address)',
+                    'function getApproved(uint256 tokenId) view returns (address)',
+                    'function isApprovedForAll(address owner, address operator) view returns (bool)'
+                ],
+                provider
+            );
+
             try {
-                // Send transaction (gas estimation already done above)
-                txHash = await client.request({
-                    method: "eth_sendTransaction",
+                const tokenId = parameters.offer[0].identifierOrCriteria;
+                const currentOwner = await nftContract.ownerOf(tokenId);
+
+                if (currentOwner.toLowerCase() !== parameters.offerer.toLowerCase()) {
+                    throw new Error("NFT is no longer owned by the seller. The listing is invalid.");
+                }
+
+                // Check if Seaport is approved
+                const approvedAddress = await nftContract.getApproved(tokenId);
+                const isApprovedForAll = await nftContract.isApprovedForAll(parameters.offerer, seaport.contract.target);
+
+                // Check if using a conduit (OpenSea's transfer proxy)
+                const usingConduit = parameters.conduitKey !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+                if (!isApprovedForAll && approvedAddress.toLowerCase() !== seaport.contract.target.toString().toLowerCase()) {
+                    if (!usingConduit) {
+                        throw new Error(
+                            "This listing cannot be fulfilled because the seller has not approved the marketplace contract. " +
+                            "The seller needs to approve the transfer before this NFT can be purchased. " +
+                            "Please try a different listing or contact the seller."
+                        );
+                    }
+                }
+            } catch (verifyError: any) {
+                if (verifyError.message.includes("owned") || verifyError.message.includes("approved")) {
+                    throw verifyError;
+                }
+                // If it's a contract call error, continue anyway
+            }
+
+            // Prepare the calldata using the exact parameters from OpenSea
+            const criteriaResolvers = fulfillment_data.transaction.input_data.criteriaResolvers || [];
+            const fulfillerConduitKey = fulfillment_data.transaction.input_data.fulfillerConduitKey;
+            const recipient = fulfillment_data.transaction.input_data.recipient;
+
+            const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
+                advancedOrder,
+                criteriaResolvers,
+                fulfillerConduitKey,
+                recipient,
+            ]);
+
+            // Try to estimate gas using eth_estimateGas
+            try {
+                await client.request({
+                    method: "eth_estimateGas",
                     params: [
                         {
                             from: buyerAddress,
@@ -847,57 +767,124 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                         },
                     ],
                 });
-                console.log("✅ Transaction submitted:", txHash);
-            } catch (txError: any) {
-                console.error("❌ Transaction error:", txError);
-                
-                if (txError.message?.includes("insufficient funds")) {
-                    throw new Error(`Insufficient ETH for gas + NFT price. Need ${ethers.formatEther(value)} ETH + gas fees.`);
-                } else {
-                    throw new Error("Transaction failed: " + (txError.message || "Unknown error"));
+            } catch (estimateError: any) {
+                console.error("❌ Gas estimation failed:", estimateError.message);
+
+                throw new Error(
+                    "Unable to estimate gas for this transaction. " +
+                    "The listing may be expired, already sold, or invalid. " +
+                    "Please refresh the page and try again."
+                );
+            }
+
+            // Check if order is expired
+            if (parameters.endTime && Number(parameters.endTime) < Math.floor(Date.now() / 1000)) {
+                throw new Error("This listing has expired. Please refresh the page.");
+            }
+
+            // Validate order parameters
+            if (!parameters.offerer || !parameters.zone || !parameters.offer || !parameters.consideration) {
+                console.error("Invalid order parameters:", parameters);
+                throw new Error("Invalid order data from OpenSea. Please try refreshing the page.");
+            }
+
+            // Validate Seaport contract address
+            if (!order.protocol_address || order.protocol_address === ethers.ZeroAddress) {
+                console.error("Invalid protocol address:", order.protocol_address);
+                throw new Error("Invalid Seaport contract address.");
+            }
+
+
+
+            let txHash: string;
+
+            // Use Farcaster SDK's Ethereum provider for miniapp
+            if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
+                console.log("Using Farcaster SDK Ethereum provider");
+
+                const farcasterProvider = await getFarcasterProvider();
+                if (!farcasterProvider) {
+                    throw new Error("Failed to get Farcaster Ethereum provider");
+                }
+
+                // Use the Farcaster provider directly
+                txHash = await farcasterProvider.request({
+                    method: "eth_sendTransaction",
+                    params: [
+                        {
+                            from: buyerAddress as `0x${string}`,
+                            to: seaport.contract.target as `0x${string}`,
+                            value: "0x" + value.toString(16) as `0x${string}`,
+                            data: calldata as `0x${string}`,
+                        },
+                    ],
+                });
+                console.log("✅ Farcaster provider transaction submitted:", txHash);
+            } else {
+                // Standard EIP-1193 for other environments
+                try {
+                    // Send transaction (gas estimation already done above)
+                    txHash = await client.request({
+                        method: "eth_sendTransaction",
+                        params: [
+                            {
+                                from: buyerAddress,
+                                to: seaport.contract.target as string,
+                                value: "0x" + value.toString(16),
+                                data: calldata,
+                            },
+                        ],
+                    });
+                    console.log("✅ Transaction submitted:", txHash);
+                } catch (txError: any) {
+                    console.error("❌ Transaction error:", txError);
+
+                    if (txError.message?.includes("insufficient funds")) {
+                        throw new Error(`Insufficient ETH for gas + NFT price. Need ${ethers.formatEther(value)} ETH + gas fees.`);
+                    } else {
+                        throw new Error("Transaction failed: " + (txError.message || "Unknown error"));
+                    }
                 }
             }
-        }
 
-        // Wait for confirmation
-        const receipt = await provider.waitForTransaction(txHash);
-        if (receipt?.status === 1) {
-            const modalData: any = await getModalData();
-            setModalData(modalData);
-            setModalOpen(true);
-        } else {
-            const modalDataFailed: any = await getModalData();
-            setFailureTxHash(txHash);
-            setFailureImage(modalDataFailed.image);
-            setActiveOrder(true);
-            setFailureModalOpen(true);
-        }
-    } catch (error: any) {
-        console.error("❌ Purchase failed:", error);
+            // Wait for confirmation
+            const receipt = await provider.waitForTransaction(txHash);
+            if (receipt?.status === 1) {
+                const modalData: any = await getModalData();
+                setModalData(modalData);
+                setModalOpen(true);
+            } else {
+                const modalDataFailed: any = await getModalData();
+                setFailureTxHash(txHash);
+                setFailureImage(modalDataFailed.image);
+                setActiveOrder(true);
+                setFailureModalOpen(true);
+            }
+        } catch (error: any) {
+            console.error("❌ Purchase failed:", error);
 
-        if (
-            error?.code === 4001 ||
-            error?.message?.toLowerCase().includes("user rejected") ||
-            error?.message?.toLowerCase().includes("user denied")
-        ) {
-            setToastTitle("Transaction Rejected");
-            setToastMessage("You cancelled the purchase.");
-        } else if (
-            error?.code === "INSUFFICIENT_FUNDS" ||
-            error?.message?.toLowerCase().includes("insufficient funds")
-        ) {
-            setToastTitle("Insufficient Funds");
-            setToastMessage("You need more ETH to complete this purchase.");
-        } else {
-            setToastTitle("Purchase Failed");
-            setToastMessage("⚠️ Something went wrong. Please try again.");
+            if (
+                error?.code === 4001 ||
+                error?.message?.toLowerCase().includes("user rejected") ||
+                error?.message?.toLowerCase().includes("user denied")
+            ) {
+                setToastTitle("Transaction Rejected");
+                setToastMessage("You cancelled the purchase.");
+            } else if (
+                error?.code === "INSUFFICIENT_FUNDS" ||
+                error?.message?.toLowerCase().includes("insufficient funds")
+            ) {
+                setToastTitle("Insufficient Funds");
+                setToastMessage("You need more ETH to complete this purchase.");
+            } else {
+                setToastTitle("Purchase Failed");
+                setToastMessage("⚠️ Something went wrong. Please try again.");
+            }
+            setShowToast(true);
+        } finally {
+            setIsBuying(false);
         }
-        setShowToast(true);
-    } finally {
-        setIsBuying(false);
     }
-    */
-}
 
 
     useEffect(() => {
@@ -1034,10 +1021,11 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                     </button>
                                                 </div>
                                                 <button
-                                                    className=" w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 cursor-not-allowed opacity-60"
-                                                    disabled={true}
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    onClick={() => handleMintAbi(quantity)}
+                                                    disabled={loading || !userAddress}
                                                 >
-                                                    Buy Tokenized Plot
+                                                    {loading ? "Processing..." : "Buy Tokenized Plot"}
                                                 </button>
 
                                             </div>
@@ -1170,10 +1158,11 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                 </div>
 
                                                 <button
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 cursor-not-allowed opacity-60"
-                                                    disabled={true}
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
+                                                    disabled={isLoadingFetchAvailable}
                                                 >
-                                                    Buy Tokenized Plot
+                                                    {isBuying ? "Processing..." : "Buy Tokenized Plot"}
                                                 </button>
 
 
@@ -1307,10 +1296,11 @@ async function handleBuy(order: any, tier: "Legendary" | "Premium") {
                                                 </div>
 
                                                 <button
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 cursor-not-allowed opacity-60"
-                                                    disabled={true}
+                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
+                                                    disabled={isLoadingFetchAvailable}
                                                 >
-                                                    Buy Tokenized Plot
+                                                    {isBuying ? "Processing..." : "Buy Tokenized Plot"}
                                                 </button>
 
                                             </div>

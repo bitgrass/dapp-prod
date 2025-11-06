@@ -48,33 +48,32 @@ const CryptoTable = ({
     }
   };
 
-  // Disabled Moralis BTG price API - returns 404
   useEffect(() => {
-    // async function fetchPriceBtg() {
-    //   try {
-    //     const response = await axios.get(
-    //       `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
-    //       {
-    //         headers: {
-    //           accept: "application/json",
-    //           "X-API-Key": API_KEY!,
-    //         },
-    //       }
-    //     )
+    async function fetchPriceBtg() {
+      try {
+        const response = await axios.get(
+          `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
+          {
+            headers: {
+              accept: "application/json",
+              "X-API-Key": API_KEY!,
+            },
+          }
+        )
 
-    //     const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
+        const dayHrPercentChange = response.data.usdPrice24hrPercentChange;
 
-    //     if (dayHrPercentChange) {
-    //       setBtgPercentChange(dayHrPercentChange.toFixed(2))
-    //     } else {
-    //       console.warn('24HrPercentChange price not found');
-    //     }
-    //   } catch (error) {
-    //     console.error("Error fetching Degen price:", error);
-    //   }
-    // }
+        if (dayHrPercentChange) {
+          setBtgPercentChange(dayHrPercentChange.toFixed(2))
+        } else {
+          console.warn('24HrPercentChange price not found');
+        }
+      } catch (error) {
+        console.error("Error fetching Degen price:", error);
+      }
+    }
 
-    // fetchPriceBtg();
+    fetchPriceBtg();
   }, []);
 
   useEffect(() => {
