@@ -680,7 +680,7 @@ const Leaderboard = () => {
                                                     background: hasBoostPass ? undefined : userInLeaderboard ? 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)' : undefined
                                                 }}
                                             >
-                                                {boostPassLoading ? '...' : hasBoostPass ? 'BoostPass Activated' : userInLeaderboard ? 'BoostPass' : 'BoostPass'}
+                                                {boostPassLoading ? '...' : hasBoostPass ? 'BoostPass Activated' : userInLeaderboard ? 'Boost APY' : 'Boost APY'}
                                             </button>
                                         </>
                                     )}
@@ -703,7 +703,7 @@ const Leaderboard = () => {
                     <div className="xl:col-span-12 col-span-12">
                         <div className="box overflow-hidden " style={{ marginBottom: 0 }}>
                             <div className="box-header justify-between">
-                                <div className="box-title">NFT holders Ranking</div>
+                                <div className="box-title">NFT adopters Ranking</div>
                             </div>
                             <div className="box-body !p-0">
                                 <div className="table-responsive">
