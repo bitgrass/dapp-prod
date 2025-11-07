@@ -300,8 +300,8 @@ const CryptoTable = ({
                 <img src="../../../assets/images/brand-logos/Boost.svg" alt="" />
               </span>
               <div className="ml-1 flex flex-col gap-1 min-w-0">
-                <div className="font-bold text-xl">{boostPassLoading ? "..." : hasBoostPass ? "Claimed" : "Not Claimed"}</div>
-                <div className="text-xs text-[#8c9097] dark:text-white/50 truncate">Boost Pass</div>
+                <div className="font-bold text-xl">{boostPassLoading ? "..." : hasBoostPass ? "x2 Boost " : "x2 Boost"}</div>
+                <div className="text-xs text-[#8c9097] dark:text-white/50 truncate">Staking APY</div>
               </div>
             </div>
           </div>

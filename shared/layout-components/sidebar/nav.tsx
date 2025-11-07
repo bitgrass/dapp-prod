@@ -48,6 +48,8 @@ const MapsIcon = <i className="bx bx-map side-menu__icon"></i>;
 
 const Icons = <i className="bx bx-store-alt side-menu__icon"></i>;
 
+const ClimateAgentIcon = <i className="bx bx-bot side-menu__icon"></i>;
+
 const badge = (
   <span className="badge !bg-warning/10 !text-warning !py-[0.25rem] !px-[0.45rem] !text-[0.75em] ms-1">
     12
@@ -66,6 +68,11 @@ const badge2 = (
 const badge4 = (
   <span className="text-primary text-[0.75em] badge !py-[0.25rem] !px-[0.45rem] rounded-sm bg-camel10 ms-1">
     Soon
+  </span>
+);
+const badgeAI = (
+  <span className="text-success text-[0.75em] badge !py-[0.25rem] !px-[0.45rem] rounded-sm !bg-success/10 ms-1 shadow-none">
+    New
   </span>
 );
 
@@ -198,6 +205,21 @@ export const MenuItems: any = [
     dirchange: false,
 
 
+  },
+
+  {
+    menutitle: "AI POWERED",
+  },
+
+  {
+    title: "Climate Agent",
+    icon: ClimateAgentIcon,
+    badgetxt: badgeAI,
+    path: "/climate-agent",
+    type: "link",
+    active: false,
+    selected: false,
+    dirchange: false,
   },
 
 

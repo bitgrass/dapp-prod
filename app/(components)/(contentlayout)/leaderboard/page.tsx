@@ -20,11 +20,15 @@ const CAMPAIGN_CHAIN_ID = 8453; // Base chain
 
 // Array of claim links from your Excel file - add all your claim links here
 const CLAIM_LINKS = [
-    "https://claim.linkdrop.io/#/redeem/84jkLk3nENEd?src=d",
-    "https://claim.linkdrop.io/#/redeem/GuZBaGy8SUFS?src=d",
-    "https://claim.linkdrop.io/#/redeem/HbUnN3yyuvnP?src=d",
-    "https://claim.linkdrop.io/#/redeem/HzPf4ydocMrq?src=d",
-    "https://claim.linkdrop.io/#/redeem/EP8Z9gc2RZp1?src=d",
+    "https://claim.linkdrop.io/#/redeem/jQgq7Z2nNN2i?src=d",
+    "https://claim.linkdrop.io/#/redeem/DyFCpH8xvT9K?src=d",
+    "https://claim.linkdrop.io/#/redeem/YH8XSpPA1AFX?src=d",
+    "https://claim.linkdrop.io/#/redeem/HEqGxTo1Y4Vd?src=d",
+    "https://claim.linkdrop.io/#/redeem/84cCGsL2Av3t?src=d",
+    "https://claim.linkdrop.io/#/redeem/CArfYKGMSThH?src=d",
+    "https://claim.linkdrop.io/#/redeem/6ZGHx5jv6NLQ?src=d",
+    "https://claim.linkdrop.io/#/redeem/Aph1rpjrvx5o?src=d",
+    "https://claim.linkdrop.io/#/redeem/8GEwRNTjgb2g?src=d",
 ];
 
 // Initialize Linkdrop SDK helper
@@ -255,7 +259,8 @@ const Leaderboard = () => {
         }
 
         // Quick check: see if any links are available
-        setClaimStatus("Checking claim availability...");
+        setClaiming(true);
+        setClaimStatus("Processing...");
         let hasAvailableLink = false;
         
         try {
@@ -278,10 +283,12 @@ const Leaderboard = () => {
 
         if (!hasAvailableLink) {
             setClaimStatus("❌ No available claim links. All links have been used or your address has already claimed.");
+            setClaiming(false);
             return;
         }
 
         setClaimStatus("");
+        setClaiming(false);
         // Show approval modal
         setShowApprovalModal(true);
     };
@@ -296,7 +303,7 @@ const Leaderboard = () => {
                 throw new Error("No wallet connected. Please connect your wallet first.");
             }
 
-            setClaimStatus("Finding available claim link...");
+            setClaimStatus("Processing...");
 
             // Try each claim link until we find an unclaimed one
             let claimedSuccessfully = false;
@@ -306,7 +313,7 @@ const Leaderboard = () => {
             for (let i = 0; i < CLAIM_LINKS.length; i++) {
                 const claimUrl = CLAIM_LINKS[i];
                 
-                setClaimStatus(`Checking link ${i + 1}/${CLAIM_LINKS.length}...`);
+                setClaimStatus("Processing...");
 
                 try {
                     // Initialize SDK for each attempt
@@ -331,10 +338,10 @@ const Leaderboard = () => {
                     }
 
                     // Found an available link!
-                    setClaimStatus(`Found available link! Initiating claim...`);
+                    setClaimStatus("Processing...");
                     
                     
-                    setClaimStatus("Submitting claim transaction...");
+                    setClaimStatus("Processing...");
                     
                     // Use SDK's redeem method - it handles the transaction automatically
                     // No wallet popup needed, Linkdrop uses gasless transactions
@@ -375,30 +382,25 @@ const Leaderboard = () => {
             setShowSuccessModal(true);
             setHasBoostPass(true); // Update state to show claimed status
 
-            if (txHash) {
-                setTimeout(() => {
-                    window.open(`https://basescan.org/tx/${txHash}`, '_blank');
-                }, 1500);
-            }
-
         } catch (err: any) {
+            console.error('Claim error:', err);
 
             if (err.code === 4001 || err.message?.includes('User denied')) {
-                setClaimStatus('❌ Transaction rejected by user.');
+                alert('❌ Transaction rejected by user.');
             } else if (err.message?.includes('already claimed') || err.message?.includes('redeemed') || err.message?.includes('Multiple claims forbidden')) {
-                setClaimStatus('❌ Your address has already claimed. Each wallet can only claim once.');
+                alert('❌ Your address has already claimed. Each wallet can only claim once.');
             } else if (err.message?.includes('expired')) {
-                setClaimStatus('❌ This claim link has expired.');
+                alert('❌ This claim link has expired.');
             } else if (err.message?.includes('deactivated')) {
-                setClaimStatus('❌ This link has been deactivated.');
+                alert('❌ This link has been deactivated.');
             } else if (err.message?.includes('insufficient funds')) {
-                setClaimStatus('❌ Insufficient funds for gas fees.');
+                alert('❌ Insufficient funds for gas fees.');
             } else if (err.message?.includes('401') || err.message?.includes('403')) {
-                setClaimStatus('❌ Authentication error. Please check API key configuration.');
+                alert('❌ Authentication error. The Linkdrop API key may be invalid or lacks permissions. Please contact support.');
             } else if (err.message?.includes('All claim links have been used')) {
-                setClaimStatus('❌ All claim links have been used or your address has already claimed. Each wallet can only claim once.');
+                alert('❌ All claim links have been used or your address has already claimed. Each wallet can only claim once.');
             } else {
-                setClaimStatus(`❌ Claim failed: ${err.message || 'Unknown error'}`);
+                alert(`❌ Claim failed: ${err.message || 'Unknown error'}`);
             }
         } finally {
             setClaiming(false);
@@ -486,7 +488,7 @@ const Leaderboard = () => {
                     </div>
                     {/* Right: Card */}
                     <div className="col-span-12 md:col-span-6 flex items-center justify-end mt-6 sm:mt-0">
-                        <div className="box w-full h-full flex flex-col justify-center shadow-none" style={{ minHeight: 220 }}>
+                        <div className="box w-full h-full flex flex-col justify-center shadow-none" style={{ minHeight: 250 }}>
 
                             <div className="box-body pb-0 " style={{ paddingBottom: 0 }}>
                                 {/* Rank Badge (Mobile only) */}
@@ -655,32 +657,38 @@ const Leaderboard = () => {
                                             </button>
                                             
                                             <button
-                                                className={`w-180 !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${
+                                                className={`w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${
                                                     hasBoostPass
-                                                        ? 'border-secondary bg-secondary/10 electric-border cursor-default text-secondary dark:text-white'
+                                                        ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
                                                         : userInLeaderboard
-                                                            ? 'cursor-pointer hover:opacity-90 text-white'
+                                                            ? 'cursor-pointer hover:opacity-90'
                                                             : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
                                                 }`}
-                                                onClick={hasBoostPass ? undefined : userInLeaderboard ? handleClaimBoostPass : undefined}
-                                                disabled={hasBoostPass || !userInLeaderboard}
+                                                onClick={hasBoostPass ? () => window.open('https://staking.bitgrass.com', '_blank') : userInLeaderboard ? handleClaimBoostPass : undefined}
+                                                disabled={!hasBoostPass && !userInLeaderboard}
                                                 style={{
                                                     userSelect: 'none',
-                                                    cursor: hasBoostPass ? 'default' : userInLeaderboard ? 'pointer' : 'not-allowed',
+                                                    cursor: hasBoostPass ? 'pointer' : userInLeaderboard ? 'pointer' : 'not-allowed',
                                                     background: hasBoostPass ? undefined : userInLeaderboard ? 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)' : undefined
                                                 }}
                                             >
-                                                {boostPassLoading ? '...' : hasBoostPass ? 'BoostPass Activated' : userInLeaderboard ? 'BoostPass' : 'BoostPass'}
+                                                {boostPassLoading ? '...' : hasBoostPass ? 'Stake $BTG' : userInLeaderboard ? 'Boost APY' : 'Boost APY'}
                                             </button>
                                         </>
                                     )}
                                 </div>
-                                
-                                {claimStatus && authenticated && (
-                                    <div className="mt-3 p-3 bg-camel/10 rounded-lg text-xs text-primary">
-                                        {claimStatus}
-                                    </div>
-                                )}
+
+                                {/* Claiming Status Message - Fixed height container */}
+                                <div className="mt-3" style={{ minHeight: '40px' }}>
+                                    {claiming && authenticated && (
+                                        <div className="flex items-center gap-2 p-3 bg-camel/10 rounded-lg">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent flex-shrink-0"></div>
+                                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                                                {claimStatus || 'Processing your claim...'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
 
                             </div>
                         </div>
@@ -693,7 +701,7 @@ const Leaderboard = () => {
                     <div className="xl:col-span-12 col-span-12">
                         <div className="box overflow-hidden " style={{ marginBottom: 0 }}>
                             <div className="box-header justify-between">
-                                <div className="box-title">NFT holders Ranking</div>
+                                <div className="box-title">NFT adopters Ranking</div>
                             </div>
                             <div className="box-body !p-0">
                                 <div className="table-responsive">
@@ -876,7 +884,7 @@ const Leaderboard = () => {
                                 <span className="text-sm text-secondary">BoostPass NFT.</span>
                                 <br />
                                 <span className="inline-flex items-center gap-1">
-                                    You can now boost your APY
+                                    You can now boost your staking APY
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline">
                                         <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="rgb(127, 196, 71)" stroke="rgb(127, 196, 71)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
@@ -928,31 +936,30 @@ const Leaderboard = () => {
                         {/* Image */}
                         <div className="flex justify-center mb-6">
                             <div className="relative w-40 h-40 rounded-md overflow-hidden">
-                                <img
-                                    src="../../../assets/images/brand-logos/BoostCard.png"
-                                    alt="BoostPass"
-                                    className="object-cover w-full h-full"
-                                />
+                                <img src="../../../assets/images/brand-logos/Boost.svg" alt="" />
                             </div>
                         </div>
 
                         {/* Content */}
                         <div className="flex flex-col items-center gap-4 text-center mb-6">
                             <p className="text-sm text-gray-600 dark:text-gray-300">
-                                You just claimed your{' '}
-                                <span className="text-sm text-secondary">BoostPass NFT!</span>
-                                <br />
-                                Check your portfolio to see it.
+                                You just<span className="text-sm text-secondary"> boosted x2</span>  your staking APY{' '}
                             </p>
                         </div>
 
-                        {/* Button */}
+                        {/* Buttons */}
                         <div className="flex flex-row gap-2">
                             <button
                                 onClick={() => window.location.href = "/portfolio"}
                                 className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
                             >
                                 View in Portfolio
+                            </button>
+                            <button
+                                onClick={() => window.open('https://staking.bitgrass.com', '_blank')}
+                                className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
+                            >
+                                Stake $BTG
                             </button>
                         </div>
                     </div>
