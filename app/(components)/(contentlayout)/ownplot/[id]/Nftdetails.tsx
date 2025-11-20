@@ -631,6 +631,48 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         try {
             setIsBuying(true);
 
+            // Check and switch to Base network if needed
+            if (window.ethereum) {
+                const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const baseChainId = '0x2105'; // Base Mainnet = 8453 in hex
+                
+                if (currentChainId !== baseChainId) {
+                    console.log(`🔄 Switching from chain ${currentChainId} to Base (${baseChainId})`);
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: baseChainId }],
+                        });
+                        console.log('✅ Switched to Base network');
+                    } catch (switchError: any) {
+                        // This error code indicates that the chain has not been added to MetaMask
+                        if (switchError.code === 4902) {
+                            try {
+                                await window.ethereum.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: baseChainId,
+                                        chainName: 'Base',
+                                        nativeCurrency: {
+                                            name: 'Ethereum',
+                                            symbol: 'ETH',
+                                            decimals: 18
+                                        },
+                                        rpcUrls: ['https://mainnet.base.org'],
+                                        blockExplorerUrls: ['https://basescan.org']
+                                    }],
+                                });
+                                console.log('✅ Added and switched to Base network');
+                            } catch (addError) {
+                                throw new Error('Please add Base network to your wallet and try again.');
+                            }
+                        } else {
+                            throw new Error('Please switch to Base network in your wallet and try again.');
+                        }
+                    }
+                }
+            }
+
             const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
             const buyerAddress = userAddress;
 
@@ -689,13 +731,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 orderHash: order.order_hash,
             });
 
-            // Check if user has enough balance (NFT price + estimated gas)
-            const estimatedGas = ethers.parseEther("0.0002"); // ~0.0002 ETH for gas on Base (reduced estimate)
-            const totalNeeded = value + estimatedGas;
-            if (balance < totalNeeded) {
+            // Basic check: user must have at least the NFT price
+            if (balance < value) {
                 throw new Error(
-                    `Insufficient balance. Need ${ethers.formatEther(totalNeeded)} ETH total ` +
-                    `(${ethers.formatEther(value)} for NFT + ~${ethers.formatEther(estimatedGas)} for gas). ` +
+                    `Insufficient balance. Need ${ethers.formatEther(value)} ETH for NFT. ` +
                     `Current balance: ${ethers.formatEther(balance)} ETH`
                 );
             }
@@ -754,9 +793,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 recipient,
             ]);
 
-            // Try to estimate gas using eth_estimateGas
+            // Estimate gas from network and check total balance needed
+            let estimatedGasLimit: bigint;
             try {
-                await client.request({
+                const gasEstimate = await client.request({
                     method: "eth_estimateGas",
                     params: [
                         {
@@ -767,6 +807,35 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                         },
                     ],
                 });
+                estimatedGasLimit = BigInt(gasEstimate);
+                
+                // Get current gas price
+                const gasPriceHex = await client.request({
+                    method: "eth_gasPrice",
+                    params: [],
+                });
+                const gasPrice = BigInt(gasPriceHex);
+                
+                // Calculate total gas cost (add 20% buffer for gas price fluctuation)
+                const estimatedGasCost = (estimatedGasLimit * gasPrice * BigInt(120)) / BigInt(100);
+                const totalNeeded = value + estimatedGasCost;
+                
+                console.log("⛽ Gas estimation:", {
+                    gasLimit: estimatedGasLimit.toString(),
+                    gasPrice: ethers.formatUnits(gasPrice, "gwei") + " gwei",
+                    estimatedGasCost: ethers.formatEther(estimatedGasCost) + " ETH",
+                    totalNeeded: ethers.formatEther(totalNeeded) + " ETH",
+                    currentBalance: ethers.formatEther(balance) + " ETH",
+                });
+                
+                // Check if user has enough for NFT + actual gas
+                if (balance < totalNeeded) {
+                    throw new Error(
+                        `Insufficient balance. Need ${ethers.formatEther(totalNeeded)} ETH total ` +
+                        `(${ethers.formatEther(value)} ETH for NFT + ${ethers.formatEther(estimatedGasCost)} ETH for gas). ` +
+                        `Current balance: ${ethers.formatEther(balance)} ETH`
+                    );
+                }
             } catch (estimateError: any) {
                 console.error("❌ Gas estimation failed:", estimateError.message);
 

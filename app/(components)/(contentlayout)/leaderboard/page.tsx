@@ -20,15 +20,13 @@ const CAMPAIGN_CHAIN_ID = 8453; // Base chain
 
 // Array of claim links from your Excel file - add all your claim links here
 const CLAIM_LINKS = [
-    "https://claim.linkdrop.io/#/redeem/jQgq7Z2nNN2i?src=d",
-    "https://claim.linkdrop.io/#/redeem/DyFCpH8xvT9K?src=d",
-    "https://claim.linkdrop.io/#/redeem/YH8XSpPA1AFX?src=d",
-    "https://claim.linkdrop.io/#/redeem/HEqGxTo1Y4Vd?src=d",
-    "https://claim.linkdrop.io/#/redeem/84cCGsL2Av3t?src=d",
-    "https://claim.linkdrop.io/#/redeem/CArfYKGMSThH?src=d",
-    "https://claim.linkdrop.io/#/redeem/6ZGHx5jv6NLQ?src=d",
-    "https://claim.linkdrop.io/#/redeem/Aph1rpjrvx5o?src=d",
-    "https://claim.linkdrop.io/#/redeem/8GEwRNTjgb2g?src=d",
+    "https://claim.linkdrop.io/#/redeem/F894ye4Y44jb?src=d",
+    "https://claim.linkdrop.io/#/redeem/FGc2dYp5gWVR?src=d",
+    "https://claim.linkdrop.io/#/redeem/8ZCQGoyzfion?src=d",
+    "https://claim.linkdrop.io/#/redeem/2nPVKDEHLZj8?src=d",
+    "https://claim.linkdrop.io/#/redeem/2azDyjsvMG29?src=d",
+    "https://claim.linkdrop.io/#/redeem/Hzi1Cq59su2N?src=d",
+    "https://claim.linkdrop.io/#/redeem/9nQhhB9bBWoy?src=d",
 ];
 
 // Initialize Linkdrop SDK helper
@@ -126,7 +124,7 @@ const Leaderboard = () => {
         return `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`;
     };
     // Use the custom hook - this will prioritize Farcaster wallet in miniapp
-    const { address: connectedAddress } = useConnectedAddress();  
+    const { address: connectedAddress } = useConnectedAddress();
     const [hasBoostPass, setHasBoostPass] = useState<boolean>(false);
     const [boostPassLoading, setBoostPassLoading] = useState<boolean>(false);
     const BOOST_PASS_CONTRACT = "0xBd528427e8612ff27961cDdb819688aF5c7D8735";
@@ -147,7 +145,7 @@ const Leaderboard = () => {
                         },
                     }
                 );
-                
+
                 const hasNFT = response.data.result && response.data.result.length > 0;
                 setHasBoostPass(hasNFT);
             } catch (err) {
@@ -262,7 +260,7 @@ const Leaderboard = () => {
         setClaiming(true);
         setClaimStatus("Processing...");
         let hasAvailableLink = false;
-        
+
         try {
             const linkdropSDK = initLinkdropSDK();
             for (const claimUrl of CLAIM_LINKS) {
@@ -312,16 +310,16 @@ const Leaderboard = () => {
 
             for (let i = 0; i < CLAIM_LINKS.length; i++) {
                 const claimUrl = CLAIM_LINKS[i];
-                
+
                 setClaimStatus("Processing...");
 
                 try {
                     // Initialize SDK for each attempt
                     const linkdropSDK = initLinkdropSDK();
-                    
+
                     // Get the claim link object using SDK
                     const claimLink = await linkdropSDK.getClaimLink(claimUrl);
-                    
+
                     // Check status
                     const statusData = await claimLink.getStatus();
 
@@ -339,14 +337,14 @@ const Leaderboard = () => {
 
                     // Found an available link!
                     setClaimStatus("Processing...");
-                    
-                    
+
+
                     setClaimStatus("Processing...");
-                    
+
                     // Use SDK's redeem method - it handles the transaction automatically
                     // No wallet popup needed, Linkdrop uses gasless transactions
                     txHash = await claimLink.redeem(connectedAddress);
-                    
+
 
                     if (txHash) {
                         claimedSuccessfully = true;
@@ -355,14 +353,14 @@ const Leaderboard = () => {
 
                 } catch (linkError: any) {
                     const errorMsg = linkError.message || String(linkError);
-                    
+
                     // Check if it's the "already claimed" error
                     if (errorMsg.includes('already claimed') || errorMsg.includes('Multiple claims forbidden')) {
                     } else {
                         // Other errors mean the link might be available for other users
                         allLinksAlreadyClaimed = false;
                     }
-                    
+
                     // Continue to next link
                     continue;
                 }
@@ -377,7 +375,7 @@ const Leaderboard = () => {
             }
 
             setClaimStatus(`✅ Claimed successfully! Transaction: ${txHash.slice(0, 10)}...`);
-            
+
             // Show success modal
             setShowSuccessModal(true);
             setHasBoostPass(true); // Update state to show claimed status
@@ -511,7 +509,7 @@ const Leaderboard = () => {
 
                                 {/* Description */}
                                 <div className="text-[#3e4042] dark:text-white mb-5">
-                                    Early NFT investors are eligible to earn $BTG via Vesting program.
+                                    Early NFT adopters earn $BTG through the Vesting program and can claim a BoostPass to double their staking APY.
                                     <br className="hidden sm:inline" />
                                     Check your eligibility.
                                 </div>
@@ -641,11 +639,10 @@ const Leaderboard = () => {
                                     ) : (
                                         <>
                                             <button
-                                                className={`w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${
-                                                    userBTG > 0
-                                                        ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
-                                                        : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
-                                                }`}
+                                                className={`w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${userBTG > 0
+                                                    ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
+                                                    : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
+                                                    }`}
                                                 onClick={userBTG > 0 ? handleClaimBTG : undefined}
                                                 disabled={userBTG === 0}
                                                 style={{
@@ -655,15 +652,14 @@ const Leaderboard = () => {
                                             >
                                                 {userBTG > 0 ? 'Claim $BTG' : 'Claim $BTG '}
                                             </button>
-                                            
+
                                             <button
-                                                className={`w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${
-                                                    hasBoostPass
-                                                        ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
-                                                        : userInLeaderboard
-                                                            ? 'cursor-pointer hover:opacity-90'
-                                                            : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
-                                                }`}
+                                                className={`w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${hasBoostPass
+                                                    ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
+                                                    : userInLeaderboard
+                                                        ? 'cursor-pointer hover:opacity-90'
+                                                        : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
+                                                    }`}
                                                 onClick={hasBoostPass ? () => window.open('https://staking.bitgrass.com', '_blank') : userInLeaderboard ? handleClaimBoostPass : undefined}
                                                 disabled={!hasBoostPass && !userInLeaderboard}
                                                 style={{
@@ -672,7 +668,7 @@ const Leaderboard = () => {
                                                     background: hasBoostPass ? undefined : userInLeaderboard ? 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)' : undefined
                                                 }}
                                             >
-                                                {boostPassLoading ? '...' : hasBoostPass ? 'Stake $BTG' : userInLeaderboard ? 'Boost APY' : 'Boost APY'}
+                                                {boostPassLoading ? '...' : hasBoostPass ? 'Stake $BTG' : userInLeaderboard ? 'Claim BoostPass' : 'Claim BoostPass'}
                                             </button>
                                         </>
                                     )}
@@ -788,8 +784,8 @@ const Leaderboard = () => {
 
                                                                     />
                                                                     <span className={`inline-block rounded-sm px-2 py-1 text-xs ${isCurrentUser
-                                                                            ? 'bg-secondary/30 text-secondary font-bold'
-                                                                            : 'bg-camel10 text-primary'
+                                                                        ? 'bg-secondary/30 text-secondary font-bold'
+                                                                        : 'bg-camel10 text-primary'
                                                                         }`}>
                                                                         {holder.address.slice(0, 6)}...{holder.address.slice(-4)}
                                                                         {isCurrentUser && ' (You)'}
@@ -867,12 +863,12 @@ const Leaderboard = () => {
                         <hr className="border-t border-gray-200 dark:border-gray-700 my-4" />
 
                         {/* Image */}
-                        <div className="flex justify-center mb-6">
-                            <div className="relative w-80 h-80 rounded-md overflow-hidden">
+                        <div className="flex justify-center items-center mb-6">
+                            <div className="relative w-full max-w-md h-80 rounded-md overflow-hidden">
                                 <img
-                                    src="../../../assets/images/brand-logos/BoostCard.png"
+                                    src="../../../assets/images/brand-logos/CardFront.png"
                                     alt="BoostPass"
-                                    className="object-cover w-full h-full"
+                                    className="object-contain w-full h-full"
                                 />
                             </div>
                         </div>
@@ -880,15 +876,11 @@ const Leaderboard = () => {
                         {/* Content */}
                         <div className="flex flex-col items-center gap-4 text-center mb-6">
                             <p className="text-sm text-gray-600 dark:text-gray-300">
-                                You are about to claim your{' '}
-                                <span className="text-sm text-secondary">BoostPass NFT.</span>
+                                BoostPass NFT allows $BTG holders <br/> to doubles their staking APY                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline">
+                                        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="rgb(127, 196, 71)" stroke="rgb(127, 196, 71)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg> (x2 boost)
                                 <br />
-                                <span className="inline-flex items-center gap-1">
-                                    You can now boost your staking APY
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline">
-                                        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="rgb(127, 196, 71)" stroke="rgb(127, 196, 71)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                </span>
+                                
                             </p>
                         </div>
 
@@ -934,9 +926,9 @@ const Leaderboard = () => {
                         <hr className="border-t border-gray-200 dark:border-gray-700 my-4" />
 
                         {/* Image */}
-                        <div className="flex justify-center mb-6">
-                            <div className="relative w-40 h-40 rounded-md overflow-hidden">
-                                <img src="../../../assets/images/brand-logos/Boost.svg" alt="" />
+                        <div className="flex justify-center items-center mb-6">
+                            <div className="relative w-64 h-64 flex items-center justify-center">
+                                <img src="../../../assets/images/brand-logos/Boost.svg" alt="" className="w-full h-full object-contain" />
                             </div>
                         </div>
 
@@ -951,7 +943,7 @@ const Leaderboard = () => {
                         <div className="flex flex-row gap-2">
                             <button
                                 onClick={() => window.location.href = "/portfolio"}
-                                className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
+                                className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-camel10 dark:bg-[#FFFFFF0D] text-gray-900 dark:text-gray-300 hover:bg-camel20 dark:hover:bg-[#FFFFFF1A] transition text-sm font-medium text-center"
                             >
                                 View in Portfolio
                             </button>
