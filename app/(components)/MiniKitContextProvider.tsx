@@ -67,6 +67,7 @@ function OnchainProviders({ children }: Props) {
       appId="cmbqbbsqm00kljy0n1yzjeij7"
       config={{
         appearance: {
+          landingHeader: 'Carbon Investment Made Easy',
           accentColor: '#7fc447',
           theme: '#F5F3EB',
           logo: '/assets/images/brand-logos/main-logo.svg',

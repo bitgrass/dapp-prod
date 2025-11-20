@@ -49,9 +49,11 @@ function useDOLeaderboard() {
     const [loading, setLoading] = useState(true);
     const [version, setVersion] = useState<number | null>(null);
     const [error, setError] = useState<null | string>(null);
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    const refresh = () => setRefreshTrigger(prev => prev + 1);
+    const refresh = () => {
+        // Trigger a manual refresh by re-fetching
+        setLoading(true);
+    };
 
     useEffect(() => {
         let closed = false;
@@ -81,13 +83,6 @@ function useDOLeaderboard() {
 
         fetchOnce();
 
-        // Polling: refresh data every 30 seconds
-        const pollInterval = setInterval(() => {
-            if (!closed) {
-                fetchOnce();
-            }
-        }, 30000);
-
         // live updates via WS (optional but nice)
         let ws: WebSocket | null = null;
         try {
@@ -107,10 +102,9 @@ function useDOLeaderboard() {
         return () => {
             closed = true;
             abort.abort();
-            clearInterval(pollInterval);
             try { ws?.close(); } catch { }
         };
-    }, [refreshTrigger]);
+    }, []);
 
     return { ranked, loading, version, error, refresh };
 }
@@ -510,8 +504,6 @@ const Leaderboard = () => {
                                 {/* Description */}
                                 <div className="text-[#3e4042] dark:text-white mb-5">
                                     Early NFT adopters earn $BTG through the Vesting program and can claim a BoostPass to double their staking APY.
-                                    <br className="hidden sm:inline" />
-                                    Check your eligibility.
                                 </div>
 
                                 {/* BTG Balance and NFT Counts */}
@@ -639,9 +631,9 @@ const Leaderboard = () => {
                                     ) : (
                                         <>
                                             <button
-                                                className={`w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${userBTG > 0
+                                                className={`w-180 text-hights !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${userBTG > 0
                                                     ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
-                                                    : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
+                                                    : 'bg-camel10 text-hights cursor-not-allowed opacity-50'
                                                     }`}
                                                 onClick={userBTG > 0 ? handleClaimBTG : undefined}
                                                 disabled={userBTG === 0}
@@ -658,14 +650,14 @@ const Leaderboard = () => {
                                                     ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
                                                     : userInLeaderboard
                                                         ? 'cursor-pointer hover:opacity-90'
-                                                        : 'bg-camel10 text-gray-700 dark:text-hights cursor-not-allowed opacity-50'
+                                                        : 'bg-camel10 text-hights cursor-not-allowed opacity-50'
                                                     }`}
                                                 onClick={hasBoostPass ? () => window.open('https://staking.bitgrass.com', '_blank') : userInLeaderboard ? handleClaimBoostPass : undefined}
                                                 disabled={!hasBoostPass && !userInLeaderboard}
                                                 style={{
                                                     userSelect: 'none',
                                                     cursor: hasBoostPass ? 'pointer' : userInLeaderboard ? 'pointer' : 'not-allowed',
-                                                    background: hasBoostPass ? undefined : userInLeaderboard ? 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)' : undefined
+                                                    background: 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)' 
                                                 }}
                                             >
                                                 {boostPassLoading ? '...' : hasBoostPass ? 'Stake $BTG' : userInLeaderboard ? 'Claim BoostPass' : 'Claim BoostPass'}
@@ -675,7 +667,7 @@ const Leaderboard = () => {
                                 </div>
 
                                 {/* Claiming Status Message - Fixed height container */}
-                                <div className="mt-3" style={{ minHeight: '40px' }}>
+                                <div className="mt-3" style={{ minHeight: '25px' }}>
                                     {claiming && authenticated && (
                                         <div className="flex items-center gap-2 p-3 bg-camel/10 rounded-lg">
                                             <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent flex-shrink-0"></div>

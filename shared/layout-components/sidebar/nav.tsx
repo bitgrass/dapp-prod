@@ -207,20 +207,20 @@ export const MenuItems: any = [
 
   },
 
-  {
-    menutitle: "AI POWERED",
-  },
+  //{
+   // menutitle: "AI POWERED",
+  //},
 
-  {
-    title: "Climate Agent",
-    icon: ClimateAgentIcon,
-    badgetxt: badgeAI,
-    path: "/climate-agent",
-    type: "link",
-    active: false,
-    selected: false,
-    dirchange: false,
-  },
+  // {
+  //   title: "Climate Agent",
+  //   icon: ClimateAgentIcon,
+  //   badgetxt: badgeAI,
+  //   path: "/climate-agent",
+  //   type: "link",
+  //   active: false,
+  //   selected: false,
+  //   dirchange: false,
+  // },
 
 
 ];
