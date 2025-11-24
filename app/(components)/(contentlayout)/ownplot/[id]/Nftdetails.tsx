@@ -134,7 +134,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [modalData, setModalData] = useState({
         id: "",
         image: "",
-        name: ""
+        name: "",
+        tier: "Standard" as "Standard" | "Premium" | "Legendary"
     });
     const sortedPremiumItems = [...listedPremiumItems].sort((a: any, b: any) =>
         parseInt(a.protocol_data.parameters.offer[0].identifierOrCriteria) -
@@ -148,7 +149,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const collection = process.env.NEXT_PUBLIC_OPENSEA_COLLECTION as string
     const apiKey = process.env.NEXT_PUBLIC_OPENSEA_API_KEY;
     const [isFailureModalOpen, setFailureModalOpen] = useState(false);
-    const [activeOrder, setActiveOrder] = useState(false)
+    const [activeOrder, setActiveOrder] = useState(false);
+    const [pendingPurchase, setPendingPurchase] = useState(false);
+    const [pendingNftImage, setPendingNftImage] = useState("");
 
     // Map tab IDs to tab names
     const tabIdToName: Record<string, string> = {
@@ -221,6 +224,12 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const handleMintAbi = async (quantity: number) => {
         try {
             setLoading(true);
+            setIsMinting(true);
+            
+            // Set pending purchase toast with Standard icon
+            setPendingNftImage("/assets/images/brand-logos/Standard.svg");
+            setPendingPurchase(true);
+            
             console.log("Address for minting:", userAddress);
             console.log("Is miniapp:", isMinitapp);
 
@@ -315,15 +324,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
 
             if (mintedTokenIds.length > 0) {
+                setPendingPurchase(false); // Hide pending toast
                 setModalData({
                     id: mintedTokenIds.join(", "),
                     image: "/assets/images/apps/100m2.webp",
                     name: `Bitgrass - Standard Collection`,
+                    tier: "Standard"
                 });
                 setIsStandardMintModalOpen(true);
             }
         } catch (error: any) {
             console.error("❌ Mint failed:", error);
+            setPendingPurchase(false); // Hide pending toast
 
             if (error?.code === 4001 || error?.message?.toLowerCase().includes("user rejected")) {
                 setToastTitle("Transaction Rejected");
@@ -341,6 +353,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             setShowToast(true);
         } finally {
             setLoading(false);
+            setIsMinting(false);
         }
     };
 
@@ -619,6 +632,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         console.log("userAddress:", userAddress);
         console.log("farcasterWallet:", farcasterWallet);
         console.log("isMinitapp:", isMinitapp);
+        console.log("hasEmbeddedWallet:", hasEmbeddedWallet);
+        console.log("hasExternalWallet:", hasExternalWallet);
+        console.log("client:", client);
 
         if (!order) {
             const modalDataFailed: any = await getModalData();
@@ -630,9 +646,36 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
         try {
             setIsBuying(true);
+            
+            // Set pending purchase toast with category icon
+            const iconMap: any = {
+                "Legendary": "/assets/images/brand-logos/Legendary.svg",
+                "Premium": "/assets/images/brand-logos/Premium.svg",
+                "Standard": "/assets/images/brand-logos/Standard.svg"
+            };
+            setPendingNftImage(iconMap[tier] || "/assets/images/brand-logos/Standard.svg");
+            setPendingPurchase(true);
 
             // Check and switch to Base network if needed
-            if (window.ethereum) {
+            // For embedded Privy wallets, use switchChainAsync from wagmi
+            // For external wallets, use window.ethereum
+            if (hasEmbeddedWallet && !hasExternalWallet) {
+                console.log('🔄 Using embedded wallet, ensuring Base chain via wagmi');
+                try {
+                    // Always switch to Base to ensure we're on the correct chain
+                    // Don't check current chain as eth_chainId is not supported by embedded wallet
+                    await switchChainAsync({ chainId: base.id });
+                    console.log('✅ Switched to Base network via wagmi');
+                    
+                    // Wait for wallet to sync with new chain
+                    console.log('⏳ Waiting for wallet to sync...');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    console.log('✅ Wallet sync complete');
+                } catch (switchError: any) {
+                    console.error('❌ Failed to switch chain:', switchError);
+                    throw new Error('Failed to switch to Base network. Please try again.');
+                }
+            } else if (window.ethereum) {
                 const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
                 const baseChainId = '0x2105'; // Base Mainnet = 8453 in hex
                 
@@ -676,9 +719,20 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             const provider = new ethers.JsonRpcProvider("https://mainnet.base.org");
             const buyerAddress = userAddress;
 
-            // Check user balance
+            // Verify we're on Base network
+            const network = await provider.getNetwork();
+            console.log("🌐 Provider network:", network.chainId, network.name);
+
+            // Check user balance from provider
             const balance = await provider.getBalance(buyerAddress);
-            console.log("💳 User balance:", ethers.formatEther(balance), "ETH");
+            console.log("💳 User balance on Base:", ethers.formatEther(balance), "ETH");
+            
+            if (balance === BigInt(0)) {
+                throw new Error(
+                    "Your wallet has 0 ETH on Base network. " +
+                    "Please deposit ETH to your wallet on Base chain before purchasing."
+                );
+            }
 
             // Get fulfillment data from OpenSea
             const fulfillmentRes = await fetch("https://api.opensea.io/api/v2/listings/fulfillment_data", {
@@ -796,25 +850,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             // Estimate gas from network and check total balance needed
             let estimatedGasLimit: bigint;
             try {
-                const gasEstimate = await client.request({
-                    method: "eth_estimateGas",
-                    params: [
-                        {
-                            from: buyerAddress,
-                            to: seaport.contract.target as string,
-                            value: "0x" + value.toString(16),
-                            data: calldata,
-                        },
-                    ],
+                // Use provider for gas estimation to ensure we're on Base chain
+                const gasEstimate = await provider.estimateGas({
+                    from: buyerAddress,
+                    to: seaport.contract.target as string,
+                    value: value,
+                    data: calldata,
                 });
-                estimatedGasLimit = BigInt(gasEstimate);
+                estimatedGasLimit = gasEstimate;
                 
-                // Get current gas price
-                const gasPriceHex = await client.request({
-                    method: "eth_gasPrice",
-                    params: [],
-                });
-                const gasPrice = BigInt(gasPriceHex);
+                // Get current gas price from Base network
+                const feeData = await provider.getFeeData();
+                const gasPrice = feeData.gasPrice || BigInt(1000000000); // fallback to 1 gwei
                 
                 // Calculate total gas cost (add 20% buffer for gas price fluctuation)
                 const estimatedGasCost = (estimatedGasLimit * gasPrice * BigInt(120)) / BigInt(100);
@@ -892,7 +939,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             } else {
                 // Standard EIP-1193 for other environments
                 try {
-                    // Send transaction (gas estimation already done above)
+                    // Send transaction - let wallet handle gas estimation automatically
+                    console.log("📤 Sending transaction (automatic gas estimation)");
+                    
                     txHash = await client.request({
                         method: "eth_sendTransaction",
                         params: [
@@ -919,10 +968,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             // Wait for confirmation
             const receipt = await provider.waitForTransaction(txHash);
             if (receipt?.status === 1) {
+                setPendingPurchase(false); // Hide pending toast
                 const modalData: any = await getModalData();
                 setModalData(modalData);
                 setModalOpen(true);
             } else {
+                setPendingPurchase(false); // Hide pending toast
+
                 const modalDataFailed: any = await getModalData();
                 setFailureTxHash(txHash);
                 setFailureImage(modalDataFailed.image);
@@ -931,6 +983,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
         } catch (error: any) {
             console.error("❌ Purchase failed:", error);
+            setPendingPurchase(false); // Hide pending toast
 
             if (
                 error?.code === 4001 ||
@@ -941,7 +994,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 setToastMessage("You cancelled the purchase.");
             } else if (
                 error?.code === "INSUFFICIENT_FUNDS" ||
-                error?.message?.toLowerCase().includes("insufficient funds")
+                error?.message?.toLowerCase().includes("insufficient funds") ||
+                error?.message?.toLowerCase().includes("insufficient balance")
             ) {
                 setToastTitle("Insufficient Funds");
                 setToastMessage("You need more ETH to complete this purchase.");
@@ -973,7 +1027,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return {
                 id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
                 image: "/assets/images/apps/500m2.webp",
-                name: "Bitgrass - Premium Collection"
+                name: "Bitgrass - Premium Collection",
+                tier: "Premium" as const
             };
         }
 
@@ -982,7 +1037,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return {
                 id: currentItem.protocol_data.parameters.offer[0].identifierOrCriteria.toString(),
                 image: "/assets/images/apps/1000m2.webp",
-                name: "Bitgrass - Legendary Collection"
+                name: "Bitgrass - Legendary Collection",
+                tier: "Legendary" as const
             };
         }
 
@@ -990,6 +1046,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             id: "0",
             image: activeTab === "Premium 500m² Plot" ? "/assets/images/apps/500m2.webp" : activeTab === "Legendary 1000m² Plot" ? "/assets/images/apps/1000m2.webp" : "/assets/images/apps/100m2.webp",
             name: activeTab === "Premium 500m² Plot" ? "Bitgrass - Premium Collection" : activeTab === "Legendary 1000m² Plot" ? "Bitgrass - Legendary Collection" : "Bitgrass NFT Collection – Standard",
+            tier: (activeTab === "Premium 500m² Plot" ? "Premium" : activeTab === "Legendary 1000m² Plot" ? "Legendary" : "Standard") as "Standard" | "Premium" | "Legendary"
         };
     };
 
@@ -1052,7 +1109,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up "
                                                     >
                                                         <img
-                                                            src="/assets/images/apps/100m2v1.jpg"
+                                                            src="/assets/images/apps/100m2s.webp"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
@@ -1090,10 +1147,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     </button>
                                                 </div>
                                                 <button
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    className={`w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 flex items-center justify-center gap-2 ${
+                                                        (loading || !userAddress || isLoadingFetchAvailable) 
+                                                        ? 'opacity-50 cursor-not-allowed' 
+                                                        : 'cursor-pointer'
+                                                    }`}
                                                     onClick={() => handleMintAbi(quantity)}
-                                                    disabled={loading || !userAddress}
+                                                    disabled={loading || !userAddress || isLoadingFetchAvailable}
                                                 >
+                                                    {loading && (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                                    )}
                                                     {loading ? "Processing..." : "Buy Tokenized Plot"}
                                                 </button>
 
@@ -1219,7 +1283,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up "
                                                     >
                                                         <img
-                                                            src="/assets/images/apps/500m2v1.jpg"
+                                                            src="/assets/images/apps/500m2s.webp"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
@@ -1227,10 +1291,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <button
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    className={`w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 flex items-center justify-center gap-2 ${
+                                                        (isLoadingFetchAvailable || isBuying || !listedPremiumItems[0]) 
+                                                        ? 'opacity-50 cursor-not-allowed' 
+                                                        : 'cursor-pointer'
+                                                    }`}
                                                     onClick={() => handleBuy(listedPremiumItems[0], "Premium")}
-                                                    disabled={isLoadingFetchAvailable}
+                                                    disabled={isLoadingFetchAvailable || isBuying || !listedPremiumItems[0]}
                                                 >
+                                                    {isBuying && (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                                    )}
                                                     {isBuying ? "Processing..." : "Buy Tokenized Plot"}
                                                 </button>
 
@@ -1357,7 +1428,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                         className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up"
                                                     >
                                                         <img
-                                                            src="/assets/images/apps/1000m2v1.jpg"
+                                                            src="/assets/images/apps/1000m2s.webp"
                                                             alt="Custom NFT Preview"
                                                             className="object-cover w-full h-full"
                                                         />
@@ -1365,10 +1436,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <button
-                                                    className="w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2"
+                                                    className={`w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 flex items-center justify-center gap-2 ${
+                                                        (isLoadingFetchAvailable || isBuying || !listedLegendaryItems[0]) 
+                                                        ? 'opacity-50 cursor-not-allowed' 
+                                                        : 'cursor-pointer'
+                                                    }`}
                                                     onClick={() => handleBuy(listedLegendaryItems[0], "Legendary")}
-                                                    disabled={isLoadingFetchAvailable}
+                                                    disabled={isLoadingFetchAvailable || isBuying || !listedLegendaryItems[0]}
                                                 >
+                                                    {isBuying && (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                                    )}
                                                     {isBuying ? "Processing..." : "Buy Tokenized Plot"}
                                                 </button>
 
@@ -1485,13 +1563,15 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                         setModalData({
                             id: "",
                             image: "",
-                            name: ""
+                            name: "",
+                            tier: "Standard"
                         });
                     }}
                     name={modalData.name}
                     token="0xe2d29582718057c9e3f69400ea0d2bb415908370"
                     id={modalData.id}
                     image={modalData.image}
+                    tier={modalData.tier}
                 />
                 <PurchaseFailedModal
                     isOpen={isFailureModalOpen}
@@ -1506,7 +1586,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     isOpen={isStandardMintModalOpen}
                     onClose={() => {
                         setIsStandardMintModalOpen(false);
-                        setModalData({ id: "", image: "", name: "" });
+                        setModalData({ id: "", image: "", name: "", tier: "Standard" });
                     }}
                     name={modalData.name}
                     token="0xe2d29582718057c9e3f69400ea0d2bb415908370"
@@ -1514,6 +1594,40 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     image={modalData.image}
                 />
 
+                {/* Pending Purchase Toast */}
+                {pendingPurchase && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:left-auto md:right-6 md:translate-x-0">
+                        <div
+                            role="alert"
+                            className="bg-camel shadow-lg rounded-md w-full max-w-md min-w-[320px] px-5 py-4"
+                        >
+                            <div className="flex items-center justify-between w-full">
+                                {/* NFT Icon */}
+                                <div className="flex-shrink-0">
+                                    <img
+                                        src={pendingNftImage}
+                                        alt="NFT"
+                                        width={30}
+                                        height={30}
+                                        className="rounded"
+                                    />
+                                </div>
+
+                                {/* Text */}
+                                <div className="flex-1 text-center">
+                                    <strong className="text-sm font-bold">Purchase pending</strong>
+                                </div>
+
+                                {/* Loader */}
+                                <div className="flex-shrink-0">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-secondary border-t-transparent"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Error Toast */}
                 {showToast && toastMessage && (
                     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:left-auto md:right-6 md:translate-x-0">
                         <div

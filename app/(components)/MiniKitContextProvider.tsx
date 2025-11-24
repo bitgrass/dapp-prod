@@ -48,8 +48,8 @@ function WagmiWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-// Configure Base chain with custom RPC - using Cloudflare's public Base RPC
-const baseWithRpc = addRpcUrlOverrideToChain(base, 'https://base.llamarpc.com');
+// Configure Base chain with official Base RPC
+const baseWithRpc = addRpcUrlOverrideToChain(base, 'https://mainnet.base.org');
 
 function OnchainProviders({ children }: Props) {
   const [mounted, setMounted] = useState(false);

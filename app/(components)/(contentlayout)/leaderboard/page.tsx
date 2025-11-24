@@ -631,8 +631,8 @@ const Leaderboard = () => {
                                     ) : (
                                         <>
                                             <button
-                                                className={`w-180 text-hights !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${userBTG > 0
-                                                    ? 'bg-secondary btn-primary cursor-pointer hover:bg-opacity-90'
+                                                className={`w-180 !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${userBTG > 0
+                                                    ? 'bg-secondary text-white btn-primary cursor-pointer hover:bg-opacity-90'
                                                     : 'bg-camel10 text-hights cursor-not-allowed opacity-50'
                                                     }`}
                                                 onClick={userBTG > 0 ? handleClaimBTG : undefined}

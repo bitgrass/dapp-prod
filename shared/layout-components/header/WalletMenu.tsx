@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { usePrivy, useLogin, useLogout, useWallets, ConnectedWallet } from '@privy-io/react-auth';
-import { useBalance, useSendTransaction, useSwitchChain } from 'wagmi';
+import { useSendTransaction, useSwitchChain } from 'wagmi';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import { parseEther } from 'viem';
 import { base } from 'wagmi/chains';
 import { Fragment } from 'react';
-import { btgToken, ETHToken } from "@/shared/data/tokens/data";
+import { btgToken, ETHToken, EthInfo } from "@/shared/data/tokens/data";
 import { useSetActiveWallet } from '@privy-io/wagmi';
 import { useConnectedAddress } from "@/app/(components)/(contentlayout)/useConnectedAddress";
+import axios from 'axios';
 
 const WalletMenu: React.FC = () => {
   const { ready, authenticated, user, linkWallet, exportWallet, createWallet } = usePrivy();
@@ -86,22 +87,91 @@ const WalletMenu: React.FC = () => {
   const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
   const hasNonEmbeddedWallet = hasExternalWallet || !!farcasterWallet;
 
-  const { data: ethBalance } = useBalance({
-    address: connectedAddress ? (connectedAddress as `0x${string}`) : undefined,
-    chainId: base.id,
-    query: {
-      enabled: !!connectedAddress,
-    },
-  });
+  // Balance states using Moralis API like portfolio page
+  const [ethBalance, setEthBalance] = useState<{ formatted: string; symbol: string } | null>(null);
+  const [tokenBalance, setTokenBalance] = useState<{ formatted: string; symbol: string } | null>(null);
 
-  const { data: tokenBalance } = useBalance({
-    address: connectedAddress ? (connectedAddress as `0x${string}`) : undefined,
-    token: btgToken.address as `0x${string}`,
-    chainId: base.id,
-    query: {
-      enabled: !!connectedAddress,
-    },
-  });
+  // Fetch both ETH and BTG balances from Moralis (matching portfolio page pattern exactly)
+  useEffect(() => {
+    async function fetchBalances() {
+      console.log("🔍 WalletMenu fetchBalances called", {
+        connectedAddress,
+        authenticated,
+        ready
+      });
+
+      if (!connectedAddress) {
+        console.log("⚠️ No connected address, skipping balance fetch");
+        setEthBalance(null);
+        setTokenBalance(null);
+        return;
+      }
+
+      try {
+        console.log("🌐 Fetching balances from Moralis for:", connectedAddress);
+        const balanceRes = await axios.get(
+          `https://deep-index.moralis.io/api/v2.2/wallets/${connectedAddress}/tokens?chain=base`,
+          {
+            headers: {
+              accept: "application/json",
+              "X-API-Key": process.env.NEXT_PUBLIC_MORALIS_APY_KEY,
+            },
+          }
+        );
+
+        console.log("✅ Moralis response:", balanceRes.data);
+        const tokens = balanceRes.data?.result || [];
+        console.log("📊 Total tokens found:", tokens.length);
+
+        // ETH: Use first token in result (matching portfolio page pattern)
+        const ethData = tokens[0];
+
+        console.log("💰 ETH token data (first token):", ethData);
+
+        if (ethData) {
+          const rawBalance = ethData.balance;
+          const decimals = ethData.decimals;
+          const humanReadable = parseFloat(rawBalance) / Math.pow(10, decimals);
+
+          setEthBalance({
+            formatted: humanReadable.toFixed(5),
+            symbol: ethData.symbol || "ETH"
+          });
+          console.log("✅ ETH balance set:", humanReadable.toFixed(5), ethData.symbol);
+        } else {
+          setEthBalance({ formatted: "0.00", symbol: "ETH" });
+          console.log("⚠️ No tokens found, ETH set to 0.00");
+        }
+
+        // BTG: Find by token address
+        const btgData = tokens.find(
+          (token: any) => token.token_address.toLowerCase() === btgToken.address.toLowerCase()
+        );
+
+        console.log("🌿 BTG token data:", btgData);
+
+        if (btgData) {
+          const rawBalance = btgData.balance;
+          const decimals = btgData.decimals;
+          const humanReadable = parseFloat(rawBalance) / Math.pow(10, decimals);
+
+          setTokenBalance({
+            formatted: humanReadable.toFixed(5),
+            symbol: btgData.symbol || btgToken.symbol
+          });
+          console.log("✅ BTG balance set:", humanReadable.toFixed(5));
+        } else {
+          setTokenBalance({ formatted: "0.00", symbol: btgToken.symbol });
+          console.log("⚠️ No BTG token found, set to 0.00");
+        }
+      } catch (error) {
+        console.error("❌ Error fetching balances:", error);
+        setEthBalance({ formatted: "0.00", symbol: "ETH" });
+        setTokenBalance({ formatted: "0.00", symbol: btgToken.symbol });
+      }
+    }
+    fetchBalances();
+  }, [connectedAddress, authenticated, ready]);
 
   const email = user?.email?.address;
   const twitterObj =

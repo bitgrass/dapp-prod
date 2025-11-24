@@ -11,6 +11,7 @@ interface CryptoTableProps {
   ethSupply: number;
   loading?: boolean; // Add loading prop
   hasInitiallyLoaded?: boolean; // Add this to track if initial load is complete
+  nftDataFromParent?: any[]; // NFT data from parent portfolio page
 }
 
 const CryptoTable = ({
@@ -22,6 +23,7 @@ const CryptoTable = ({
   ethSupply,
   loading = false,
   hasInitiallyLoaded = false,
+  nftDataFromParent = [],
 }: CryptoTableProps) => {
   const [nftData, setNftData] = useState<any[]>([]);
   const [nftLoading, setNftLoading] = useState<boolean>(false);
@@ -110,6 +112,10 @@ const CryptoTable = ({
     const fetchBoostPass = async () => {
       setBoostPassLoading(true);
       try {
+                console.log("addres-------",address)
+                                console.log("bp-------",BOOST_PASS_CONTRACT)
+
+
         const response = await axios.get(
           `https://deep-index.moralis.io/api/v2.2/${address}/nft?chain=base&token_addresses[]=${BOOST_PASS_CONTRACT}&limit=1`,
           {
@@ -119,7 +125,7 @@ const CryptoTable = ({
             },
           }
         );
-        
+        console.log("resss-------",response)
         const hasNFT = response.data.result && response.data.result.length > 0;
         setHasBoostPass(hasNFT);
       } catch (err) {
@@ -215,15 +221,6 @@ const CryptoTable = ({
   // Calculate market cap
   const marketCap = supplyNum * priceNum;
   
-  // Debug logging
-  console.log('💰 ETH Market Cap Calculation:', {
-    ethSupply,
-    ethPrice,
-    supplyNum,
-    priceNum,
-    marketCap,
-    formatted: formatLargeValue(marketCap)
-  });
 
   const formatLargeValueBTG = (value: number) => {
     if (value >= 1_000_000_000) {
