@@ -478,11 +478,58 @@ const Leaderboard = () => {
                     <div className="col-span-12 md:col-span-6 flex items-center">
                         <div className=" w-full p-4">
                             <p className="text-4xl font-bold mb-1 ">Leaderboard</p>
-                            <p className='dark:text-white/60'>
-                                Early NFT investors are eligible to earn $BTG via Vesting program.<br />
-                                Exclusive to public mint participants, who secure their NFTs during the initial mint session,<br />
-                                and to primary sale buyers, who join at the first offering stage.
+                            <p className='dark:text-white/60 mb-2'>
+                                Early NFT adopters earn $BTG through the Vesting Program <br />and
+                                can unlock a BoostPass that doubles their staking APY (x2 boost).<br />
+                                $BTG rewards become claimable after the public sale ends.
                             </p>
+
+                            {/* Eligibility Status - Only show when wallet is connected */}
+                            {authenticated && (
+                                <div className="mt-4 space-y-2">
+                                    {/* Case 2: Not in leaderboard */}
+                                    {!userInLeaderboard && (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <img src="../../../assets/images/svg/XCircle.svg" alt="Not Eligible" className="w-5 h-5" />
+                                                <span className="text-sm">Not Eligible to earn $BTG</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <img src="../../../assets/images/svg/XCircle.svg" alt="Not Eligible" className="w-5 h-5" />
+                                                <span className="text-sm">Not Eligible to Boost Staking APY</span>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Case 3: In leaderboard but no boost pass */}
+                                    {userInLeaderboard && !hasBoostPass && (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <img src="../../../assets/images/svg/CheckCircle.svg" alt="Eligible" className="w-5 h-5" />
+                                                <span className="text-sm">Eligible to earn $BTG</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <img src="../../../assets/images/svg/CheckCircleGrey.svg" alt="Eligible" className="w-5 h-5" />
+                                                <span className="text-sm">Eligible to Boost Staking APY</span>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Case 4: In leaderboard and has boost pass */}
+                                    {userInLeaderboard && hasBoostPass && (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <img src="../../../assets/images/svg/CheckCircle.svg" alt="Eligible" className="w-5 h-5" />
+                                                <span className="text-sm">Eligible to earn $BTG</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <img src="../../../assets/images/svg/CheckCircle.svg" alt="Activated" className="w-5 h-5" />
+                                                <span className="text-sm">Staking APY Boost Activated</span>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                     {/* Right: Card */}
@@ -510,7 +557,7 @@ const Leaderboard = () => {
 
                                 {/* Description */}
                                 <div className="text-[#3e4042] dark:text-white mb-5">
-                                    Early NFT adopters earn $BTG through the Vesting program and can claim a BoostPass to double their staking APY.
+                                    Early NFT adopters earn $BTG through the Vesting program <br />and can claim a BoostPass to double their staking APY.
                                 </div>
 
                                 {/* BTG Balance and NFT Counts */}
@@ -638,18 +685,14 @@ const Leaderboard = () => {
                                     ) : (
                                         <>
                                             <button
-                                                className={`w-180 !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap ${userBTG > 0
-                                                    ? 'bg-secondary text-white btn-primary cursor-pointer hover:bg-opacity-90'
-                                                    : 'bg-camel10 text-hights cursor-not-allowed opacity-50'
-                                                    }`}
-                                                onClick={userBTG > 0 ? handleClaimBTG : undefined}
-                                                disabled={userBTG === 0}
+                                                className="w-180 !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap bg-camel10 text-hights cursor-not-allowed opacity-50"
+                                                disabled={true}
                                                 style={{
                                                     userSelect: 'none',
-                                                    cursor: userBTG > 0 ? 'pointer' : 'not-allowed'
+                                                    cursor: 'not-allowed'
                                                 }}
                                             >
-                                                {userBTG > 0 ? 'Claim $BTG' : 'Claim $BTG '}
+                                                Claim $BTG
                                             </button>
 
                                             <button
@@ -664,7 +707,7 @@ const Leaderboard = () => {
                                                 style={{
                                                     userSelect: 'none',
                                                     cursor: hasBoostPass ? 'pointer' : userInLeaderboard ? 'pointer' : 'not-allowed',
-                                                    background: 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)' 
+                                                    background: 'linear-gradient(135deg, #F5DF14 0%, #FCA400 100%)'
                                                 }}
                                             >
                                                 {boostPassLoading ? '...' : hasBoostPass ? 'Stake $BTG' : userInLeaderboard ? 'Claim BoostPass' : 'Claim BoostPass'}
@@ -875,11 +918,11 @@ const Leaderboard = () => {
                         {/* Content */}
                         <div className="flex flex-col items-center gap-4 text-center mb-6">
                             <p className="text-sm text-gray-600 dark:text-gray-300">
-                                BoostPass NFT allows $BTG holders <br/> to doubles their staking APY                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline">
-                                        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="rgb(127, 196, 71)" stroke="rgb(127, 196, 71)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg> (x2 boost)
+                                BoostPass NFT allows $BTG holders <br /> to doubles their staking APY                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline">
+                                    <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="rgb(127, 196, 71)" stroke="rgb(127, 196, 71)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg> (x2 boost)
                                 <br />
-                                
+
                             </p>
                         </div>
 
@@ -894,9 +937,8 @@ const Leaderboard = () => {
                             <button
                                 onClick={handleApproveAndClaim}
                                 disabled={claiming}
-                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center ${
-                                    claiming ? 'opacity-75 cursor-not-allowed' : ''
-                                }`}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center ${claiming ? 'opacity-75 cursor-not-allowed' : ''
+                                    }`}
                             >
                                 {claiming && (
                                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>

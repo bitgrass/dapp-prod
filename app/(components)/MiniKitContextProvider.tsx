@@ -72,7 +72,7 @@ function OnchainProviders({ children }: Props) {
         appearance: {
           landingHeader: 'Carbon Investment Made Easy',
           accentColor: '#7fc447',
-          theme: '#F5F3EB',
+          theme: '#FFFFFF',
           logo: '/assets/images/brand-logos/main-logo.svg',
           walletChainType: 'ethereum-only',
           walletList: [

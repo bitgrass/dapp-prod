@@ -60,11 +60,19 @@
 
 /* Override Privy CSS variables */
 :root {
-  --privy-color-background-2: rgb(249, 248, 247) !important;
+  --privy-color-background-2: rgb(245, 243, 235) !important;
+  --privy-color-foreground-2: #8C9097 !important;
+  --privy-color-foreground-3: #8C9097 !important;
+  --privy-color-foreground-4: rgba(81, 73, 41, 0.2) !important;
+  --privy-color-icon-muted: #514929 !important;
 }
 
 [data-theme-mode="dark"] {
   --privy-color-background-2: rgb(37, 39, 41) !important;
+  --privy-color-foreground-2: #8C9097 !important;
+  --privy-color-foreground-3: #8C9097 !important;
+  --privy-color-foreground-4: rgba(81, 73, 41, 0.2) !important;
+  --privy-color-icon-muted: #514929 !important;
 }
 
 /* Thirdweb SwapWidget Customization */
