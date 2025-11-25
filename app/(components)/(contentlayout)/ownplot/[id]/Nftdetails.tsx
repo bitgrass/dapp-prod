@@ -1592,6 +1592,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     token="0xe2d29582718057c9e3f69400ea0d2bb415908370"
                     id={modalData.id}
                     image={modalData.image}
+                    tier={modalData.tier}
                 />
 
                 {/* Pending Purchase Toast */}

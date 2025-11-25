@@ -10,6 +10,7 @@ import { PrivyProvider } from '@privy-io/react-auth';
 import { useWagmiConfig } from './wagmi';
 import { useEffect, useState } from 'react';
 import { addRpcUrlOverrideToChain } from '@privy-io/chains';
+import { ThirdwebProvider } from 'thirdweb/react';
 
 type Props = { children: ReactNode };
 
@@ -26,25 +27,27 @@ function WagmiWrapper({ children }: { children: ReactNode }) {
   const wagmiConfig = useWagmiConfig();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
-        <MiniKitProvider
-          apiKey={NEXT_PUBLIC_CDP_API_KEY}
-          chain={base as any}
-          projectId="55dd698a-0763-4455-9c13-3db125f81623"
-          config={{
-            appearance: { theme: 'base', mode: 'light' },
-            wallet: {
-              display: 'modal',
-              termsUrl: '#',
-              privacyUrl: '#',
-            },
-          }}
-        >
-          {children}
-        </MiniKitProvider>
-      </WagmiProvider>
-    </QueryClientProvider>
+    <ThirdwebProvider>
+      <QueryClientProvider client={queryClient}>
+        <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
+          <MiniKitProvider
+            apiKey={NEXT_PUBLIC_CDP_API_KEY}
+            chain={base as any}
+            projectId="55dd698a-0763-4455-9c13-3db125f81623"
+            config={{
+              appearance: { theme: 'base', mode: 'light' },
+              wallet: {
+                display: 'modal',
+                termsUrl: '#',
+                privacyUrl: '#',
+              },
+            }}
+          >
+            {children}
+          </MiniKitProvider>
+        </WagmiProvider>
+      </QueryClientProvider>
+    </ThirdwebProvider>
   );
 }
 

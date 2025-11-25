@@ -20,13 +20,19 @@ const CAMPAIGN_CHAIN_ID = 8453; // Base chain
 
 // Array of claim links from your Excel file - add all your claim links here
 const CLAIM_LINKS = [
-    "https://claim.linkdrop.io/#/redeem/F894ye4Y44jb?src=d",
-    "https://claim.linkdrop.io/#/redeem/FGc2dYp5gWVR?src=d",
-    "https://claim.linkdrop.io/#/redeem/8ZCQGoyzfion?src=d",
-    "https://claim.linkdrop.io/#/redeem/2nPVKDEHLZj8?src=d",
-    "https://claim.linkdrop.io/#/redeem/2azDyjsvMG29?src=d",
-    "https://claim.linkdrop.io/#/redeem/Hzi1Cq59su2N?src=d",
-    "https://claim.linkdrop.io/#/redeem/9nQhhB9bBWoy?src=d",
+    "https://claim.linkdrop.io/#/redeem/4oUMwXAJt4Py?src=d",
+    "https://claim.linkdrop.io/#/redeem/C1q2oVuWGf7T?src=d",
+    "https://claim.linkdrop.io/#/redeem/6CAinCVyVXjB?src=d",
+    "https://claim.linkdrop.io/#/redeem/G9o47ZRHVoM5?src=d",
+    "https://claim.linkdrop.io/#/redeem/2U4vvL1kBAHT?src=d",
+    "https://claim.linkdrop.io/#/redeem/5sJPrjqbQNK7?src=d",
+    "https://claim.linkdrop.io/#/redeem/4jWHzecwCL3b?src=d",
+    "https://claim.linkdrop.io/#/redeem/BpLvuuZXeSZp?src=d",
+    "https://claim.linkdrop.io/#/redeem/34EdPeHm4nGy?src=d",
+    "https://claim.linkdrop.io/#/redeem/3d2ufaU7uwLy?src=d",
+    "https://claim.linkdrop.io/#/redeem/7ZJ5qYrpBzHZ?src=d",
+    "https://claim.linkdrop.io/#/redeem/GCMh4uw1qwVX?src=d",
+    "https://claim.linkdrop.io/#/redeem/Ck5eyAnTBdjc?src=d",
 ];
 
 // Initialize Linkdrop SDK helper
@@ -286,7 +292,6 @@ const Leaderboard = () => {
     };
 
     const handleApproveAndClaim = async () => {
-        setShowApprovalModal(false);
         setClaiming(true);
         setClaimStatus("Preparing claim...");
 
@@ -370,12 +375,14 @@ const Leaderboard = () => {
 
             setClaimStatus(`✅ Claimed successfully! Transaction: ${txHash.slice(0, 10)}...`);
 
-            // Show success modal
+            // Close approval modal and show success modal
+            setShowApprovalModal(false);
             setShowSuccessModal(true);
             setHasBoostPass(true); // Update state to show claimed status
 
         } catch (err: any) {
             console.error('Claim error:', err);
+            setShowApprovalModal(false); // Close modal on error
 
             if (err.code === 4001 || err.message?.includes('User denied')) {
                 alert('❌ Transaction rejected by user.');
@@ -886,9 +893,15 @@ const Leaderboard = () => {
                             </button>
                             <button
                                 onClick={handleApproveAndClaim}
-                                className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center"
+                                disabled={claiming}
+                                className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-sm bg-[#7FC447] text-white hover:bg-[#6DB83C] transition text-sm font-medium text-center ${
+                                    claiming ? 'opacity-75 cursor-not-allowed' : ''
+                                }`}
                             >
-                                Approve & Claim
+                                {claiming && (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                )}
+                                {claiming ? 'Processing...' : 'Approve & Claim'}
                             </button>
                         </div>
                     </div>

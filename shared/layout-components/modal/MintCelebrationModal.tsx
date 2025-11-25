@@ -13,6 +13,7 @@ interface MintCelebrationModalProps {
   token: string;
   isOpen: boolean;
   onClose: () => void;
+  tier?: 'Standard' | 'Premium' | 'Legendary';
 }
 
 // Portal for fullscreen confetti, with fade-out transition
@@ -51,7 +52,15 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({
   id,
   isOpen,
   onClose,
+  tier = 'Standard',
 }) => {
+  // Determine surface area based on tier
+  const surfaceMap: Record<string, string> = {
+    'Standard': '100m²',
+    'Premium': '500m²',
+    'Legendary': '1000m²',
+  };
+  const surface = surfaceMap[tier] || '100m²';
   const modalRef = useRef<HTMLDivElement>(null);
 
   // --- Mobile detection
@@ -118,8 +127,8 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({
     typeof window !== 'undefined'
       ? window.location.href.replace(/\/$/, '')
       : '';
-  const shareTextTwitter = `Discover The ${name} — live now on #Base`;
-  const shareTextWarpcast = `Discover The ${name} — live now on #Base`;
+  const shareTextTwitter = `Discover the ${tier} Tokenized Landplots from the Bitgrass NFT collection - Live now on #Base`;
+  const shareTextWarpcast = `Discover the ${tier} Tokenized Landplots from the Bitgrass NFT collection - Live now on #Base`;
   const encodedTextTwitter = encodeURIComponent(shareTextTwitter);
   const encodedTextWarpcast = encodeURIComponent(shareTextWarpcast);
   const encodedLink = encodeURIComponent(currentUrl);
@@ -197,12 +206,11 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({
           {/* Content */}
           <div className="flex flex-col items-center gap-4 text-center mb-6">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              You just Minted{' '}
-              <span className="text-sm text-secondary">
-                Plot {formattedTokenIds}.
-              </span>{' '}
-              <br />
-              from the {name}
+              You just purchased a{' '}
+              <span className="text-sm text-secondary font-semibold">{tier}</span> NFT,{' '}
+              <span className="text-sm text-secondary font-semibold">{surface}</span> tokenized plot{' '}
+              <span className="text-sm text-secondary font-semibold">{formattedTokenIds}</span>{' '}
+              from the Bitgrass Collection
             </p>
           </div>
 
@@ -233,6 +241,8 @@ const MintCelebrationModal: React.FC<MintCelebrationModalProps> = ({
           <div className="flex flex-row max-[420px]:flex-col gap-2">
             <Link
               href={`https://opensea.io/item/base/${token}/${firstTokenId}`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center px-3 py-3 rounded-sm bg-camel10 dark:bg-[#FFFFFF0D] text-gray-900 dark:text-gray-300 hover:bg-camel20 dark:hover:bg-[#FFFFFF1A] transition text-sm font-medium text-center"
             >
               View Item on Opensea

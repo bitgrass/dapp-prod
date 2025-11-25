@@ -8,20 +8,19 @@ import {
     Autoplay, Pagination,
     EffectCube
 } from 'swiper/modules';
-import {
-    Swap,
-    SwapAmountInput,
-    SwapToggleButton,
-    SwapButton,
-    SwapMessage,
-    SwapToast,
-} from '@coinbase/onchainkit/swap';
-import type { Token } from '@coinbase/onchainkit/token';
+import { createThirdwebClient } from "thirdweb";
+import { SwapWidget, useSetActiveWallet } from "thirdweb/react";
+import { EIP1193 } from "thirdweb/wallets";
+import { useConnectedAddress } from '../useConnectedAddress';
 import Moralis from 'moralis';
 import axios from 'axios';
-import { btgToken, ETHToken, btgInfo } from "@/shared/data/tokens/data";
+import { btgInfo } from "@/shared/data/tokens/data";
 import TokenizedLandCube from './TokenizedLandCarousel';
 import PriceChart from './PriceChart';
+
+const thirdwebClient = createThirdwebClient({
+    clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
+});
 
 declare global {
     interface Window {
@@ -42,17 +41,32 @@ const Dashboard = () => {
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
     const shortAddress = btgInfo && btgInfo.address ? `${btgInfo.address.slice(0, 6)}…${btgInfo.address.slice(-4)}` : '';
 
-
-
-
     const [btgPrice, setBtgPrice] = useState(0);
     const [btgPercentChange, setBtgPercentChange] = useState(0)
     const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState('overview');
+    
+    // Thirdweb wallet integration
+    const { address, client: walletClient, clientReady } = useConnectedAddress();
+    const setActiveWallet = useSetActiveWallet();
 
-
-    // add other tokens here to display them as options in the swap
-    const swappableTokens: Token[] = [ETHToken, btgToken];
+    // Sync connected wallet with Thirdweb
+    useEffect(() => {
+        const syncWallet = async () => {
+            if (address && walletClient && clientReady) {
+                try {
+                    const thirdwebWallet = EIP1193.fromProvider({
+                        provider: walletClient,
+                    });
+                    await thirdwebWallet.connect({ client: thirdwebClient });
+                    setActiveWallet(thirdwebWallet);
+                } catch (error) {
+                    console.error("Failed to sync wallet with Thirdweb:", error);
+                }
+            }
+        };
+        syncWallet();
+    }, [address, walletClient, clientReady, setActiveWallet]);
 
     useEffect(() => {
         const initMoralis = async () => {
@@ -130,7 +144,7 @@ const Dashboard = () => {
         async function fetchPrice() {
             try {
                 const response = await axios.get(
-                    `https://deep-index.moralis.io/api/v2.2/erc20/${btgToken.address}/price?chain=base&include=percent_change`,
+                    `https://deep-index.moralis.io/api/v2.2/erc20/${btgInfo.address}/price?chain=base&include=percent_change`,
                     {
                         headers: {
                             accept: "application/json",
@@ -163,7 +177,7 @@ const Dashboard = () => {
         async function fetchPrice24H() {
             try {
                 const response = await axios.get(
-                    `https://deep-index.moralis.io/api/v2.2/tokens/${btgToken.address}/analytics?chain=base`,
+                    `https://deep-index.moralis.io/api/v2.2/tokens/${btgInfo.address}/analytics?chain=base`,
                     {
                         headers: {
                             accept: "application/json",
@@ -649,7 +663,7 @@ const Dashboard = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="xl:col-span-4 col-span-12">
+                                        <div className="xl:col-span-4 col-span-12 swap">
                                             <div className="xl:col-span-4 lg:col-span-6 md:col-span-6 sm:col-span-12 col-span-12">
                                                 <div className="box custom-box">
                                                     <div className="box-header">
@@ -672,26 +686,32 @@ const Dashboard = () => {
                                                             <div className="text-[0.65rem] text-default ">Swap shows BTG but actually uses USDC.</div>                                                    </div>
                                                     </div> */}
                                                     <div className="box-body crypto-data" style={{ paddingTop: 0 }}>
-
-                                                        <Swap className='swapContainer'>
-                                                            <SwapAmountInput
-                                                                label="Sell"
-                                                                swappableTokens={swappableTokens}
-                                                                token={ETHToken}
-                                                                type="from"
+                                                        {address && clientReady ? (
+                                                            <SwapWidget
+                                                                client={thirdwebClient}
+                                                                theme={theme === 'dark' ? 'dark' : 'light'}
+                                                                prefill={{
+                                                                    sellToken: {
+                                                                        chainId: 8453,
+                                                                    },
+                                                                    buyToken: {
+                                                                        chainId: 8453,
+                                                                        tokenAddress: "0x20429F731096e359910921994A267d32ef576720",
+                                                                    },
+                                                                }}
+                                                                connectOptions={{
+                                                                    wallets: [],
+                                                                    autoConnect: false,
+                                                                }}
+                                                                showThirdwebBranding={false}
+                                                                persistTokenSelections={false}
+                                                                style={{ width: '100%', minHeight: '400px' }}
                                                             />
-                                                            <SwapToggleButton className='swapButton' />
-                                                            <SwapAmountInput
-                                                                label="Buy"
-                                                                swappableTokens={swappableTokens}
-                                                                token={btgToken}
-                                                                type="to"
-                                                            />
-                                                            <SwapButton />
-                                                            <SwapMessage />
-                                                            <SwapToast />
-                                                        </Swap>
-
+                                                        ) : (
+                                                            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                                                                <p>Please connect your wallet to use the swap feature.</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

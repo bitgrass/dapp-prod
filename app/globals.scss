@@ -57,3 +57,162 @@
 .electric-border {
   animation: electric-border 1.5s ease-in-out infinite;
 }
+
+/* Override Privy CSS variables */
+:root {
+  --privy-color-background-2: rgb(249, 248, 247) !important;
+}
+
+[data-theme-mode="dark"] {
+  --privy-color-background-2: rgb(37, 39, 41) !important;
+}
+
+/* Thirdweb SwapWidget Customization */
+.swap [data-thirdweb] {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Hide token selector buttons to lock tokens */
+.swap [data-thirdweb] button[aria-label*="Select"] {
+  pointer-events: none !important;
+  cursor: default !important;
+  opacity: 0.6 !important;
+}
+
+/* Hide dropdown arrows and make token buttons non-interactive */
+.swap [data-thirdweb] button[data-variant="ghost"] {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+/* Hide the chevron/arrow icons in token selectors */
+.swap [data-thirdweb] button div[color="secondaryText"]:has(svg) {
+  display: none !important;
+}
+
+.swap [data-thirdweb] button svg path[d*="6.15803"] {
+  display: none !important;
+}
+
+.swap [data-thirdweb] button div:has(svg path[d*="6.15803"]) {
+  display: none !important;
+}
+
+/* Disable hover effects on token buttons */
+.swap [data-thirdweb] button[data-variant="ghost"]:hover {
+  background: transparent !important;
+}
+
+/* Swap widget styling */
+.swap .box-body {
+  padding: 1rem !important;
+}
+
+.swap .css-mp7nqh {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.swap .css-cauv8d {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
+
+.swap .css-10b0hqi {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.swap .css-dkfvx5 {
+  @apply bg-camel !important;
+}
+
+.swap .css-d48knh {
+  display: none !important;
+}
+
+.swap .css-hjgojf {
+  pointer-events: none !important;
+}
+
+.swap .css-1cp03g1 {
+  border: none !important;
+}
+
+.swap .css-1ttmfkt {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.swap .css-xak5w6 {
+  @apply bg-camel !important;
+}
+
+.swap .css-y5i7x6 {
+  display: none !important;
+}
+
+.swap .css-1qwkx4l {
+  pointer-events: none !important;
+}
+
+.swap .css-1uz78yq {
+  display: none !important;
+}
+
+.swap .css-1ml0291 {
+  display: none !important;
+}
+
+/* Style swap button to match dashboard style */
+.swap button.css-pdiliw,
+.swap button.css-3hwt6 {
+  background: linear-gradient(to right, #7fc447, #6ab03a) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+  height: 38px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(127, 196, 71, 0.2) !important;
+}
+
+.swap button.css-pdiliw:hover,
+.swap button.css-3hwt6:hover {
+  background: linear-gradient(to right, #6ab03a, #5a9830) !important;
+  box-shadow: 0 4px 8px rgba(127, 196, 71, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+.swap button.css-pdiliw:active,
+.swap button.css-3hwt6:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 4px rgba(127, 196, 71, 0.2) !important;
+}
+
+/* Style amount buttons to match swap button */
+.swap .css-15a01af,
+.swap .css-hfs5kq {
+  background: linear-gradient(to right, #7fc447, #6ab03a) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+}
+
+.swap .css-15a01af:hover,
+.swap .css-hfs5kq:hover {
+  background: linear-gradient(to right, #6ab03a, #5a9830) !important;
+  transform: translateY(-1px) !important;
+}
+
+.swap .css-15a01af:active,
+.swap .css-hfs5kq:active {
+  transform: translateY(0) !important;
+}
