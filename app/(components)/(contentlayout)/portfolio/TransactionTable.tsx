@@ -173,6 +173,14 @@ const TransactionTable = ({
                                       alt={tx.bought?.symbol}
                                     />
                                   </div>
+                                ) : tx.type === "eth" ? (
+                                  <img
+                                    src="/assets/images/brand-logos/eth.png"
+                                    alt="ETH"
+                                    className="avatar avatar-md avatar-rounded"
+                                    width={40}
+                                    height={40}
+                                  />
                                 ) : (
                                   <img
                                     src={

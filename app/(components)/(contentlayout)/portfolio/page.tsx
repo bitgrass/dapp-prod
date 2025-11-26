@@ -74,9 +74,11 @@ const Crypto = () => {
   // ✅ CRITICAL: Use Map for instant deduplication during fetch
   const [cryptoTxMap, setCryptoTxMap] = useState<Map<string, any>>(new Map());
   const [nftTxMap, setNftTxMap] = useState<Map<string, any>>(new Map());
+  const [ethTxMap, setEthTxMap] = useState<Map<string, any>>(new Map());
 
   const [transactionCursor, setTransactionCursor] = useState(null);
   const [nftTransactionCursor, setNftTransactionCursor] = useState(null);
+  const [ethTransactionCursor, setEthTransactionCursor] = useState(null);
   const [nftData, setNftData] = useState<any[]>([]);
   
   // ✅ Cache for API responses (5 minute TTL)
@@ -416,6 +418,72 @@ const Crypto = () => {
     }
   }, [address, getCachedOrFetch]);
 
+  // ✅ Fetch native ETH transactions
+  const fetchEthTransactions = useCallback(async (cursor = null, limit = 10) => {
+    if (!address) return;
+
+    console.log('💎 Fetching ETH transactions:', { cursor, limit });
+
+    try {
+      const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
+      const params = new URLSearchParams({
+        chain: "base",
+        order: "DESC",
+        limit: limit.toString(),
+      });
+      if (cursor) params.append("cursor", cursor);
+
+      const url = `https://deep-index.moralis.io/api/v2.2/${address}?${params.toString()}`;
+      const data = await getCachedOrFetch(url, { 
+        accept: "application/json", 
+        "X-API-Key": API_KEY 
+      });
+      const response = { data };
+
+      const fetchedEthTxs = response.data.result
+        .filter((tx: any) => {
+          // Only include transactions with ETH value (not token transfers)
+          const value = parseFloat(tx.value || "0");
+          return value > 0;
+        })
+        .map((tx: any) => {
+          const value = parseFloat(tx.value) / 1e18; // Convert from wei to ETH
+          const isSent = tx.from_address?.toLowerCase() === address.toLowerCase();
+          const transactionType = isSent ? "Send" : "Receive";
+          const uniqueKey = `eth::${tx.hash}::${tx.block_timestamp}`;
+
+          return {
+            _key: uniqueKey,
+            type: "eth",
+            transaction: transactionType,
+            value: `${isSent ? "-" : "+"}${value.toFixed(6)} ETH`,
+            grayValue: isSent ? `To: ${tx.to_address?.slice(0, 6)}...${tx.to_address?.slice(-4)}` : `From: ${tx.from_address?.slice(0, 6)}...${tx.from_address?.slice(-4)}`,
+            date: new Date(tx.block_timestamp).toLocaleString(),
+            timestamp: new Date(tx.block_timestamp).getTime(),
+            transactionHash: tx.hash,
+          };
+        });
+
+      console.log('💎 Fetched ETH txs:', fetchedEthTxs.length);
+
+      // ✅ Use Map for instant deduplication
+      setEthTxMap((prevMap) => {
+        const newMap = new Map(prevMap);
+        fetchedEthTxs.forEach((tx: any) => {
+          if (!newMap.has(tx._key)) {
+            newMap.set(tx._key, tx);
+          }
+        });
+        console.log('💎 ETH Map size:', newMap.size);
+        return newMap;
+      });
+
+      setEthTransactionCursor(response.data.cursor || null);
+    } catch (error) {
+      console.error("Error fetching ETH transactions:", error);
+    }
+  }, [address, getCachedOrFetch]);
+
   // Fetch NFTs
   const fetchNfts = useCallback(async (cursor = null, limit = 4) => {
     if (!address) return;
@@ -527,7 +595,8 @@ const Crypto = () => {
   const allTransactions = useMemo(() => {
     const cryptoArray = Array.from(cryptoTxMap.values());
     const nftArray = Array.from(nftTxMap.values());
-    const merged = [...cryptoArray, ...nftArray];
+    const ethArray = Array.from(ethTxMap.values());
+    const merged = [...cryptoArray, ...nftArray, ...ethArray];
 
     // Add unique index for stable keys
     const withUniqueKeys = merged.map((tx, idx) => ({
@@ -538,7 +607,7 @@ const Crypto = () => {
 
     const sorted = withUniqueKeys.sort((a, b) => b.timestamp - a.timestamp);
     return sorted;
-  }, [cryptoTxMap, nftTxMap]);
+  }, [cryptoTxMap, nftTxMap, ethTxMap]);
 
   // ✅ CRITICAL FIX: Stable pagination with proper bounds checking
   const transactionPagination = useMemo(() => {
@@ -653,6 +722,7 @@ const Crypto = () => {
         if (isNewAddress) {
           setCryptoTxMap(new Map());
           setNftTxMap(new Map());
+          setEthTxMap(new Map());
           setNftData([]);
           setCurrentTransactionPage(1);
           setCurrentNftPage(1);
@@ -660,6 +730,7 @@ const Crypto = () => {
 
         setTransactionCursor(null);
         setNftTransactionCursor(null);
+        setEthTransactionCursor(null);
         setNftCursor(null);
         setHasInitialNftLoad(false);
         setHasInitialTransaction(false);
@@ -681,13 +752,17 @@ const Crypto = () => {
           console.log('✅ NFT transactions loaded');
         });
 
+        const ethTxPromise = fetchEthTransactions(null, 100).then(() => {
+          console.log('✅ ETH transactions loaded');
+        });
+
         const nftGridPromise = fetchNfts(null, 100).then(() => {
           setHasInitialNftLoad(true);
           console.log('✅ NFT grid loaded');
         });
 
         // Wait for all to complete
-        Promise.all([cryptoPromise, nftTxPromise, nftGridPromise]).finally(() => {
+        Promise.all([cryptoPromise, nftTxPromise, ethTxPromise, nftGridPromise]).finally(() => {
           initialFetchComplete.current = true;
           console.log('✅ All data loaded');
         });
@@ -701,9 +776,11 @@ const Crypto = () => {
 
         setCryptoTxMap(new Map());
         setNftTxMap(new Map());
+        setEthTxMap(new Map());
         setNftData([]);
         setTransactionCursor(null);
         setNftTransactionCursor(null);
+        setEthTransactionCursor(null);
         setNftCursor(null);
         setHasInitialNftLoad(false);
         setHasInitialTransaction(false);
@@ -712,7 +789,7 @@ const Crypto = () => {
         setLoadingNftGrid(false);
       }
     }
-  }, [address, addressLoading, authenticated, ready, fetchCryptoTransactions, fetchNftTransactions, fetchNfts, cryptoTxMap.size]);
+  }, [address, addressLoading, authenticated, ready, fetchCryptoTransactions, fetchNftTransactions, fetchEthTransactions, fetchNfts, cryptoTxMap.size]);
 
   // Status effect
   useEffect(() => {
