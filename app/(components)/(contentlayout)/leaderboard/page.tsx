@@ -124,15 +124,52 @@ const Leaderboard = () => {
         return `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`;
     };
     // Use the custom hook - this will prioritize Farcaster wallet in miniapp
-    const { address: connectedAddress } = useConnectedAddress();
+    const { address: connectedAddress, isLoading: addressLoading } = useConnectedAddress();
     const [hasBoostPass, setHasBoostPass] = useState<boolean>(false);
     const [boostPassLoading, setBoostPassLoading] = useState<boolean>(false);
+    const [statusReady, setStatusReady] = useState<boolean>(false);
+    const [isMounted, setIsMounted] = useState<boolean>(false);
+    const [pageReady, setPageReady] = useState<boolean>(false);
     const BOOST_PASS_CONTRACT = "0xBd528427e8612ff27961cDdb819688aF5c7D8735";
     const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
 
+    // Set mounted state on client side only
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Wait for all data to be ready before showing page
+    useEffect(() => {
+        if (!isMounted) return;
+        
+        // Check if we have all the data we need
+        // If authenticated, wait for address and boost pass data
+        // If not authenticated, just wait for leaderboard data
+        const isDataReady = authenticated 
+            ? !addressLoading && !boostPassLoading && !loading && connectedAddress
+            : !loading;
+        
+        if (isDataReady) {
+            // Add a small delay to ensure smooth transition
+            const timer = setTimeout(() => {
+                setPageReady(true);
+                setStatusReady(true);
+            }, 500);
+            
+            return () => clearTimeout(timer);
+        } else {
+            // Reset page ready state when data becomes unavailable (e.g., during wallet connection)
+            setPageReady(false);
+            setStatusReady(false);
+        }
+    }, [isMounted, addressLoading, boostPassLoading, loading, authenticated, connectedAddress]);
+
     // Fetch Boost Pass NFT
     useEffect(() => {
-        if (!connectedAddress) return;
+        if (!authenticated || !connectedAddress) {
+            return;
+        }
+        
         const fetchBoostPass = async () => {
             setBoostPassLoading(true);
             try {
@@ -156,7 +193,7 @@ const Leaderboard = () => {
         };
 
         fetchBoostPass();
-    }, [connectedAddress]);
+    }, [connectedAddress, authenticated]);
 
     const ITEMS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = useState(1);
@@ -468,6 +505,23 @@ const Leaderboard = () => {
         </svg>
     );
 
+    // Show loader until page is ready
+    if (!pageReady) {
+        return (
+            <Fragment>
+                <Seo title={"Leaderboard"} />
+                <div className='container'>
+                    <div className="flex items-center justify-center min-h-screen">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-secondary border-t-transparent"></div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Loading leaderboard...</p>
+                        </div>
+                    </div>
+                </div>
+            </Fragment>
+        );
+    }
+
     return (
         <Fragment>
             <Seo title={"Leaderboard"} />
@@ -478,63 +532,80 @@ const Leaderboard = () => {
                     <div className="col-span-12 md:col-span-6 flex items-center">
                         <div className=" w-full p-4">
                             <p className="text-4xl font-bold mb-1 ">Leaderboard</p>
-                            <p className='dark:text-white/60 mb-2'>
+                            <p className='dark:text-white/60'>
                                 Early NFT adopters earn $BTG through the Vesting Program <br />and
                                 can unlock a BoostPass that doubles their staking APY (x2 boost).<br />
                                 $BTG rewards become claimable after the public sale ends.
                             </p>
 
-                            {/* Eligibility Status - Only show when wallet is connected */}
-                            {authenticated && (
-                                <div className="mt-4 space-y-2">
-                                    {/* Case 2: Not in leaderboard */}
-                                    {!userInLeaderboard && (
-                                        <>
-                                            <div className="flex items-center gap-2">
-                                                <img src="../../../assets/images/svg/XCircle.svg" alt="Not Eligible" className="w-5 h-5" />
-                                                <span className="text-sm">Not Eligible to earn $BTG</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <img src="../../../assets/images/svg/XCircle.svg" alt="Not Eligible" className="w-5 h-5" />
-                                                <span className="text-sm">Not Eligible to Boost Staking APY</span>
-                                            </div>
-                                        </>
-                                    )}
+                            {/* Eligibility Status - Fixed height container to prevent layout shift */}
+                            <div className="mt-4 space-y-2" style={{
+                                minHeight: '56px',
+                                height: '56px'
+                            }}>
+                                {authenticated && (
+                                    <div style={{
+                                        opacity: statusReady ? 1 : 0,
+                                        transition: 'opacity 0.5s ease-in-out'
+                                    }}>
+                                        {statusReady && (
+                                            <>
+                                                {/* Case 2: Not in leaderboard */}
+                                                {!userInLeaderboard && (
+                                                    <>
+                                                        <div className="flex items-center gap-2">
+                                                            <img src="../../../assets/images/svg/XCircle.svg" alt="Not Eligible" className="w-5 h-5" />
+                                                            <span className="text-sm">Not Eligible to earn $BTG</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <img src="../../../assets/images/svg/XCircle.svg" alt="Not Eligible" className="w-5 h-5" />
+                                                            <span className="text-sm">Not Eligible to Boost Staking APY</span>
+                                                        </div>
+                                                    </>
+                                                )}
 
-                                    {/* Case 3: In leaderboard but no boost pass */}
-                                    {userInLeaderboard && !hasBoostPass && (
-                                        <>
-                                            <div className="flex items-center gap-2">
-                                                <img src="../../../assets/images/svg/CheckCircle.svg" alt="Eligible" className="w-5 h-5" />
-                                                <span className="text-sm">Eligible to earn $BTG</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <img src="../../../assets/images/svg/CheckCircleGrey.svg" alt="Eligible" className="w-5 h-5" />
-                                                <span className="text-sm">Eligible to Boost Staking APY</span>
-                                            </div>
-                                        </>
-                                    )}
+                                                {/* Case 3: In leaderboard but no boost pass */}
+                                                {userInLeaderboard && !hasBoostPass && (
+                                                    <>
+                                                        <div className="flex items-center gap-2">
+                                                            <img src="../../../assets/images/svg/CheckCircle.svg" alt="Eligible" className="w-5 h-5" />
+                                                            <span className="text-sm">Eligible to earn $BTG</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <img src="../../../assets/images/svg/CheckCircleGrey.svg" alt="Eligible" className="w-5 h-5" />
+                                                            <span className="text-sm">Eligible to Boost Staking APY</span>
+                                                        </div>
+                                                    </>
+                                                )}
 
-                                    {/* Case 4: In leaderboard and has boost pass */}
-                                    {userInLeaderboard && hasBoostPass && (
-                                        <>
-                                            <div className="flex items-center gap-2">
-                                                <img src="../../../assets/images/svg/CheckCircle.svg" alt="Eligible" className="w-5 h-5" />
-                                                <span className="text-sm">Eligible to earn $BTG</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <img src="../../../assets/images/svg/CheckCircle.svg" alt="Activated" className="w-5 h-5" />
-                                                <span className="text-sm">Staking APY Boost Activated</span>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            )}
+                                                {/* Case 4: In leaderboard and has boost pass */}
+                                                {userInLeaderboard && hasBoostPass && (
+                                                    <>
+                                                        <div className="flex items-center gap-2">
+                                                            <img src="../../../assets/images/svg/CheckCircle.svg" alt="Eligible" className="w-5 h-5" />
+                                                            <span className="text-sm">Eligible to earn $BTG</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <img src="../../../assets/images/svg/CheckCircle.svg" alt="Activated" className="w-5 h-5" />
+                                                            <span className="text-sm">Staking APY Boost Activated</span>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     {/* Right: Card */}
                     <div className="col-span-12 md:col-span-6 flex items-center justify-end mt-6 sm:mt-0">
-                        <div className="box w-full h-full flex flex-col justify-center shadow-none" style={{ minHeight: 250 }}>
+                        {isMounted && (
+                            <div className="box w-full h-full flex flex-col justify-center shadow-none" style={{ 
+                                minHeight: 250,
+                                opacity: statusReady ? 1 : 0,
+                                transition: 'opacity 0.5s ease-in-out'
+                            }}>
 
                             <div className="box-body pb-0 " style={{ paddingBottom: 0 }}>
                                 {/* Rank Badge (Mobile only) */}
@@ -546,18 +617,18 @@ const Leaderboard = () => {
 
                                 {/* Title + Rank Badge (Desktop only) */}
                                 <div className="hidden sm:flex items-center justify-between mb-2">
-                                    <div className="text-lg font-bold">Your available $BTG for claim</div>
+                                    <div className="text-lg font-bold">Your $BTG Reward Balance</div>
                                     <div className="flex items-center gap-2 bg-camel rounded-sm px-3 py-2 text-sm font-semibold text-primary">
                                         {RankIcon}
                                         <span className="text-base">{displayRank}</span>                                    </div>
                                 </div>
 
                                 {/* Title (Mobile) */}
-                                <div className="text-lg font-bold mb-2 sm:hidden">Your available $BTG for claim</div>
+                                <div className="text-lg font-bold mb-2 sm:hidden"> Your $BTG Reward Balance</div>
 
                                 {/* Description */}
                                 <div className="text-[#3e4042] dark:text-white mb-5">
-                                    Early NFT adopters earn $BTG through the Vesting program <br />and can claim a BoostPass to double their staking APY.
+                                    Your $BTG rewards are calculated based on the number <br /> of tokenized land plots (NFTs) you hold.
                                 </div>
 
                                 {/* BTG Balance and NFT Counts */}
@@ -673,7 +744,9 @@ const Leaderboard = () => {
                                     </>
                                 )}
                                 {/* Connect Wallet Button */}
-                                <div className="flex gap-3">
+                                <div className="flex gap-3" style={{
+                                    minHeight: '48px'
+                                }}>
                                     {!authenticated ? (
                                         <button
                                             className="w-180 text-white !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 bg-secondary btn-primary cursor-pointer whitespace-nowrap"
@@ -682,7 +755,7 @@ const Leaderboard = () => {
                                         >
                                             Connect Wallet
                                         </button>
-                                    ) : (
+                                    ) : statusReady && (
                                         <>
                                             <button
                                                 className="w-180 !font-medium btn px-4 sm:px-8 py-2 rounded-sm mt-2 whitespace-nowrap bg-camel10 text-hights cursor-not-allowed opacity-50"
@@ -730,6 +803,7 @@ const Leaderboard = () => {
 
                             </div>
                         </div>
+                        )}
                     </div>
 
                 </div>

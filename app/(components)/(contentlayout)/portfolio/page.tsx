@@ -444,7 +444,16 @@ const Crypto = () => {
         .filter((tx: any) => {
           // Only include transactions with ETH value (not token transfers)
           const value = parseFloat(tx.value || "0");
-          return value > 0;
+          if (value === 0) return false;
+          
+          // Filter out contract interactions - only keep EOA to EOA transfers
+          // Contract interactions typically have input data
+          const hasInputData = tx.input && tx.input !== "0x" && tx.input.length > 2;
+          
+          // Skip if there's input data (contract interaction)
+          if (hasInputData) return false;
+          
+          return true;
         })
         .map((tx: any) => {
           const value = parseFloat(tx.value) / 1e18; // Convert from wei to ETH

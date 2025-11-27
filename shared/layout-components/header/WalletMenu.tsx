@@ -134,13 +134,13 @@ const WalletMenu: React.FC = () => {
           const humanReadable = parseFloat(rawBalance) / Math.pow(10, decimals);
 
           setEthBalance({
-            formatted: humanReadable.toFixed(5),
+            formatted: humanReadable === 0 ? "0" : humanReadable.toFixed(7),
             symbol: ethData.symbol || "ETH"
           });
-          console.log("✅ ETH balance set:", humanReadable.toFixed(5), ethData.symbol);
+          console.log("✅ ETH balance set:", humanReadable.toFixed(7), ethData.symbol);
         } else {
-          setEthBalance({ formatted: "0.00", symbol: "ETH" });
-          console.log("⚠️ No tokens found, ETH set to 0.00");
+          setEthBalance({ formatted: "0", symbol: "ETH" });
+          console.log("⚠️ No tokens found, ETH set to 0");
         }
 
         // BTG: Find by token address
@@ -156,18 +156,18 @@ const WalletMenu: React.FC = () => {
           const humanReadable = parseFloat(rawBalance) / Math.pow(10, decimals);
 
           setTokenBalance({
-            formatted: humanReadable.toFixed(5),
+            formatted: humanReadable === 0 ? "0" : humanReadable.toFixed(5),
             symbol: btgData.symbol || btgToken.symbol
           });
           console.log("✅ BTG balance set:", humanReadable.toFixed(5));
         } else {
-          setTokenBalance({ formatted: "0.00", symbol: btgToken.symbol });
-          console.log("⚠️ No BTG token found, set to 0.00");
+          setTokenBalance({ formatted: "0", symbol: btgToken.symbol });
+          console.log("⚠️ No BTG token found, set to 0");
         }
       } catch (error) {
         console.error("❌ Error fetching balances:", error);
-        setEthBalance({ formatted: "0.00", symbol: "ETH" });
-        setTokenBalance({ formatted: "0.00", symbol: btgToken.symbol });
+        setEthBalance({ formatted: "0", symbol: "ETH" });
+        setTokenBalance({ formatted: "0", symbol: btgToken.symbol });
       }
     }
     fetchBalances();
@@ -347,6 +347,8 @@ const WalletMenu: React.FC = () => {
       return `${(Math.round(value / 100_000) / 10).toFixed(1)}M`;
     } else if (value >= 1_000) {
       return `${(Math.round(value / 100) / 10).toFixed(1)}K`;
+    } else if (value === 0) {
+      return "0";
     } else {
       return `${value.toFixed(2)}`;
     }
@@ -540,7 +542,7 @@ const WalletMenu: React.FC = () => {
                   <span className="font-semibold text-sm ms-2">{ETHToken.symbol}</span>
                 </div>
                 <div className="text-sm font-medium text-right">
-                  {ethBalance ? `${ethBalance.formatted.slice(0, 6)} ${ethBalance.symbol}` : "0"}
+                  {ethBalance ? `${ethBalance.formatted} ${ethBalance.symbol}` : "0"}
                 </div>
               </div>
             </div>
@@ -645,7 +647,7 @@ const WalletMenu: React.FC = () => {
                         Balance:{" "}
                         <span style={{ color: "#7FC447" }}>
                           {ethBalance
-                            ? `${ethBalance.formatted.slice(0, 6)} ${ethBalance.symbol}`
+                            ? `${ethBalance.formatted} ${ethBalance.symbol}`
                             : "0"}
                         </span>
                       </span>

@@ -192,6 +192,9 @@ function useFarcasterProvider(farcasterWallet: string | null) {
   return { provider, providerError, isLoading }
 }
 
+// Global flag to prevent duplicate wallet creation across all instances
+const globalWalletCreationTracker = new Map<string, boolean>();
+
 /**
  * Hook to ensure embedded wallet is created when needed
  * Now handles fallback when external wallet disconnects
@@ -209,28 +212,40 @@ function useEnsureEmbeddedWallet() {
       return
     }
 
+    const userId = user.id;
+    
     const ensureWallet = async () => {
       // Prevent concurrent creation attempts
       if (creatingWallet.current) {
         return
       }
 
+      // Check global tracker - if we've already created for this user, skip
+      if (globalWalletCreationTracker.get(userId)) {
+        return
+      }
+
       // ONLY check the wallets array for active wallets
       const hasExternalWallet = wallets.some(w => w.walletClientType !== 'privy')
-      const hasEmbeddedWallet = wallets.some(w => w.walletClientType === 'privy')
+      const embeddedWallets = wallets.filter(w => w.walletClientType === 'privy')
+      const hasEmbeddedWallet = embeddedWallets.length > 0
 
       const currentlyHasExternal = hasExternalWallet
       const currentlyHasEmbedded = hasEmbeddedWallet
 
+      // If we already have an embedded wallet, mark as created globally and return
+      if (currentlyHasEmbedded) {
+        globalWalletCreationTracker.set(userId, true);
+        return
+      }
+
       // Detect when external wallet was disconnected
       const externalWalletWasDisconnected = hadExternalWallet.current && !currentlyHasExternal
-
-
 
       // Update tracking
       hadExternalWallet.current = currentlyHasExternal
 
-      // Create embedded wallet if:
+      // Create embedded wallet ONLY if:
       // 1. User has no wallets at all, OR
       // 2. External wallet was just disconnected and no embedded wallet exists
       const shouldCreateEmbedded = (
@@ -239,15 +254,17 @@ function useEnsureEmbeddedWallet() {
       )
 
       if (shouldCreateEmbedded) {
+        // Mark as creating BEFORE the attempt to prevent race conditions
         creatingWallet.current = true
+        globalWalletCreationTracker.set(userId, true);
         
-        if (externalWalletWasDisconnected) {
-        } else {
-        }
-
         try {
           await createWallet()
+          console.log('✅ Embedded wallet created for user:', userId)
         } catch (error) {
+          console.error('❌ Failed to create embedded wallet:', error)
+          // On failure, remove the global flag so we can retry
+          globalWalletCreationTracker.delete(userId);
         } finally {
           creatingWallet.current = false
         }
@@ -267,6 +284,13 @@ function useEnsureEmbeddedWallet() {
     creatingWallet.current = false
     hadExternalWallet.current = false
   }, [user?.id])
+  
+  // Cleanup global tracker when component unmounts
+  useEffect(() => {
+    return () => {
+      // Don't clear the global tracker on unmount - keep it to prevent recreation
+    }
+  }, [])
 }
 
 /**

@@ -257,6 +257,15 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             const mintPrice = publicDrop.mintPrice;
             const totalPrice = mintPrice * BigInt(quantity);
 
+            // Check user balance
+            const balance = await publicProvider.getBalance(userAddress);
+            console.log("💳 User balance:", ethers.formatEther(balance), "ETH");
+            console.log("💰 Total price needed:", ethers.formatEther(totalPrice), "ETH");
+
+            if (balance < totalPrice) {
+                throw new Error("INSUFFICIENT_BALANCE");
+            }
+
             // Prepare calldata
             const iface = new ethers.Interface(SeaDropABI);
             const calldata = iface.encodeFunctionData("mintPublic", [
@@ -287,6 +296,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             data: calldata,
                         },
                     ],
+                }).catch((txError: any) => {
+                    console.error("❌ Transaction error:", txError);
+                    if (
+                        txError?.message?.toLowerCase().includes("insufficient funds") ||
+                        txError?.message?.toLowerCase().includes("exceeds the balance") ||
+                        txError?.details?.toLowerCase().includes("insufficient funds") ||
+                        txError?.name?.includes("EstimateGasExecutionError") ||
+                        txError?.shortMessage?.toLowerCase().includes("insufficient funds")
+                    ) {
+                        throw new Error("INSUFFICIENT_BALANCE");
+                    }
+                    throw txError;
                 });
                 console.log("✅ Farcaster provider mint submitted:", txHash);
             } else {
@@ -302,6 +323,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             data: calldata,
                         },
                     ],
+                }).catch((txError: any) => {
+                    console.error("❌ Transaction error:", txError);
+                    if (
+                        txError?.message?.toLowerCase().includes("insufficient funds") ||
+                        txError?.message?.toLowerCase().includes("exceeds the balance") ||
+                        txError?.details?.toLowerCase().includes("insufficient funds") ||
+                        txError?.name?.includes("EstimateGasExecutionError") ||
+                        txError?.shortMessage?.toLowerCase().includes("insufficient funds")
+                    ) {
+                        throw new Error("INSUFFICIENT_BALANCE");
+                    }
+                    throw txError;
                 });
                 console.log("✅ Standard mint transaction submitted:", txHash);
             }
@@ -341,11 +374,17 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 setToastTitle("Transaction Rejected");
                 setToastMessage("You missed your plot.");
             } else if (
+                error?.message === "INSUFFICIENT_BALANCE" ||
                 error?.code === "INSUFFICIENT_FUNDS" ||
-                error?.message?.toLowerCase().includes("insufficient funds")
+                error?.message?.toLowerCase().includes("insufficient funds") ||
+                error?.message?.toLowerCase().includes("insufficient balance") ||
+                error?.message?.toLowerCase().includes("exceeds the balance") ||
+                error?.details?.toLowerCase().includes("insufficient funds") ||
+                error?.name?.includes("EstimateGasExecutionError") ||
+                error?.shortMessage?.toLowerCase().includes("insufficient funds")
             ) {
-                setToastTitle("Insufficient Funds");
-                setToastMessage("You need more ETH in your wallet to complete your mint.");
+                setToastTitle("Insufficient Balance");
+                setToastMessage("You need more ETH to complete this purchase.");
             } else {
                 setToastTitle("Transaction Failed");
                 setToastMessage("⚠️ Something went wrong. Please try again.");
@@ -402,6 +441,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         let legendaryNftDispo: number[] = [];
         let primaryNftDispo: number[] = [];
         let nextCursor: string | null = null;
+        let pagesChecked = 0;
+        const MAX_PAGES = 5; // Increased to 5 pages to ensure we find available NFTs
 
         const getListings = async (cursor: string | null = null) => {
             const params = new URLSearchParams({ collection });
@@ -428,9 +469,9 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         do {
             try {
                 const data = await getListings(nextCursor);
-                console.log("dataaaaaa---------", data)
                 const nfts = data.listings || [];
                 nextCursor = data.next || null;
+                pagesChecked++;
 
                 const newLegendary: number[] = nfts.flatMap((nft: any) => {
                     if (
@@ -457,8 +498,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 legendaryNftDispo = [...legendaryNftDispo, ...newLegendary];
                 primaryNftDispo = [...primaryNftDispo, ...newPremium];
 
-                // Stop if both arrays have data
-                if (legendaryNftDispo.length > 0 && primaryNftDispo.length > 0) {
+                // Stop early if we have at least one of each OR reached max pages
+                if ((legendaryNftDispo.length > 0 && primaryNftDispo.length > 0) || pagesChecked >= MAX_PAGES) {
                     break;
                 }
             } catch (err) {
@@ -467,24 +508,27 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
         } while (nextCursor);
 
-        if (legendaryNftDispo.length === 0) {
-            console.log("No legendary NFTs found in range 1-40");
-        }
-        if (primaryNftDispo.length === 0) {
-            console.log("No premium NFTs found in range 41-120");
-        }
-
+        // Fetch both in parallel instead of sequentially
+        const fetchPromises = [];
+        
         if (legendaryNftDispo.length > 0) {
-            await fetchListedLegendaryItems(legendaryNftDispo.sort((a, b) => a - b));
+            fetchPromises.push(
+                fetchListedLegendaryItems(legendaryNftDispo.sort((a, b) => a - b))
+            );
         } else {
             setListedLegendaryItems([]);
         }
 
         if (primaryNftDispo.length > 0) {
-            await fetchListedPremiumItems(primaryNftDispo.sort((a, b) => a - b));
+            fetchPromises.push(
+                fetchListedPremiumItems(primaryNftDispo.sort((a, b) => a - b))
+            );
         } else {
             setListedPremiumItems([]);
         }
+
+        // Wait for both fetches to complete in parallel
+        await Promise.all(fetchPromises);
 
         setIsLoadingFetchAvailable(false);
     }
@@ -500,7 +544,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return;
         }
 
-        const firstTokenId = tokenIds[0];
+        // Fetch listings for first 3 token IDs to have backup options
+        const tokenIdsToFetch = tokenIds.slice(0, 3);
 
         try {
             const url = new URL("https://api.opensea.io/api/v2/orders/base/seaport/listings");
@@ -509,7 +554,11 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             url.searchParams.set("order_by", "created_date");
             url.searchParams.set("order_direction", "desc");
             url.searchParams.set("maker", openseaAddress.toLowerCase());
-            url.searchParams.append("token_ids", firstTokenId.toString());
+            
+            // Add multiple token IDs
+            tokenIdsToFetch.forEach((tokenId: number) => {
+                url.searchParams.append("token_ids", tokenId.toString());
+            });
 
             const res = await fetch(url.toString(), {
                 headers: {
@@ -541,12 +590,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     );
 
                 setListedLegendaryItems(sorted);
+                console.log(`Found ${sorted.length} active legendary listings`);
             } else {
-                console.log(`No active legendary NFT listings found for token ID ${firstTokenId}`);
+                console.log(`No active legendary NFT listings found`);
                 setListedLegendaryItems([]);
             }
         } catch (err) {
-            console.error(`Failed to fetch legendary listing for token ID ${firstTokenId}:`, err);
+            console.error(`Failed to fetch legendary listings:`, err);
             setListedLegendaryItems([]);
         }
     }
@@ -563,7 +613,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             return;
         }
 
-        const firstTokenId = tokenIds[0];
+        // Fetch listings for first 3 token IDs to have backup options
+        const tokenIdsToFetch = tokenIds.slice(0, 3);
 
         try {
             const url = new URL("https://api.opensea.io/api/v2/orders/base/seaport/listings");
@@ -572,7 +623,11 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             url.searchParams.set("order_by", "created_date");
             url.searchParams.set("order_direction", "desc");
             url.searchParams.set("maker", openseaAddress.toLowerCase());
-            url.searchParams.append("token_ids", firstTokenId.toString());
+            
+            // Add multiple token IDs
+            tokenIdsToFetch.forEach((tokenId: number) => {
+                url.searchParams.append("token_ids", tokenId.toString());
+            });
 
             const res = await fetch(url.toString(), {
                 headers: {
@@ -605,12 +660,13 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     );
 
                 setListedPremiumItems(sorted);
+                console.log(`Found ${sorted.length} active premium listings`);
             } else {
-                console.log(`No active premium NFT listings found for token ID ${firstTokenId}`);
+                console.log(`No active premium NFT listings found`);
                 setListedPremiumItems([]);
             }
         } catch (err) {
-            console.error(`Failed to fetch premium listing for token ID ${firstTokenId}:`, err);
+            console.error(`Failed to fetch premium listings:`, err);
             setListedPremiumItems([]);
         }
     }
@@ -856,7 +912,24 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     to: seaport.contract.target as string,
                     value: value,
                     data: calldata,
+                }).catch((gasError: any) => {
+                    // Catch gas estimation errors immediately
+                    console.error("❌ Gas estimation error:", gasError);
+                    
+                    // Check if it's an insufficient funds error
+                    if (
+                        gasError?.message?.toLowerCase().includes("insufficient funds") ||
+                        gasError?.message?.toLowerCase().includes("exceeds the balance") ||
+                        gasError?.details?.toLowerCase().includes("insufficient funds") ||
+                        gasError?.name?.includes("EstimateGasExecutionError") ||
+                        gasError?.shortMessage?.toLowerCase().includes("insufficient funds") ||
+                        gasError?.cause?.message?.toLowerCase().includes("insufficient funds")
+                    ) {
+                        throw new Error("INSUFFICIENT_BALANCE");
+                    }
+                    throw gasError;
                 });
+                
                 estimatedGasLimit = gasEstimate;
                 
                 // Get current gas price from Base network
@@ -877,14 +950,28 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 
                 // Check if user has enough for NFT + actual gas
                 if (balance < totalNeeded) {
-                    throw new Error(
-                        `Insufficient balance. Need ${ethers.formatEther(totalNeeded)} ETH total ` +
-                        `(${ethers.formatEther(value)} ETH for NFT + ${ethers.formatEther(estimatedGasCost)} ETH for gas). ` +
-                        `Current balance: ${ethers.formatEther(balance)} ETH`
-                    );
+                    throw new Error("INSUFFICIENT_BALANCE");
                 }
             } catch (estimateError: any) {
-                console.error("❌ Gas estimation failed:", estimateError.message);
+                console.error("❌ Gas estimation failed:", estimateError);
+
+                // Check if it's an insufficient funds error
+                if (
+                    estimateError?.message === "INSUFFICIENT_BALANCE" ||
+                    estimateError?.message?.toLowerCase().includes("insufficient funds") ||
+                    estimateError?.message?.toLowerCase().includes("exceeds the balance") ||
+                    estimateError?.details?.toLowerCase().includes("insufficient funds") ||
+                    estimateError?.name?.includes("EstimateGasExecutionError") ||
+                    estimateError?.shortMessage?.toLowerCase().includes("insufficient funds")
+                ) {
+                    // Don't re-throw, just set the toast and return early
+                    setPendingPurchase(false);
+                    setToastTitle("Insufficient Balance");
+                    setToastMessage("You need more ETH to complete this purchase.");
+                    setShowToast(true);
+                    setIsBuying(false);
+                    return;
+                }
 
                 throw new Error(
                     "Unable to estimate gas for this transaction. " +
@@ -972,6 +1059,11 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 const modalData: any = await getModalData();
                 setModalData(modalData);
                 setModalOpen(true);
+                
+                // Refresh listings after successful purchase to show next available NFT
+                setTimeout(() => {
+                    fetchAvailableNfts();
+                }, 2000); // Wait 2 seconds for blockchain to update
             } else {
                 setPendingPurchase(false); // Hide pending toast
 
@@ -995,9 +1087,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             } else if (
                 error?.code === "INSUFFICIENT_FUNDS" ||
                 error?.message?.toLowerCase().includes("insufficient funds") ||
-                error?.message?.toLowerCase().includes("insufficient balance")
+                error?.message?.toLowerCase().includes("insufficient balance") ||
+                error?.message?.toLowerCase().includes("0 eth on base") ||
+                error?.message?.toLowerCase().includes("exceeds the balance") ||
+                error?.details?.toLowerCase().includes("insufficient funds") ||
+                error?.name?.includes("EstimateGasExecutionError") ||
+                (error?.message?.toLowerCase().includes("need") && error?.message?.toLowerCase().includes("eth total"))
             ) {
-                setToastTitle("Insufficient Funds");
+                setToastTitle("Insufficient Balance");
                 setToastMessage("You need more ETH to complete this purchase.");
             } else {
                 setToastTitle("Purchase Failed");
@@ -1148,12 +1245,12 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
                                                 <button
                                                     className={`w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 flex items-center justify-center gap-2 ${
-                                                        (loading || !userAddress || isLoadingFetchAvailable) 
+                                                        (loading || !userAddress) 
                                                         ? 'opacity-50 cursor-not-allowed' 
                                                         : 'cursor-pointer'
                                                     }`}
                                                     onClick={() => handleMintAbi(quantity)}
-                                                    disabled={loading || !userAddress || isLoadingFetchAvailable}
+                                                    disabled={loading || !userAddress}
                                                 >
                                                     {loading && (
                                                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
