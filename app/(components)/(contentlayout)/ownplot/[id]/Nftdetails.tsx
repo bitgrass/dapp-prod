@@ -3,7 +3,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import Link from "next/link";
 import { Seaport } from "@opensea/seaport-js";
-import { useAccount, useSwitchChain } from 'wagmi';
+import { useAccount, useSwitchChain, useSendTransaction } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { id } from 'ethers';
 import axios from "axios";
@@ -101,6 +101,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         address: userAddress,
         client,
         farcasterWallet,
+        isCustodyWallet,
         hasExternalWallet,
         hasEmbeddedWallet,
         isMinitapp,
@@ -109,6 +110,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
 
     const { switchChainAsync } = useSwitchChain();
+    const { sendTransactionAsync } = useSendTransaction();
     const [isMinting, setIsMinting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
@@ -477,7 +479,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     if (
                         nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
                         parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 1 &&
-                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 40
+                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 400
                     ) {
                         return [parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria)];
                     }
@@ -487,8 +489,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 const newPremium: number[] = nfts.flatMap((nft: any) => {
                     if (
                         nft.protocol_data.parameters.offerer.toLowerCase() === openseaAddress.toLowerCase() &&
-                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 41 &&
-                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 120
+                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) >= 401 &&
+                        parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria) <= 1200
                     ) {
                         return [parseInt(nft.protocol_data.parameters.offer[0].identifierOrCriteria)];
                     }
@@ -687,6 +689,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         console.log("=== WALLET DEBUG INFO ===");
         console.log("userAddress:", userAddress);
         console.log("farcasterWallet:", farcasterWallet);
+        console.log("isCustodyWallet:", isCustodyWallet);
         console.log("isMinitapp:", isMinitapp);
         console.log("hasEmbeddedWallet:", hasEmbeddedWallet);
         console.log("hasExternalWallet:", hasExternalWallet);
@@ -699,6 +702,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             setFailureModalOpen(true);
             return;
         }
+
+
+
+
 
         try {
             setIsBuying(true);
@@ -815,30 +822,71 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
             }
 
             const fulfillmentResponse = await fulfillmentRes.json();
+            console.log("📦 Fulfillment response:", fulfillmentResponse);
 
             const { fulfillment_data } = fulfillmentResponse;
-            if (!fulfillment_data?.transaction?.input_data?.advancedOrder) {
+            
+            if (!fulfillment_data?.transaction?.input_data) {
+                console.error("❌ No input data in fulfillment response");
                 throw new Error("Invalid fulfillment data from OpenSea");
             }
 
-            // Use the advancedOrder directly from OpenSea's fulfillment response
-            // This includes the correct extraData required by the zone contract
-            const advancedOrder = fulfillment_data.transaction.input_data.advancedOrder;
+            // Check if it's a basicOrder or advancedOrder format
+            const isBasicOrder = !!fulfillment_data.transaction.input_data.parameters;
+            const isAdvancedOrder = !!fulfillment_data.transaction.input_data.advancedOrder;
+            
+            console.log("📋 Order type:", { isBasicOrder, isAdvancedOrder });
+
+            let advancedOrder;
+            
+            if (isAdvancedOrder) {
+                // Use the advancedOrder directly from OpenSea's fulfillment response
+                advancedOrder = fulfillment_data.transaction.input_data.advancedOrder;
+            } else if (isBasicOrder && fulfillment_data.orders?.[0]) {
+                // Convert basicOrder to advancedOrder format using the orders array
+                const orderData = fulfillment_data.orders[0];
+                advancedOrder = {
+                    parameters: orderData.parameters,
+                    signature: orderData.signature,
+                    numerator: 1,
+                    denominator: 1,
+                    extraData: "0x"
+                };
+                console.log("✅ Converted basicOrder to advancedOrder format");
+            } else {
+                console.error("❌ Unknown fulfillment format");
+                throw new Error("Invalid fulfillment data from OpenSea");
+            }
 
             const seaport = new Seaport(provider, {
                 overrides: { contractAddress: order.protocol_address },
             });
 
+            console.log("📦 Advanced order:", advancedOrder);
+
             const { parameters, signature } = advancedOrder;
+
+            console.log("📋 Parameters:", parameters);
+            console.log("📋 Consideration items:", parameters?.consideration);
 
             const value = parameters.consideration
                 .filter((i: any) => i.token === ethers.ZeroAddress)
                 .reduce((sum: bigint, i: any) => sum + BigInt(i.startAmount), BigInt(0));
 
+            console.log("💵 Calculated value:", value);
+
+            // Extract token ID from the offer (what the seller is offering - the NFT)
+            const nftOffer = parameters.offer.find((item: any) => 
+                item.itemType === 2 || item.itemType === 3 // ERC721 or ERC1155
+            );
+            const tokenId = nftOffer?.identifierOrCriteria || "unknown";
+
             console.log("💰 Purchase details:", {
                 value: ethers.formatEther(value),
                 buyerAddress,
                 orderHash: order.order_hash,
+                tokenId: tokenId,
+                nftContract: nftOffer?.token || "unknown"
             });
 
             // Basic check: user must have at least the NFT price
@@ -891,17 +939,62 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 // If it's a contract call error, continue anyway
             }
 
-            // Prepare the calldata using the exact parameters from OpenSea
-            const criteriaResolvers = fulfillment_data.transaction.input_data.criteriaResolvers || [];
-            const fulfillerConduitKey = fulfillment_data.transaction.input_data.fulfillerConduitKey;
-            const recipient = fulfillment_data.transaction.input_data.recipient;
+            // Prepare transaction data
+            let calldata;
+            let transactionValue = value;
+            
+            console.log("🔍 Fulfillment transaction data:", fulfillment_data.transaction);
+            
+            if (isBasicOrder) {
+                // For basicOrder, we need to encode the fulfillBasicOrder call
+                // Use the Seaport library to handle this
+                const basicOrderParams = fulfillment_data.transaction.input_data.parameters;
+                
+                // Convert to the format Seaport expects
+                const basicOrderParameters = {
+                    considerationToken: basicOrderParams.considerationToken,
+                    considerationIdentifier: basicOrderParams.considerationIdentifier,
+                    considerationAmount: basicOrderParams.considerationAmount,
+                    offerer: basicOrderParams.offerer,
+                    zone: basicOrderParams.zone,
+                    offerToken: basicOrderParams.offerToken,
+                    offerIdentifier: basicOrderParams.offerIdentifier,
+                    offerAmount: basicOrderParams.offerAmount,
+                    basicOrderType: basicOrderParams.basicOrderType,
+                    startTime: basicOrderParams.startTime,
+                    endTime: basicOrderParams.endTime,
+                    zoneHash: basicOrderParams.zoneHash,
+                    salt: basicOrderParams.salt,
+                    offererConduitKey: basicOrderParams.offererConduitKey,
+                    fulfillerConduitKey: basicOrderParams.fulfillerConduitKey,
+                    totalOriginalAdditionalRecipients: basicOrderParams.totalOriginalAdditionalRecipients,
+                    additionalRecipients: basicOrderParams.additionalRecipients,
+                    signature: basicOrderParams.signature
+                };
+                
+                // Use the efficient fulfillBasicOrder function
+                calldata = seaport.contract.interface.encodeFunctionData("fulfillBasicOrder", [
+                    basicOrderParameters
+                ]);
+                
+                transactionValue = BigInt(fulfillment_data.transaction.value || value);
+                console.log("📦 Using fulfillBasicOrder with encoded parameters");
+            } else {
+                // For advancedOrder, encode it ourselves
+                const criteriaResolvers = fulfillment_data.transaction.input_data.criteriaResolvers || [];
+                const fulfillerConduitKey = fulfillment_data.transaction.input_data.fulfillerConduitKey;
+                const recipient = fulfillment_data.transaction.input_data.recipient;
 
-            const calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
-                advancedOrder,
-                criteriaResolvers,
-                fulfillerConduitKey,
-                recipient,
-            ]);
+                calldata = seaport.contract.interface.encodeFunctionData("fulfillAdvancedOrder", [
+                    advancedOrder,
+                    criteriaResolvers,
+                    fulfillerConduitKey,
+                    recipient,
+                ]);
+                console.log("📦 Using fulfillAdvancedOrder");
+            }
+            
+            const finalValue = transactionValue;
 
             // Estimate gas from network and check total balance needed
             let estimatedGasLimit: bigint;
@@ -910,11 +1003,16 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 const gasEstimate = await provider.estimateGas({
                     from: buyerAddress,
                     to: seaport.contract.target as string,
-                    value: value,
+                    value: finalValue,
                     data: calldata,
                 }).catch((gasError: any) => {
                     // Catch gas estimation errors immediately
                     console.error("❌ Gas estimation error:", gasError);
+                    console.log("🔍 Error details:", {
+                        data: gasError?.data,
+                        code: gasError?.code,
+                        message: gasError?.message
+                    });
                     
                     // Check if it's an insufficient funds error
                     if (
@@ -927,6 +1025,43 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     ) {
                         throw new Error("INSUFFICIENT_BALANCE");
                     }
+                    
+                    // Check for Seaport OrderAlreadyFilled error (0x10fda3e1)
+                    if (gasError?.data?.startsWith("0x10fda3e1")) {
+                        console.log("⚠️ Detected OrderAlreadyFilled error");
+                        throw new Error("ORDER_ALREADY_FILLED");
+                    }
+                    
+                    // Check if it's a contract revert (execution reverted)
+                    // This could be various contract errors
+                    if (
+                        gasError?.message?.toLowerCase().includes("execution reverted") ||
+                        gasError?.code === "CALL_EXCEPTION"
+                    ) {
+                        // Check the error data for specific Seaport errors
+                        if (gasError?.data) {
+                            console.log("🔍 Checking error data:", gasError.data);
+                            // OrderAlreadyFilled
+                            if (gasError.data.startsWith("0x10fda3e1")) {
+                                console.log("⚠️ Detected OrderAlreadyFilled error from data");
+                                throw new Error("ORDER_ALREADY_FILLED");
+                            }
+                            // OrderIsCancelled (0x1a515574)
+                            if (gasError.data.startsWith("0x1a515574")) {
+                                console.log("⚠️ Detected OrderIsCancelled error");
+                                throw new Error("ORDER_CANCELLED");
+                            }
+                            // OrderPartiallyFilled (0xee9e0e63)
+                            if (gasError.data.startsWith("0xee9e0e63")) {
+                                console.log("⚠️ Detected OrderPartiallyFilled error");
+                                throw new Error("ORDER_PARTIALLY_FILLED");
+                            }
+                        }
+                        // Generic contract revert - could be order expired or invalid
+                        console.log("⚠️ Generic contract revert, treating as ORDER_UNAVAILABLE");
+                        throw new Error("ORDER_UNAVAILABLE");
+                    }
+                    
                     throw gasError;
                 });
                 
@@ -938,7 +1073,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 
                 // Calculate total gas cost (add 20% buffer for gas price fluctuation)
                 const estimatedGasCost = (estimatedGasLimit * gasPrice * BigInt(120)) / BigInt(100);
-                const totalNeeded = value + estimatedGasCost;
+                const totalNeeded = finalValue + estimatedGasCost;
                 
                 console.log("⛽ Gas estimation:", {
                     gasLimit: estimatedGasLimit.toString(),
@@ -973,6 +1108,34 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     return;
                 }
 
+                // Check for order-specific errors
+                if (estimateError?.message === "ORDER_ALREADY_FILLED") {
+                    setPendingPurchase(false);
+                    setToastTitle("Already Sold");
+                    setToastMessage("This NFT has already been purchased. Please refresh the page to see available listings.");
+                    setShowToast(true);
+                    setIsBuying(false);
+                    return;
+                }
+
+                if (estimateError?.message === "ORDER_CANCELLED") {
+                    setPendingPurchase(false);
+                    setToastTitle("Listing Cancelled");
+                    setToastMessage("This listing has been cancelled by the seller. Please refresh the page.");
+                    setShowToast(true);
+                    setIsBuying(false);
+                    return;
+                }
+
+                if (estimateError?.message === "ORDER_PARTIALLY_FILLED" || estimateError?.message === "ORDER_UNAVAILABLE") {
+                    setPendingPurchase(false);
+                    setToastTitle("Listing Unavailable");
+                    setToastMessage("This listing is no longer available. Please refresh the page to see current listings.");
+                    setShowToast(true);
+                    setIsBuying(false);
+                    return;
+                }
+
                 throw new Error(
                     "Unable to estimate gas for this transaction. " +
                     "The listing may be expired, already sold, or invalid. " +
@@ -1001,9 +1164,10 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
             let txHash: string;
 
-            // Use Farcaster SDK's Ethereum provider for miniapp
-            if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
-                console.log("Using Farcaster SDK Ethereum provider");
+            // Only use Farcaster SDK provider if the primary wallet IS the Farcaster custody wallet
+            // If primary is an external wallet (Coinbase, MetaMask, etc.), use standard provider
+            if (isMinitapp  && farcasterWallet && userAddress === farcasterWallet) {
+                console.log("Using Farcaster SDK Ethereum provider (custody wallet)");
 
                 const farcasterProvider = await getFarcasterProvider();
                 if (!farcasterProvider) {
@@ -1017,7 +1181,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                         {
                             from: buyerAddress as `0x${string}`,
                             to: seaport.contract.target as `0x${string}`,
-                            value: "0x" + value.toString(16) as `0x${string}`,
+                            value: "0x" + finalValue.toString(16) as `0x${string}`,
                             data: calldata as `0x${string}`,
                         },
                     ],
@@ -1027,20 +1191,48 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 // Standard EIP-1193 for other environments
                 try {
                     // Send transaction - let wallet handle gas estimation automatically
-                    console.log("📤 Sending transaction (automatic gas estimation)");
+                    console.log("📤 Sending transaction via client.request");
+                    console.log("📤 Client type:", client.constructor?.name);
+                    console.log("📤 Transaction params:", {
+                        from: buyerAddress,
+                        to: seaport.contract.target,
+                        value: "0x" + finalValue.toString(16),
+                        dataLength: calldata.length
+                    });
                     
-                    txHash = await client.request({
+                    // Add timeout to prevent infinite hanging
+                    console.log("⏳ Waiting for user confirmation...");
+                    console.log("📤 Using client provider");
+                    console.log("📤 From address (should match primary):", buyerAddress);
+                    
+                    // Use the client provider which should be connected to the primary wallet
+                    const txPromise = client.request({
                         method: "eth_sendTransaction",
                         params: [
                             {
                                 from: buyerAddress,
                                 to: seaport.contract.target as string,
-                                value: "0x" + value.toString(16),
+                                value: "0x" + finalValue.toString(16),
                                 data: calldata,
                             },
                         ],
+                    }).then((hash: any) => {
+                        console.log("✅ Transaction hash received:", hash);
+                        return hash;
+                    }).catch((err: any) => {
+                        console.error("❌ Transaction error:", err);
+                        throw err;
                     });
-                    console.log("✅ Transaction submitted:", txHash);
+                    
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => {
+                            console.error("⏰ Transaction request timeout");
+                            reject(new Error("Transaction request timeout - wallet may not be responding"));
+                        }, 120000)
+                    );
+                    
+                    txHash = await Promise.race([txPromise, timeoutPromise]) as string;
+                    console.log("✅ Transaction submitted, hash:", txHash);
                 } catch (txError: any) {
                     console.error("❌ Transaction error:", txError);
 
@@ -1052,8 +1244,18 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                 }
             }
 
-            // Wait for confirmation
-            const receipt = await provider.waitForTransaction(txHash);
+            // Wait for confirmation with timeout
+            console.log("⏳ Waiting for transaction confirmation:", txHash);
+            
+            const receipt = await Promise.race([
+                provider.waitForTransaction(txHash),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Transaction confirmation timeout")), 60000)
+                )
+            ]);
+            
+            console.log("✅ Transaction receipt:", receipt);
+            
             if (receipt?.status === 1) {
                 setPendingPurchase(false); // Hide pending toast
                 const modalData: any = await getModalData();

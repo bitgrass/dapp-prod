@@ -83,6 +83,7 @@ const WalletMenu: React.FC = () => {
   const [fundError, setFundError] = useState('');
   const [sendSuccess, setSendSuccess] = useState<{ hash: string } | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy');
   const hasNonEmbeddedWallet = hasExternalWallet || !!farcasterWallet;
@@ -302,6 +303,7 @@ const WalletMenu: React.FC = () => {
     }
 
     try {
+      setIsSending(true);
       const chainMismatch = activePrivyWallet?.chainId !== `eip155:${base.id}`;
       if (chainMismatch && activePrivyWallet?.walletClientType === 'privy' && activePrivyWallet.switchChain) {
         await activePrivyWallet.switchChain(base.id);
@@ -326,6 +328,8 @@ const WalletMenu: React.FC = () => {
       } else {
         setSendError("Failed to send ETH.");
       }
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -568,13 +572,20 @@ const WalletMenu: React.FC = () => {
                 <button
                   onClick={handleSendPanel}
                   style={{ placeContent: 'center' }}
-                  className="flex items-center justify-between text-sm font-medium text-wihte w-full py-3 px-3 rounded-sm hover:opacity-90 transition ti-btn"
+                  className="flex items-center justify-center gap-2 text-sm font-medium text-white w-full py-3 px-3 rounded-sm hover:opacity-90 transition ti-btn"
+                  disabled={isSending}
                 >
-                  <span className="flex text-white items-center">
-                    <i className="bx bx-send mr-2 text-white" />
-
-                    Send
-                  </span>
+                  {isSending && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  )}
+                  {isSending ? (
+                    <span>Processing...</span>
+                  ) : (
+                    <span className="flex text-white items-center">
+                      <i className="bx bx-send mr-2 text-white" />
+                      Send
+                    </span>
+                  )}
                 </button>
               </div>
             </div>

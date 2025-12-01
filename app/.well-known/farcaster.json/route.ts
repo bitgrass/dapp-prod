@@ -1,13 +1,13 @@
 
 function withValidProperties(
-  properties: Record<string, undefined | string | string[]>,
+  properties: Record<string, undefined | string | string[] | boolean>,
 ) {
   return Object.fromEntries(
     Object.entries(properties).filter(([key, value]) => {
       if (Array.isArray(value)) {
         return value.length > 0;
       }
-      return !!value;
+      return value !== undefined && value !== null && value !== '';
     }),
   );
 }
@@ -47,7 +47,7 @@ export async function GET() {
       ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE,
       ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION,
       ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE,
-      noindex: "true"
+      noindex: true
 
     }),
     baseBuilder: {

@@ -155,6 +155,23 @@ function useFarcasterProvider(farcasterWallet: string | null) {
       setProviderError(null)
 
       try {
+        // Try to use Farcaster SDK's Ethereum provider first
+        try {
+          const { sdk } = await import('@farcaster/miniapp-sdk');
+          const farcasterProvider = await sdk.wallet.getEthereumProvider();
+          
+          if (farcasterProvider) {
+            console.log("✅ Using Farcaster SDK Ethereum provider");
+            setProvider(farcasterProvider);
+            setProviderError(null);
+            setIsLoading(false);
+            return;
+          }
+        } catch (sdkError) {
+          console.warn("⚠️ Farcaster SDK provider not available:", sdkError);
+        }
+
+        // Fallback to proxy provider using window.ethereum
         const proxyProvider = {
           isProxy: true,
           targetAddress: farcasterWallet,
@@ -262,8 +279,7 @@ function useEnsureEmbeddedWallet() {
           await createWallet()
           console.log('✅ Embedded wallet created for user:', userId)
         } catch (error) {
-          console.error('❌ Failed to create embedded wallet:', error)
-          // On failure, remove the global flag so we can retry
+                    // On failure, remove the global flag so we can retry
           globalWalletCreationTracker.delete(userId);
         } finally {
           creatingWallet.current = false

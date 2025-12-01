@@ -17,22 +17,54 @@ const client = createThirdwebClient({
 const Dashboard = () => {
     const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState('overview');
-    const { address, client: walletClient, clientReady } = useConnectedAddress();
+    const { address, client: walletClient, clientReady, isLoading: addressLoading } = useConnectedAddress();
     const setActiveWallet = useSetActiveWallet();
+    const [walletSynced, setWalletSynced] = useState(false);
+    const [walletSyncFailed, setWalletSyncFailed] = useState(false);
 
     // Sync connected wallet with Thirdweb
     useEffect(() => {
         const syncWallet = async () => {
-            if (address && walletClient && clientReady) {
+            // If we have an address and the client is ready, we can proceed
+            if (address && clientReady) {
+                setWalletSyncFailed(false);
                 try {
-                    const thirdwebWallet = EIP1193.fromProvider({
-                        provider: walletClient,
-                    });
-                    await thirdwebWallet.connect({ client });
-                    setActiveWallet(thirdwebWallet);
+                    // Only try to sync if we have a wallet client
+                    if (walletClient) {
+                        const thirdwebWallet = EIP1193.fromProvider({
+                            provider: walletClient,
+                        });
+                        try {
+                            await thirdwebWallet.connect({ client });
+                            setActiveWallet(thirdwebWallet);
+                            setWalletSynced(true);
+                            setWalletSyncFailed(false);
+                            console.log("✅ Wallet synced with Thirdweb:", address);
+                        } catch (connectError) {
+                            console.warn("⚠️ Wallet connect failed:", connectError);
+                            // Don't try to set active wallet if connect failed
+                            // The error "Cannot set a wallet without an account" means
+                            // the wallet doesn't have accounts available
+                            // Mark as failed - provider doesn't support required methods
+                            setWalletSynced(true);
+                            setWalletSyncFailed(true);
+                        }
+                    } else {
+                        setWalletSynced(true);
+                        setWalletSyncFailed(true);
+                    }
+
+                    // Mark as synced regardless - we have the address
+                    setWalletSynced(true);
                 } catch (error) {
-                    console.error("Failed to sync wallet with Thirdweb:", error);
+                    console.error("❌ Failed to create Thirdweb wallet:", error);
+                    // Still mark as synced if we have an address
+                    setWalletSynced(true);
+                    setWalletSyncFailed(true);
                 }
+            } else if (!address) {
+                setWalletSynced(false);
+                setWalletSyncFailed(false);
             }
         };
         syncWallet();
@@ -172,7 +204,26 @@ const Dashboard = () => {
 
                                 
                                                 <div className="box-body crypto-data" style={{ paddingTop: 0 }}>
-                                                    {address && clientReady ? (
+                                                    {!address ? (
+                                                        <div style={{ padding: '2rem', textAlign: 'center' }}>
+                                                            <p>Please connect your wallet to use the swap feature.</p>
+                                                        </div>
+                                                    ) : !walletSynced ? (
+                                                        <div style={{ padding: '2rem', textAlign: 'center' }}>
+                                                            <div className="animate-spin rounded-full h-8 w-8 border-4 border-secondary border-t-transparent mx-auto mb-4">
+                                                            </div>
+                                                            <p className="mt-3">Syncing wallet...</p>
+                                                        </div>
+                                                    ) : address && walletSynced && walletSyncFailed ? (
+                                                        <div style={{ padding: '2rem', textAlign: 'center' }}>
+                                                            <div className="alert alert-warning" role="alert">
+                                                                <h5 className="alert-heading">⚠️ Limited Functionality</h5>
+                                                                <p>Swap feature is not available in this environment.</p>
+                                                                <p className="mb-0">Please open this app in the Warpcast mobile app for full swap functionality.</p>
+                                                            </div>
+                                                            <p className="text-muted mt-3">Connected: {address.slice(0, 6)}...{address.slice(-4)}</p>
+                                                        </div>
+                                                    ) : (
                                                         <SwapWidget
                                                             client={client}
                                                             theme={theme === 'dark' ? 'dark' : 'light'}
@@ -193,10 +244,6 @@ const Dashboard = () => {
                                                             persistTokenSelections={true}
                                                             style={{ width: '100%', minHeight: '400px' }}
                                                         />
-                                                    ) : (
-                                                        <div style={{ padding: '2rem', textAlign: 'center' }}>
-                                                            <p>Please connect your wallet to use the swap feature.</p>
-                                                        </div>
                                                     )}
                                                 </div>
                                             </div>

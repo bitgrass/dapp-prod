@@ -14,7 +14,7 @@ export const btgInfo = {
 }
 
 export const nftInfo = {
-   address: "0x346877b6755530b308b4e537efe4c1c052c09953"
+   address: "0x23308734dfaaae503c686720fff26126fcdc22c7"
 }
 
 export const EthInfo = {
@@ -44,7 +44,7 @@ export const rangesLegendary = [
 ];
 
 
-   export  const CONTRACT_ADDRESS_INFO = "0x346877b6755530b308b4e537efe4c1c052c09953";
+   export  const CONTRACT_ADDRESS_INFO = "0x23308734dfaaae503c686720fff26126fcdc22c7";
    export const SEADROP_ADDRESS_INFO = "0x00005EA00Ac477B1030CE78506496e8C2dE24bf5";
    export const SEADROP_CONDUIT_INFO = "0x0000a26b00c1F0DF003000390027140000fAa719";
 
