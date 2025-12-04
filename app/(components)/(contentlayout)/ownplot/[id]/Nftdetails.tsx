@@ -3,7 +3,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import Link from "next/link";
 import { Seaport } from "@opensea/seaport-js";
-import { useAccount, useSwitchChain, useSendTransaction } from 'wagmi';
+import { useAccount, useSwitchChain, useSendTransaction, useConnect, useConnectors } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { id } from 'ethers';
 import axios from "axios";
@@ -101,7 +101,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         address: userAddress,
         client,
         farcasterWallet,
-        isCustodyWallet,
         hasExternalWallet,
         hasEmbeddedWallet,
         isMinitapp,
@@ -111,6 +110,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
     const { switchChainAsync } = useSwitchChain();
     const { sendTransactionAsync } = useSendTransaction();
+    const { connectAsync } = useConnect();
+    const connectors = useConnectors();
     const [isMinting, setIsMinting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
@@ -119,7 +120,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
     const [isBuying, setIsBuying] = useState(false);
 
     // Use isConnected from wagmi, but also check if we have an address from our hook
-    const { isConnected: wagmiConnected } = useAccount();
+    const { isConnected: wagmiConnected, address: wagmiAddress, connector: activeConnector } = useAccount();
     const isConnected = wagmiConnected || !!userAddress;
 
     const [activeTab, setActiveTab] = useState("");
@@ -279,25 +280,43 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
             let txHash: string;
 
-            // Use Farcaster SDK's Ethereum provider for miniapp
+            // Use Farcaster SDK provider directly for miniapp (Wagmi has issues with connector priority)
             if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
                 console.log("Using Farcaster SDK Ethereum provider for mint");
+                console.log("🔍 Wagmi state:", {
+                    wagmiAddress,
+                    activeConnector: activeConnector?.id,
+                    userAddress,
+                    farcasterWallet
+                });
 
                 const farcasterProvider = await getFarcasterProvider();
                 if (!farcasterProvider) {
                     throw new Error("Failed to get Farcaster Ethereum provider");
                 }
 
+                const txParams = {
+                    from: userAddress as `0x${string}`,
+                    to: SEADROP_ADDRESS as `0x${string}`,
+                    value: "0x" + totalPrice.toString(16) as `0x${string}`,
+                    data: calldata as `0x${string}`,
+                    chainId: "0x" + base.id.toString(16), // Add chainId for better display
+                };
+                
+                console.log("📤 Mint transaction params:", {
+                    from: txParams.from,
+                    to: txParams.to,
+                    value: ethers.formatEther(totalPrice) + " ETH",
+                    valueHex: txParams.value,
+                    quantity: quantity,
+                    contract: CONTRACT_ADDRESS,
+                    chainId: txParams.chainId,
+                    dataLength: calldata.length
+                });
+
                 txHash = await farcasterProvider.request({
                     method: "eth_sendTransaction",
-                    params: [
-                        {
-                            from: userAddress as `0x${string}`,
-                            to: SEADROP_ADDRESS,
-                            value: "0x" + totalPrice.toString(16) as `0x${string}`,
-                            data: calldata,
-                        },
-                    ],
+                    params: [txParams],
                 }).catch((txError: any) => {
                     console.error("❌ Transaction error:", txError);
                     if (
@@ -689,7 +708,6 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
         console.log("=== WALLET DEBUG INFO ===");
         console.log("userAddress:", userAddress);
         console.log("farcasterWallet:", farcasterWallet);
-        console.log("isCustodyWallet:", isCustodyWallet);
         console.log("isMinitapp:", isMinitapp);
         console.log("hasEmbeddedWallet:", hasEmbeddedWallet);
         console.log("hasExternalWallet:", hasExternalWallet);
@@ -1164,15 +1182,21 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
             let txHash: string;
 
-            // Only use Farcaster SDK provider if the primary wallet IS the Farcaster custody wallet
-            // If primary is an external wallet (Coinbase, MetaMask, etc.), use standard provider
-            if (isMinitapp  && farcasterWallet && userAddress === farcasterWallet) {
-                console.log("Using Farcaster SDK Ethereum provider (custody wallet)");
+            // Use Farcaster SDK provider directly for miniapp (Wagmi has issues with connector priority)
+            if (isMinitapp && farcasterWallet && userAddress === farcasterWallet) {
+                console.log("Using Farcaster SDK Ethereum provider for buy");
 
                 const farcasterProvider = await getFarcasterProvider();
                 if (!farcasterProvider) {
                     throw new Error("Failed to get Farcaster Ethereum provider");
                 }
+
+                console.log("📤 Buy transaction params:", {
+                    from: buyerAddress,
+                    to: seaport.contract.target,
+                    value: ethers.formatEther(finalValue) + " ETH",
+                    orderHash: order.order_hash
+                });
 
                 // Use the Farcaster provider directly
                 txHash = await farcasterProvider.request({
@@ -1183,10 +1207,11 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                             to: seaport.contract.target as `0x${string}`,
                             value: "0x" + finalValue.toString(16) as `0x${string}`,
                             data: calldata as `0x${string}`,
+                            chainId: "0x" + base.id.toString(16) as `0x${string}`, // Add chainId for better display
                         },
                     ],
                 });
-                console.log("✅ Farcaster provider transaction submitted:", txHash);
+                console.log("✅ Farcaster provider buy transaction submitted:", txHash);
             } else {
                 // Standard EIP-1193 for other environments
                 try {

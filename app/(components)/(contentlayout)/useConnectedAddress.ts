@@ -102,15 +102,23 @@ function useFarcasterWallet(fid?: number) {
         const verified = (user?.verified_addresses?.eth_addresses || []).map((a: string) =>
           a.toLowerCase()
         )
-        const auth = (user?.auth_addresses || []).map((obj: any) =>
-          obj.address.toLowerCase()
+        const authAddresses = user?.auth_addresses || []
+        
+        // Find the Farcaster wallet by looking for Warpcast app (FID 9152)
+        // This is the true Farcaster custody wallet, not external wallets like Coinbase
+        const warpcastAuth = authAddresses.find((obj: any) => obj.app?.fid === 9152)
+        const farcasterWallet = warpcastAuth?.address?.toLowerCase()
+        
+        // Fallback: if no Warpcast auth found, use intersection of verified and auth
+        const fallbackWallet = farcasterWallet || verified.find((addr: any) => 
+          authAddresses.some((obj: any) => obj.address.toLowerCase() === addr)
         )
-
-
-
-        const intersection = verified.find((addr: any) => auth.includes(addr))
-        console.log('✅ Resolved Farcaster wallet:', intersection)
-        setAddress(intersection || null)
+        
+        console.log('✅ Resolved Farcaster wallet:', fallbackWallet, {
+          warpcastAuth: warpcastAuth?.address,
+          allAuthAddresses: authAddresses.map((a: any) => ({ address: a.address, appFid: a.app?.fid }))
+        })
+        setAddress(fallbackWallet || null)
       } catch (err) {
         console.error('❌ Neynar fetch error:', err)
         setAddress(null)
