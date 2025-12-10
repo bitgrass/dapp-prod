@@ -23,6 +23,16 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
 
   //full screen
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const lastToggleTime = React.useRef<number>(0);
+  const isInitialized = React.useRef<boolean>(false);
+  
+  // Mark as initialized after first render
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      isInitialized.current = true;
+    }, 500); // Wait 500ms after mount before allowing toggles
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleFullscreen = () => {
     if (!isFullscreen) {
@@ -92,6 +102,18 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
   const resizeHandlerRef = React.useRef<(() => void) | null>(null);
 
   const toggleSidebar = () => {
+    // Prevent toggling during initial page load
+    if (!isInitialized.current) {
+      return;
+    }
+    
+    // Prevent rapid toggling (debounce 300ms)
+    const now = Date.now();
+    if (now - lastToggleTime.current < 300) {
+      return;
+    }
+    lastToggleTime.current = now;
+    
     const theme = store.getState();
     let sidemenuType = theme.dataNavLayout;
     if (window.innerWidth >= 992) {
@@ -203,7 +225,8 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
       if (theme.dataToggled === "close") {
         ThemeChanger({ ...theme, "dataToggled": "open" });
 
-        setTimeout(() => {
+        // Use requestAnimationFrame instead of setTimeout for better timing
+        requestAnimationFrame(() => {
           // Check current state from store, not closure
           const currentTheme = store.getState();
           if (currentTheme.dataToggled === "open") {
@@ -226,7 +249,7 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
                 }
               };
               
-              overlay.addEventListener("click", overlayClickHandlerRef.current);
+              overlay.addEventListener("click", overlayClickHandlerRef.current, { once: true });
             }
           }
 
@@ -235,18 +258,22 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
             window.removeEventListener("resize", resizeHandlerRef.current);
           }
           
-          // Create new resize handler and store reference
+          // Create new resize handler and store reference with debounce
+          let resizeTimeout: NodeJS.Timeout;
           resizeHandlerRef.current = () => {
-            if (window.screen.width >= 992) {
-              const overlay = document.querySelector("#responsive-overlay");
-              if (overlay) {
-                overlay.classList.remove("active");
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+              if (window.screen.width >= 992) {
+                const overlay = document.querySelector("#responsive-overlay");
+                if (overlay) {
+                  overlay.classList.remove("active");
+                }
               }
-            }
+            }, 150);
           };
           
           window.addEventListener("resize", resizeHandlerRef.current);
-        }, 100);
+        });
       } else if (theme.dataToggled === "open") {
         ThemeChanger({ ...theme, "dataToggled": "close" });
       }
@@ -352,9 +379,16 @@ const Header = ({ local_varaiable, ThemeChanger }: any) => {
                   </Link>
                 </div>
               </div>
-              <div className="header-element md:px-[0.325rem] !items-center" onClick={() => toggleSidebar()}>
+              <div className="header-element md:px-[0.325rem] !items-center">
                 <Link aria-label="Hide Sidebar"
-                  className="sidemenu-toggle animated-arrow  hor-toggle horizontal-navtoggle inline-flex items-center" href="#!" scroll={false}><span></span></Link>
+                  className="sidemenu-toggle animated-arrow  hor-toggle horizontal-navtoggle inline-flex items-center" 
+                  href="#!" 
+                  scroll={false}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleSidebar();
+                  }}
+                ><span></span></Link>
               </div>
             </div>
             <div className="header-content-right">

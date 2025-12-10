@@ -52,29 +52,60 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 		}
 		
 		// Add click listener to main content (but not sidebar clicks)
+		// Use touchstart for better mobile responsiveness, but prevent double-firing
+		let touchHandled = false;
+		
 		const handleMainContentClick = (e: Event) => {
-			const target = e.target as HTMLElement;
-			// Don't close if clicking inside sidebar or wallet menu
-			if (target.closest('.app-sidebar') || target.closest('.wallet-menu-popup')) {
+			// Prevent double-firing on mobile (both touch and click events)
+			if (e.type === 'click' && touchHandled) {
+				touchHandled = false;
 				return;
 			}
-			menuClose();
+			if (e.type === 'touchstart') {
+				touchHandled = true;
+			}
+			
+			const target = e.target as HTMLElement;
+			// Don't close if clicking inside sidebar, wallet menu, interactive elements, or dashboard tabs
+			if (target.closest('.app-sidebar') || 
+			    target.closest('.wallet-menu-popup') ||
+			    target.closest('button') ||
+			    target.closest('a') ||
+			    target.closest('input') ||
+			    target.closest('nav') ||
+			    target.closest('.nav-link') ||
+			    target.closest('[data-hs-tab]')) {
+				return;
+			}
+			
+			// Only close on mobile
+			if (window.innerWidth <= 992) {
+				menuClose();
+			}
 		};
 		
 		if (mainContent) {
 			mainContent.addEventListener('click', handleMainContentClick);
+			mainContent.addEventListener('touchstart', handleMainContentClick, { passive: true });
 		}
 		
 		return () => {
 			window.removeEventListener("resize", menuResizeFn);
 			window.removeEventListener('resize', checkHoriMenu);
-			// Remove main content click listener
+			// Remove main content click and touch listeners
 			if (mainContent) {
 				mainContent.removeEventListener('click', handleMainContentClick);
+				mainContent.removeEventListener('touchstart', handleMainContentClick);
 			}
-			// Clear any pending menu close timeout
+			// Clear any pending timeouts
 			if (menuCloseTimeoutRef.current) {
 				clearTimeout(menuCloseTimeoutRef.current);
+			}
+			if (resizeTimeoutRef.current) {
+				clearTimeout(resizeTimeoutRef.current);
+			}
+			if (hoverTimeoutRef.current) {
+				clearTimeout(hoverTimeoutRef.current);
 			}
 		};
 	}, []);
@@ -93,18 +124,44 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 			if (theme.dataToggled === "open") {
 				ThemeChanger({ ...theme, dataToggled: "close" });
 			}
+			
+			// Remove overlay when navigating to new page
+			const overlay = document.querySelector("#responsive-overlay");
+			if (overlay) {
+				overlay.classList.remove("active");
+			}
 		}
 	}, [pathname])
 
 
-	function Onhover() {
+	const hoverTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+	const lastToggleTime = React.useRef<number>(0);
 
-		const theme = store.getState();
-		if ((theme.dataToggled == 'icon-overlay-close' || theme.dataToggled == 'detached-close') && theme.iconOverlay != 'open') {
-			ThemeChanger({ ...theme, "iconOverlay": "open" });
+	function Onhover() {
+		// Don't trigger hover if sidebar was just toggled (within 500ms)
+		const now = Date.now();
+		if (now - lastToggleTime.current < 500) {
+			return;
 		}
+
+		// Debounce hover to prevent rapid state changes
+		if (hoverTimeoutRef.current) {
+			clearTimeout(hoverTimeoutRef.current);
+		}
+
+		hoverTimeoutRef.current = setTimeout(() => {
+			const theme = store.getState();
+			if ((theme.dataToggled == 'icon-overlay-close' || theme.dataToggled == 'detached-close') && theme.iconOverlay != 'open') {
+				ThemeChanger({ ...theme, "iconOverlay": "open" });
+			}
+		}, 100);
 	}
+	
 	function Outhover() {
+		// Clear any pending hover timeout
+		if (hoverTimeoutRef.current) {
+			clearTimeout(hoverTimeoutRef.current);
+		}
 
 		const theme = store.getState();
 		if ((theme.dataToggled == 'icon-overlay-close' || theme.dataToggled == 'detached-close') && theme.iconOverlay == 'open') {
@@ -124,6 +181,9 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 		if (now - lastMenuCloseTime.current < 100) {
 			return;
 		}
+		
+		// Track toggle time to prevent hover from reopening immediately
+		lastToggleTime.current = now;
 		lastMenuCloseTime.current = now;
 		
 		// Clear any pending menu close timeout
@@ -150,6 +210,7 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 	}
 
 	const WindowPreSize = typeof window !== 'undefined' ? [window.innerWidth] : [];
+	const resizeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
 	function menuResizeFn() {
 
@@ -158,26 +219,34 @@ const Sidebar = ({ local_varaiable, ThemeChanger }: any) => {
 			return;
 		}
 
-		WindowPreSize.push(window.innerWidth);
-		if (WindowPreSize.length > 2) { WindowPreSize.shift() }
-
-		const theme = store.getState();
-		const currentWidth = WindowPreSize[WindowPreSize.length - 1];
-		const prevWidth = WindowPreSize[WindowPreSize.length - 2];
-
-
-		if (WindowPreSize.length > 1) {
-			if (currentWidth < 992 && prevWidth >= 992) {
-				// less than 992;
-				ThemeChanger({ ...theme, dataToggled: "close" });
-			}
-
-			if (currentWidth >= 992 && prevWidth < 992) {
-				// greater than 992
-				ThemeChanger({ ...theme, dataToggled: theme.dataVerticalStyle === "doublemenu" ? "double-menu-open" : "" });
-
-			}
+		// Debounce resize events to prevent mobile address bar triggers
+		if (resizeTimeoutRef.current) {
+			clearTimeout(resizeTimeoutRef.current);
 		}
+
+		resizeTimeoutRef.current = setTimeout(() => {
+			WindowPreSize.push(window.innerWidth);
+			if (WindowPreSize.length > 2) { WindowPreSize.shift() }
+
+			const theme = store.getState();
+			const currentWidth = WindowPreSize[WindowPreSize.length - 1];
+			const prevWidth = WindowPreSize[WindowPreSize.length - 2];
+
+			// Only trigger if width actually changed significantly (more than 50px)
+			// This prevents mobile address bar hide/show from triggering
+			if (WindowPreSize.length > 1 && Math.abs(currentWidth - prevWidth) > 50) {
+				if (currentWidth < 992 && prevWidth >= 992) {
+					// less than 992;
+					ThemeChanger({ ...theme, dataToggled: "close" });
+				}
+
+				if (currentWidth >= 992 && prevWidth < 992) {
+					// greater than 992
+					ThemeChanger({ ...theme, dataToggled: theme.dataVerticalStyle === "doublemenu" ? "double-menu-open" : "" });
+
+				}
+			}
+		}, 200); // 200ms debounce
 	}
 
 	function switcherArrowFn(): void {
