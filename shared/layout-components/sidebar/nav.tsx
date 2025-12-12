@@ -168,6 +168,17 @@ export const MenuItems: any = [
 
   },
   {
+    title: "Staking NFT",
+    icon: WidgetsIcon,
+    path: "/staking-nft",
+    type: "link",
+    active: false,
+    selected: false,
+    dirchange: false,
+
+
+  },
+  {
     menutitle: "EXPLORER",
   },
 
