@@ -159,8 +159,8 @@ const TransactionTable = ({
                         <td>
                           <div className="flex items-center">
                             <div className="leading-none">
-                              <span className="avatar avatar-md avatar-rounded me-2">
-                                {tx.type === "crypto" ? (
+                              {tx.type === "crypto" ? (
+                                <span className="avatar avatar-md avatar-rounded me-2">
                                   <div className="flex -space-x-5">
                                     <img
                                       className="avatar avatar-rounded border-2 border-transparent"
@@ -173,7 +173,9 @@ const TransactionTable = ({
                                       alt={tx.bought?.symbol}
                                     />
                                   </div>
-                                ) : tx.type === "eth" ? (
+                                </span>
+                              ) : tx.type === "eth" ? (
+                                <span className="avatar avatar-md avatar-rounded me-2">
                                   <img
                                     src="/assets/images/brand-logos/eth.png"
                                     alt="ETH"
@@ -181,7 +183,36 @@ const TransactionTable = ({
                                     width={40}
                                     height={40}
                                   />
-                                ) : (
+                                </span>
+                              ) : tx.type === "scan" ? (
+                                <span className="avatar avatar-md avatar-rounded me-2 bg-[var(--camel-variable-background)] flex items-center justify-center">
+                                  <img
+                                    src="/assets/images/svg/leaf1.svg"
+                                    alt="BCO2 Earned"
+                                    className="w-6 h-6"
+                                    style={{ filter: 'var(--primary-filter)' }}
+                                  />
+                                </span>
+                              ) : tx.transaction === "Plot Stake" ? (
+                                <span className="avatar avatar-md avatar-rounded me-2 bg-[var(--camel-variable-background)] flex items-center justify-center">
+                                  <img
+                                    src="/assets/images/svg/stake.svg"
+                                    alt="Plot Stake"
+                                    className="w-6 h-6"
+                                    style={{ filter: 'var(--primary-filter)' }}
+                                  />
+                                </span>
+                              ) : tx.transaction === "Plot Unstake" ? (
+                                <span className="avatar avatar-md avatar-rounded me-2 bg-[var(--camel-variable-background)] flex items-center justify-center">
+                                  <img
+                                    src="/assets/images/svg/unstake.svg"
+                                    alt="Plot Unstake"
+                                    className="w-6 h-6"
+                                    style={{ filter: 'var(--primary-filter)' }}
+                                  />
+                                </span>
+                              ) : (
+                                <span className="avatar avatar-md avatar-rounded me-2">
                                   <img
                                     src={
                                       (tx.NftType &&
@@ -193,8 +224,8 @@ const TransactionTable = ({
                                     width={40}
                                     height={40}
                                   />
-                                )}
-                              </span>
+                                </span>
+                              )}
                             </div>
                             <div className="items-center ml-5">
                               <p className="mb-0 font-semibold">

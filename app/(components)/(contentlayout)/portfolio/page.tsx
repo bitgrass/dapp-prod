@@ -363,16 +363,30 @@ const Crypto = () => {
         let NftType = "Standard 100m²";
         let transactionType = "NFT Transfer";
 
+        // Staking pool addresses
+        const LEGENDARY_POOL = "0x8Ce083356a01EF8229d69df897e348948182a72f".toLowerCase();
+        const PREMIUM_POOL = "0xfdD53102A85AE52A201e2faa8Cc4668d7Bf8f81C".toLowerCase();
+        const STANDARD_POOL = "0xDBfB6672125776176Bd9F154A0b4bbC8F63192A6".toLowerCase();
+        
+        const fromAddress = tx.from_address?.toLowerCase();
+        const toAddress = tx.to_address?.toLowerCase();
+        const userAddress = address.toLowerCase();
+
         if (tokenId >= 1 && tokenId <= 400) {
           NftType = "Legendary 1000m²";
         } else if (tokenId >= 401 && tokenId <= 1200) {
           NftType = "Premium 500m²";
         }
 
-        if (tx.from_address === "0x0000000000000000000000000000000000000000") {
-          transactionType = "NFT Purchase";
+        // Check if this is a staking/unstaking transaction
+        if (fromAddress === userAddress && (toAddress === LEGENDARY_POOL || toAddress === PREMIUM_POOL || toAddress === STANDARD_POOL)) {
+          transactionType = "Land Plot Stake";
+        } else if ((fromAddress === LEGENDARY_POOL || fromAddress === PREMIUM_POOL || fromAddress === STANDARD_POOL) && toAddress === userAddress) {
+          transactionType = "Land Plot Unstake";
+        } else if (tx.from_address === "0x0000000000000000000000000000000000000000") {
+          transactionType = "Land Plot Purchase";
         } else if (tx.transaction_value && tx.transaction_value !== "0") {
-          transactionType = "NFT Purchase";
+          transactionType = "Land Plot Purchase";
         }
 
         let nftValue = `+1 NFT`;
@@ -388,7 +402,7 @@ const Crypto = () => {
           transaction: transactionType,
           NftType,
           value: nftValue,
-          grayValue: `NFT ID: ${tx.token_id}`,
+          grayValue: `Asset ID: ${tx.token_id}`,
           date: new Date(tx.block_timestamp).toLocaleString(),
           timestamp: new Date(tx.block_timestamp).getTime(),
           transactionHash: tx.transaction_hash,
@@ -493,6 +507,81 @@ const Crypto = () => {
     }
   }, [address, getCachedOrFetch]);
 
+  // Fetch SCAN token (BCO2) transfers
+  const [scanTxMap, setScanTxMap] = useState<Map<string, any>>(new Map());
+  const [scanTransactionCursor, setScanTransactionCursor] = useState(null);
+
+  const fetchScanTransactions = useCallback(async (cursor = null, limit = 10) => {
+    if (!address) return;
+
+    console.log('🌱 Fetching SCAN token transactions:', { cursor, limit });
+
+    try {
+      const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
+      const SCAN_TOKEN_ADDRESS = "0x20429F731096e359910921994A267d32ef576720";
+      const LEGENDARY_POOL = "0x8Ce083356a01EF8229d69df897e348948182a72f".toLowerCase();
+      const PREMIUM_POOL = "0xfdD53102A85AE52A201e2faa8Cc4668d7Bf8f81C".toLowerCase();
+      const STANDARD_POOL = "0xDBfB6672125776176Bd9F154A0b4bbC8F63192A6".toLowerCase();
+
+      const params = new URLSearchParams({
+        chain: "base",
+        order: "DESC",
+        limit: limit.toString(),
+      });
+      if (cursor) params.append("cursor", cursor);
+
+      const url = `https://deep-index.moralis.io/api/v2.2/${address}/erc20/transfers?${params.toString()}&contract_addresses=${SCAN_TOKEN_ADDRESS}`;
+      const data = await getCachedOrFetch(url, { 
+        accept: "application/json", 
+        "X-API-Key": API_KEY 
+      });
+      const response = { data };
+
+      const fetchedScanTxs = response.data.result
+        .filter((tx: any) => {
+          // Only show transfers FROM staking pools TO user (rewards)
+          const fromAddress = tx.from_address?.toLowerCase();
+          const toAddress = tx.to_address?.toLowerCase();
+          const userAddress = address.toLowerCase();
+          
+          return (fromAddress === LEGENDARY_POOL || fromAddress === PREMIUM_POOL || fromAddress === STANDARD_POOL) 
+                 && toAddress === userAddress;
+        })
+        .map((tx: any) => {
+          const value = parseFloat(tx.value) / 1e18; // Convert from wei
+          const uniqueKey = `scan::${tx.transaction_hash}::${tx.block_timestamp}`;
+
+          return {
+            _key: uniqueKey,
+            type: "scan",
+            transaction: "BCO2 Earned",
+            value: `+${value.toFixed(4)} BCO2`,
+            grayValue: "Staking Reward",
+            date: new Date(tx.block_timestamp).toLocaleString(),
+            timestamp: new Date(tx.block_timestamp).getTime(),
+            transactionHash: tx.transaction_hash,
+          };
+        });
+
+      console.log('🌱 Fetched SCAN txs:', fetchedScanTxs.length);
+
+      setScanTxMap((prevMap) => {
+        const newMap = new Map(prevMap);
+        fetchedScanTxs.forEach((tx: any) => {
+          if (!newMap.has(tx._key)) {
+            newMap.set(tx._key, tx);
+          }
+        });
+        console.log('🌱 SCAN Map size:', newMap.size);
+        return newMap;
+      });
+
+      setScanTransactionCursor(response.data.cursor || null);
+    } catch (error) {
+      console.error("Error fetching SCAN transactions:", error);
+    }
+  }, [address, getCachedOrFetch]);
+
   // Fetch NFTs
   const fetchNfts = useCallback(async (cursor = null, limit = 4) => {
     if (!address) return;
@@ -572,7 +661,7 @@ const Crypto = () => {
           type: "nft",
           transaction: "NFT Minted",
           value: `+${nft.amount || 1} NFT`,
-          grayValue: `NFT ID: ${nft.token_id}`,
+          grayValue: `Asset ID: ${nft.token_id}`,
           date: purchaseDate,
           timestamp: actualTimestamp,
           transactionHash: "",
@@ -605,7 +694,8 @@ const Crypto = () => {
     const cryptoArray = Array.from(cryptoTxMap.values());
     const nftArray = Array.from(nftTxMap.values());
     const ethArray = Array.from(ethTxMap.values());
-    const merged = [...cryptoArray, ...nftArray, ...ethArray];
+    const scanArray = Array.from(scanTxMap.values());
+    const merged = [...cryptoArray, ...nftArray, ...ethArray, ...scanArray];
 
     // Add unique index for stable keys
     const withUniqueKeys = merged.map((tx, idx) => ({
@@ -616,7 +706,7 @@ const Crypto = () => {
 
     const sorted = withUniqueKeys.sort((a, b) => b.timestamp - a.timestamp);
     return sorted;
-  }, [cryptoTxMap, nftTxMap, ethTxMap]);
+  }, [cryptoTxMap, nftTxMap, ethTxMap, scanTxMap]);
 
   // ✅ CRITICAL FIX: Stable pagination with proper bounds checking
   const transactionPagination = useMemo(() => {
@@ -740,6 +830,7 @@ const Crypto = () => {
         setTransactionCursor(null);
         setNftTransactionCursor(null);
         setEthTransactionCursor(null);
+        setScanTransactionCursor(null);
         setNftCursor(null);
         setHasInitialNftLoad(false);
         setHasInitialTransaction(false);
@@ -765,13 +856,17 @@ const Crypto = () => {
           console.log('✅ ETH transactions loaded');
         });
 
+        const scanTxPromise = fetchScanTransactions(null, 100).then(() => {
+          console.log('✅ SCAN transactions loaded');
+        });
+
         const nftGridPromise = fetchNfts(null, 100).then(() => {
           setHasInitialNftLoad(true);
           console.log('✅ NFT grid loaded');
         });
 
         // Wait for all to complete
-        Promise.all([cryptoPromise, nftTxPromise, ethTxPromise, nftGridPromise]).finally(() => {
+        Promise.all([cryptoPromise, nftTxPromise, ethTxPromise, scanTxPromise, nftGridPromise]).finally(() => {
           initialFetchComplete.current = true;
           console.log('✅ All data loaded');
         });
@@ -786,8 +881,10 @@ const Crypto = () => {
         setCryptoTxMap(new Map());
         setNftTxMap(new Map());
         setEthTxMap(new Map());
+        setScanTxMap(new Map());
         setNftData([]);
         setTransactionCursor(null);
+        setScanTransactionCursor(null);
         setNftTransactionCursor(null);
         setEthTransactionCursor(null);
         setNftCursor(null);
