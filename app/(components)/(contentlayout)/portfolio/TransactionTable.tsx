@@ -189,25 +189,28 @@ const TransactionTable = ({
                                   <img
                                     src="/assets/images/svg/leaf1.svg"
                                     alt="BCO2 Earned"
-                                    className="w-6 h-6"
+                                        width={40}
+                                    height={40}
                                     style={{ filter: 'var(--primary-filter)' }}
                                   />
                                 </span>
-                              ) : tx.transaction === "Plot Stake" ? (
+                              ) : tx.transaction === "Land Plot Stake" ? (
                                 <span className="avatar avatar-md avatar-rounded me-2 bg-[var(--camel-variable-background)] flex items-center justify-center">
                                   <img
-                                    src="/assets/images/svg/stake.svg"
+                                    src="/assets/images/svg/Staked.svg"
                                     alt="Plot Stake"
-                                    className="w-6 h-6"
+                                        width={40}
+                                    height={40}
                                     style={{ filter: 'var(--primary-filter)' }}
                                   />
                                 </span>
-                              ) : tx.transaction === "Plot Unstake" ? (
+                              ) : tx.transaction === "Land Plot Unstake" ? (
                                 <span className="avatar avatar-md avatar-rounded me-2 bg-[var(--camel-variable-background)] flex items-center justify-center">
                                   <img
-                                    src="/assets/images/svg/unstake.svg"
+                                    src="/assets/images/svg/Unstaked.svg"
                                     alt="Plot Unstake"
-                                    className="w-6 h-6"
+                                        width={40}
+                                    height={40}
                                     style={{ filter: 'var(--primary-filter)' }}
                                   />
                                 </span>
