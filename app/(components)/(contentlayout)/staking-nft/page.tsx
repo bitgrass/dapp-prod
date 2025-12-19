@@ -879,43 +879,28 @@ const StakingNFT = () => {
             <Seo title={"Staking NFT"} />
             <div className='container'>
                 {/* Title and Description Section */}
-                <div className="grid grid-cols-12 gap-x-6 mt-10 mb-6">
+                <div className="grid grid-cols-12 gap-x-6 mt-10 mb-6 items-end">
                     {/* Left: Title + Description + Cards */}
-                    <div className="col-span-12 md:col-span-6">
-                        <div className="w-full">
+                    <div className="col-span-12 md:col-span-6 flex flex-col">
+                        <div className="w-full flex-grow">
                             <p className="text-4xl font-bold mb-1">Earn BCO2</p>
                             <p className='dark:text-white/60 mb-4'>
                                 Stake your tokenized land plots (NFTs) to earn BCO2 rewards.<br />
                                 The more NFTs you stake, the higher your earnings potential.
                             </p>
+                        </div>
                             
-                            {/* Staked and Available NFTs Cards */}
-                            <div className="flex flex-row gap-3 mt-4">
-                                {/* Staked NFTs */}
-                                <div className="box flex-1">
+                        {/* Available and Staked Plots Cards */}
+                        <div className="flex flex-row gap-3 max-w-md">
+                                {/* Available Plots */}
+                                <div className="box flex-1 bg-primary/10">
                                     <div className="box-body !py-3 !px-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="p-2 bg-primary/10 rounded-lg">
-                                                <i className="bx bx-coin-stack text-xl text-primary"></i>
+                                            <div className="p-2 bg-primary/20 rounded-lg">
+                                                <img src="../../../assets/images/svg/stakeI.svg" alt="Available" className="w-5 h-5" />
                                             </div>
                                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                Staked NFTs
-                                            </div>
-                                            <div className="text-xl font-semibold ml-auto">
-                                                {stakedNFTs.length}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Available NFTs */}
-                                <div className="box flex-1">
-                                    <div className="box-body !py-3 !px-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="p-2 bg-info/10 rounded-lg">
-                                                <i className="bx bx-collection text-xl text-info"></i>
-                                            </div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                Available NFTs
+                                                Available Plots
                                             </div>
                                             <div className="text-xl font-semibold ml-auto">
                                                 {ownedNFTs.length}
@@ -923,47 +908,67 @@ const StakingNFT = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right: Total Earned and Current Earnings Cards */}
-                    <div className="col-span-12 md:col-span-6 flex items-center justify-end mt-6 sm:mt-0">
-                        <div className="grid grid-cols-2 gap-4 w-full">
-                            {/* Total Earned */}
-                            <div className="box">
-                                <div className="box-body">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                                Total Earned
+                                {/* Staked Plots */}
+                                <div className="box flex-1 bg-secondary/10">
+                                    <div className="box-body !py-3 !px-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-2 bg-secondary/20 rounded-lg">
+                                                <img src="../../../assets/images/svg/stakeIu.svg" alt="Staked" className="w-5 h-5" />
                                             </div>
-                                            <div className="text-2xl font-semibold">
-                                                {parseFloat(totalEarned).toFixed(4)} BCO2
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                Staked Plots
                                             </div>
-                                        </div>
-                                        <div className="p-3 bg-warning/10 rounded-lg">
-                                            <i className="bx bx-wallet text-2xl text-warning"></i>
+                                            <div className="text-xl font-semibold ml-auto">
+                                                {stakedNFTs.length}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                    </div>
+
+                    {/* Right: Total Earned and Current Earnings Cards */}
+                    <div className="col-span-12 md:col-span-6 flex items-end justify-end mt-6 sm:mt-0">
+                        <div className="grid grid-cols-2 gap-4 w-full">
+                            {/* Total Earned */}
+                            <div className="box relative overflow-hidden">
+                                <div className="box-body">
+                                    <div>
+                                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                            Total Earned
+                                        </div>
+                                        <div className="text-2xl font-semibold">
+                                            {parseFloat(totalEarned).toFixed(4)} <span className="text-base">BCO2</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <img 
+                                    src="../../../assets/images/svg/bigEarn.svg" 
+                                    alt="Earnings" 
+                                    className="absolute bottom-0 right-0 w-20 h-20 opacity-30"
+                                />
+                            </div>
                             {/* Current Earnings */}
                             <div className="box">
                                 <div className="box-body">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                                Current Earnings
-                                            </div>
-                                            <div className="text-2xl font-semibold">
-                                                {parseFloat(currentEarnings).toFixed(4)} BCO2
-                                            </div>
+                                    <div className="mb-3">
+                                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                            Current Earnings
                                         </div>
-                                        <div className="p-3 bg-success/10 rounded-lg">
-                                            <i className="bx bx-trending-up text-2xl text-success"></i>
+                                        <div className="text-2xl font-semibold mb-2">
+                                            {parseFloat(currentEarnings).toFixed(4)} <span className="text-base">BCO2</span>
+                                        </div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                            * BCO₂e = Bitgrass Carbon token
                                         </div>
                                     </div>
+                                    <button
+                                        onClick={handleClaimRewards}
+                                        disabled={loading || parseFloat(currentEarnings) === 0}
+                                        className="w-full bg-secondary text-white py-2 px-4 rounded-md hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? "Processing..." : "Claim BCO2"}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1053,25 +1058,26 @@ const StakingNFT = () => {
                         </div>
 
                         {/* Pool Stats Table */}
-                        <div className="mb-6">
-                            {/* Table Headers */}
-                            <div className="grid grid-cols-5 gap-4 mb-4 px-4">
-                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Pool Type</div>
-                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Your Staked Plots</div>
-                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Total Staked Plots</div>
-                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Your Earnings</div>
-                                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Status</div>
-                            </div>
+                        <div className="mb-6 overflow-x-auto">
+                            <div className="min-w-[800px]">
+                                {/* Table Headers */}
+                                <div className="grid grid-cols-5 gap-4 mb-4 px-4">
+                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Pool Type</div>
+                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Your Staked Plots</div>
+                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Total Staked Plots</div>
+                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Your Earnings</div>
+                                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">Status</div>
+                                </div>
 
-                            {/* Pool Cards */}
-                            <div className="grid grid-cols-1 gap-1">
+                                {/* Pool Cards */}
+                                <div className="grid grid-cols-1 gap-1">
                                 {/* Legendary Pool */}
-                                <div className="box  border-1 dark:border-yellow-500/30 border-[#CA8A04]/30" style={{ marginBottom: '1rem' }}>
+                                <div className="box border-1 dark:border-yellow-500/30 border-[#CA8A04]/30" style={{ marginBottom: '1rem' }}>
                                     <div className="box-body !p-3">
                                         <div className="grid grid-cols-5 gap-4 items-center">
                                             {/* Pool Type */}
                                             <div className="flex items-center gap-3">
-                                                <img src="../../../assets/images/brand-logos/Legendary.svg" alt="Legendary" className="w-8 h-8" />
+                                                <img src="../../../assets/images/svg/lsvg.svg" alt="Legendary" className="w-10 h-10" />
                                                 <div>
                                                     <h6 className="font-semibold text-sm mb-0">Legendary Pool</h6>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 1-400</p>
@@ -1112,12 +1118,12 @@ const StakingNFT = () => {
                                 </div>
 
                                 {/* Premium Pool */}
-                                <div className="box  border-1 dark:border-blue-400/30 border-[#5ea9cc]/30" style={{ marginBottom: '1rem' }}>
+                                <div className="box border-1 dark:border-blue-400/30 border-[#5ea9cc]/30" style={{ marginBottom: '1rem' }}>
                                     <div className="box-body !p-3">
                                         <div className="grid grid-cols-5 gap-4 items-center">
                                             {/* Pool Type */}
                                             <div className="flex items-center gap-3">
-                                                <img src="../../../assets/images/brand-logos/Premium.svg" alt="Premium" className="w-8 h-8" />
+                                                <img src="../../../assets/images/svg/psvg.svg" alt="Premium" className="w-10 h-10" />
                                                 <div>
                                                     <h6 className="font-semibold text-sm mb-0">Premium Pool</h6>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 401-1200</p>
@@ -1163,7 +1169,7 @@ const StakingNFT = () => {
                                         <div className="grid grid-cols-5 gap-4 items-center">
                                             {/* Pool Type */}
                                             <div className="flex items-center gap-3">
-                                                <img src="../../../assets/images/brand-logos/Standard.svg" alt="Standard" className="w-8 h-8" />
+                                                <img src="../../../assets/images/svg/ssvg.svg" alt="Standard" className="w-10 h-10" />
                                                 <div>
                                                     <h6 className="font-semibold text-sm mb-0">Standard Pool</h6>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 1201-3200</p>
@@ -1203,20 +1209,10 @@ const StakingNFT = () => {
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </div>
 
-                        {/* Claim Rewards Button */}
-                        {parseFloat(currentEarnings) > 0 && (
-                            <div className="mb-6">
-                                <button
-                                    onClick={handleClaimRewards}
-                                    disabled={loading}
-                                    className="ti-btn ti-btn-success w-full"
-                                >
-                                    {loading ? "Processing..." : "Claim All Rewards"}
-                                </button>
-                            </div>
-                        )}
+
 
                         {/* Main Content */}
                         <div className="box">
@@ -1278,7 +1274,7 @@ const StakingNFT = () => {
                                                                         key={nft.id.toString()}
                                                                         className="xxl:col-span-3 xl:col-span-3 lg:col-span-3 md:col-span-6 sm:col-span-6 col-span-12"
                                                                     >
-                                                                        <div className="box overflow-hidden">
+                                                                        <div className={`box overflow-hidden transition-all duration-200 ${selectedNFTs.includes(nft.id.toString()) ? 'ring-4 ring-primary' : ''}`}>
                                                                             <div className="relative aspect-[4/5]">
                                                                                 <img
                                                                                     src={tierImage}
@@ -1308,10 +1304,10 @@ const StakingNFT = () => {
                                                                                     <img
                                                                                         src={
                                                                                             tokenId >= 1 && tokenId <= 400
-                                                                                                ? "/assets/images/brand-logos/Legendary.svg"
+                                                                                                ? "/assets/images/svg/lsvg.svg"
                                                                                                 : tokenId >= 401 && tokenId <= 1200
-                                                                                                    ? "/assets/images/brand-logos/Premium.svg"
-                                                                                                    : "/assets/images/brand-logos/Standard.svg"
+                                                                                                    ? "/assets/images/svg/psvg.svg"
+                                                                                                    : "/assets/images/svg/ssvg.svg"
                                                                                         }
                                                                                         alt="Category"
                                                                                         className="w-8 h-8 me-3"
@@ -1363,15 +1359,15 @@ const StakingNFT = () => {
 
                                                         {/* Multi-stake button (only show if NFTs selected) */}
                                                         {selectedNFTs.length > 0 && (
-                                                            <div className="sticky bottom-4 z-20">
+                                                            <div className="mt-6 mb-4">
                                                                 <button
                                                                     onClick={handleStake}
                                                                     disabled={loading}
-                                                                    className="ti-btn ti-btn-primary w-full shadow-2xl text-lg py-3"
+                                                                    className="ti-btn ti-btn-primary w-full text-lg py-3"
                                                                 >
                                                                     {loading ? (
                                                                         <>
-                                                                            <span className="animate-spin mr-2">⏳</span>
+                                                                            <i className="ri-loader-4-line animate-spin mr-2"></i>
                                                                             Staking...
                                                                         </>
                                                                     ) : (
@@ -1412,7 +1408,7 @@ const StakingNFT = () => {
                                                                         key={nft.tokenId.toString()}
                                                                         className="xxl:col-span-3 xl:col-span-3 lg:col-span-3 md:col-span-6 sm:col-span-6 col-span-12"
                                                                     >
-                                                                        <div className="box overflow-hidden">
+                                                                        <div className={`box overflow-hidden transition-all duration-200 ${selectedNFTs.includes(nft.tokenId.toString()) ? 'ring-4 ring-danger' : ''}`}>
                                                                             <div className="relative aspect-[4/5]">
                                                                                 <img
                                                                                     src={tierImage}
@@ -1448,10 +1444,10 @@ const StakingNFT = () => {
                                                                                     <img
                                                                                         src={
                                                                                             tokenId >= 1 && tokenId <= 400
-                                                                                                ? "/assets/images/brand-logos/Legendary.svg"
+                                                                                                ? "/assets/images/svg/lsvg.svg"
                                                                                                 : tokenId >= 401 && tokenId <= 1200
-                                                                                                    ? "/assets/images/brand-logos/Premium.svg"
-                                                                                                    : "/assets/images/brand-logos/Standard.svg"
+                                                                                                    ? "/assets/images/svg/ppsvg.svg"
+                                                                                                    : "/assets/images/svg/ssvg.svg"
                                                                                         }
                                                                                         alt="Category"
                                                                                         className="w-8 h-8 me-3"
@@ -1505,15 +1501,15 @@ const StakingNFT = () => {
 
                                                         {/* Multi-unstake button (only show if NFTs selected) */}
                                                         {selectedNFTs.length > 0 && (
-                                                            <div className="sticky bottom-4 z-20">
+                                                            <div className="mt-6 mb-4">
                                                                 <button
                                                                     onClick={handleWithdraw}
                                                                     disabled={loading}
-                                                                    className="ti-btn ti-btn-danger w-full shadow-2xl text-lg py-3"
+                                                                    className="ti-btn ti-btn-danger w-full text-lg py-3"
                                                                 >
                                                                     {loading ? (
                                                                         <>
-                                                                            <span className="animate-spin mr-2">⏳</span>
+                                                                            <i className="ri-loader-4-line animate-spin mr-2"></i>
                                                                             Withdrawing...
                                                                         </>
                                                                     ) : (

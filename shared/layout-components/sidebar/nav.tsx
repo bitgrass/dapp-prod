@@ -36,6 +36,21 @@ const AdvancedUiIcon = <i className="bx bx-party side-menu__icon"></i>;
 
 const WidgetsIcon = <i className="bx bx-coin-stack side-menu__icon"></i>;
 
+const LeafMenuIcon = (
+  <>
+    <img
+      src="../../assets/images/svg/leafmenu.svg"
+      className="side-menu__icon block dark:hidden"
+      alt="Earn BCO2"
+    />
+    <img
+      src="../../assets/images/svg/leafmenuD.svg"
+      className="side-menu__icon hidden dark:block"
+      alt="Earn BCO2 Dark"
+    />
+  </>
+);
+
 const AppsIcon = <i className="bx bx-grid-alt side-menu__icon"></i>;
 
 const NestedmenuIcon = <i className="bx bx-layer side-menu__icon"></i>;
@@ -144,18 +159,7 @@ export const MenuItems: any = [
 
   },
   {
-    title: "Own plot",
-    icon: AuthenticationIcon,
-    path: "/ownplot/standard",
-    type: "link",
-    active: false,
-    selected: false,
-    dirchange: false,
-
-
-  },
-  {
-    title: "Staking",
+    title: "Stake $BTG",
     icon: WidgetsIcon,
     path: "https://staking.bitgrass.com",
     type: "link",
@@ -168,8 +172,19 @@ export const MenuItems: any = [
 
   },
   {
-    title: "Staking NFT",
-    icon: WidgetsIcon,
+    title: "Own plot",
+    icon: AuthenticationIcon,
+    path: "/ownplot/standard",
+    type: "link",
+    active: false,
+    selected: false,
+    dirchange: false,
+
+
+  },
+  {
+    title: "Earn BCO2",
+    icon: LeafMenuIcon,
     path: "/staking-nft",
     type: "link",
     active: false,
