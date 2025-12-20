@@ -52,6 +52,9 @@ const StakingNFT = () => {
     const [currentEarnings, setCurrentEarnings] = useState("0")
     const [totalEarned, setTotalEarned] = useState("0")
     const [activeTab, setActiveTab] = useState<'stake' | 'unstake'>('stake')
+    const [showSuccessToast, setShowSuccessToast] = useState(false)
+    const [stakedTokenIds, setStakedTokenIds] = useState<string[]>([])
+    const [toastType, setToastType] = useState<'stake' | 'unstake'>('stake')
 
     // Pool stats
     const [legendaryStats, setLegendaryStats] = useState({ staked: 0, totalStaked: 0, earnings: "0" })
@@ -703,7 +706,11 @@ const StakingNFT = () => {
             }
 
             console.log("All NFTs staked successfully!")
+            setStakedTokenIds(selectedNFTs)
+            setToastType('stake')
             setSelectedNFTs([])
+            setShowSuccessToast(true)
+            await new Promise(resolve => setTimeout(resolve, 3000))
             window.location.reload()
         } catch (error: any) {
             console.error("Error staking NFTs:", error)
@@ -765,7 +772,11 @@ const StakingNFT = () => {
             }
 
             console.log("All NFTs withdrawn successfully!")
+            setStakedTokenIds(selectedNFTs)
+            setToastType('unstake')
             setSelectedNFTs([])
+            setShowSuccessToast(true)
+            await new Promise(resolve => setTimeout(resolve, 3000))
             window.location.reload()
         } catch (error: any) {
             console.error("Error withdrawing NFTs:", error)
@@ -902,7 +913,7 @@ const StakingNFT = () => {
                                             <div className="text-sm text-gray-500 dark:text-gray-400">
                                                 Available Plots
                                             </div>
-                                            <div className="text-xl font-semibold ml-auto">
+                                            <div className="text-xl font-semibold ml-auto dark:text-white">
                                                 {ownedNFTs.length}
                                             </div>
                                         </div>
@@ -918,7 +929,7 @@ const StakingNFT = () => {
                                             <div className="text-sm text-gray-500 dark:text-gray-400">
                                                 Staked Plots
                                             </div>
-                                            <div className="text-xl font-semibold ml-auto">
+                                            <div className="text-xl font-semibold ml-auto dark:text-white">
                                                 {stakedNFTs.length}
                                             </div>
                                         </div>
@@ -937,7 +948,7 @@ const StakingNFT = () => {
                                         <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                                             Total Earned
                                         </div>
-                                        <div className="text-2xl font-semibold">
+                                        <div className="text-2xl font-semibold dark:text-white">
                                             {parseFloat(totalEarned).toFixed(4)} <span className="text-base">BCO2</span>
                                         </div>
                                     </div>
@@ -955,7 +966,7 @@ const StakingNFT = () => {
                                         <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                                             Current Earnings
                                         </div>
-                                        <div className="text-2xl font-semibold mb-2">
+                                        <div className="text-2xl font-semibold mb-2 dark:text-white">
                                             {parseFloat(currentEarnings).toFixed(4)} <span className="text-base">BCO2</span>
                                         </div>
                                         <div className="text-xs text-gray-500 dark:text-gray-400 italic">
@@ -965,7 +976,7 @@ const StakingNFT = () => {
                                     <button
                                         onClick={handleClaimRewards}
                                         disabled={loading || parseFloat(currentEarnings) === 0}
-                                        className="w-full bg-secondary text-white py-2 px-4 rounded-md hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full bg-secondary text-white py-3 px-4 rounded-[0.25rem] hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {loading ? "Processing..." : "Claim BCO2"}
                                     </button>
@@ -1086,13 +1097,13 @@ const StakingNFT = () => {
 
                                             {/* Your Staked Plots */}
                                             <div>
-                                                <p className="text-2xl font-bold">{legendaryStats.staked}</p>
+                                                <p className="text-2xl font-bold dark:text-white">{legendaryStats.staked}</p>
                                             </div>
 
                                             {/* Total Staked Plots */}
                                             <div>
-                                                <p className="text-2xl font-bold">{legendaryStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 400</span></p>
-                                                <div className="w-1/2 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                                                <p className="text-2xl font-bold dark:text-white">{legendaryStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 400</span></p>
+                                                <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
                                                     <div
                                                         className="bg-[#CA8A04] h-2 rounded-full transition-all duration-300"
                                                         style={{ width: `${(legendaryStats.totalStaked / 400) * 100}%` }}
@@ -1102,7 +1113,7 @@ const StakingNFT = () => {
 
                                             {/* Your Earnings */}
                                             <div>
-                                                <p className="text-2xl font-bold">{parseFloat(legendaryStats.earnings).toFixed(4)}</p>
+                                                <p className="text-2xl font-bold dark:text-white">{parseFloat(legendaryStats.earnings).toFixed(4)}</p>
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
                                             </div>
 
@@ -1132,13 +1143,13 @@ const StakingNFT = () => {
 
                                             {/* Your Staked Plots */}
                                             <div>
-                                                <p className="text-2xl font-bold">{premiumStats.staked}</p>
+                                                <p className="text-2xl font-bold dark:text-white">{premiumStats.staked}</p>
                                             </div>
 
                                             {/* Total Staked Plots */}
                                             <div>
-                                                <p className="text-2xl font-bold">{premiumStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 800</span></p>
-                                                <div className="w-1/2 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                                                <p className="text-2xl font-bold dark:text-white">{premiumStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 800</span></p>
+                                                <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
                                                     <div
                                                         className="bg-[#5ea9cc] h-2 rounded-full transition-all duration-300"
                                                         style={{ width: `${(premiumStats.totalStaked / 800) * 100}%` }}
@@ -1148,7 +1159,7 @@ const StakingNFT = () => {
 
                                             {/* Your Earnings */}
                                             <div>
-                                                <p className="text-2xl font-bold">{parseFloat(premiumStats.earnings).toFixed(4)}</p>
+                                                <p className="text-2xl font-bold dark:text-white">{parseFloat(premiumStats.earnings).toFixed(4)}</p>
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
                                             </div>
 
@@ -1178,13 +1189,13 @@ const StakingNFT = () => {
 
                                             {/* Your Staked Plots */}
                                             <div>
-                                                <p className="text-2xl font-bold">{standardStats.staked}</p>
+                                                <p className="text-2xl font-bold dark:text-white">{standardStats.staked}</p>
                                             </div>
 
                                             {/* Total Staked Plots */}
                                             <div>
-                                                <p className="text-2xl font-bold">{standardStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 2000</span></p>
-                                                <div className="w-1/2 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                                                <p className="text-2xl font-bold dark:text-white">{standardStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 2000</span></p>
+                                                <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
                                                     <div
                                                         className="bg-secondary h-2 rounded-full transition-all duration-300"
                                                         style={{ width: `${(standardStats.totalStaked / 2000) * 100}%` }}
@@ -1194,7 +1205,7 @@ const StakingNFT = () => {
 
                                             {/* Your Earnings */}
                                             <div>
-                                                <p className="text-2xl font-bold">{parseFloat(standardStats.earnings).toFixed(4)}</p>
+                                                <p className="text-2xl font-bold dark:text-white">{parseFloat(standardStats.earnings).toFixed(4)}</p>
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
                                             </div>
 
@@ -1532,6 +1543,41 @@ const StakingNFT = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Success Toast */}
+            {showSuccessToast && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:left-auto md:right-6 md:translate-x-0 max-w-[90vw] md:max-w-none">
+                    <div
+                        role="alert"
+                        className="bg-camel shadow-lg rounded-md w-full max-w-2xl min-w-[320px] px-5 py-4"
+                    >
+                        <div className="flex items-center gap-4 w-full">
+                            {/* Icon */}
+                            <div className="flex-shrink-0">
+                                <img
+                                    src={toastType === 'stake' ? '/assets/images/svg/Staked.svg' : '/assets/images/svg/Unstaked.svg'}
+                                    alt={toastType === 'stake' ? 'Staked' : 'Unstaked'}
+                                    width={30}
+                                    height={30}
+                                    className="rounded"
+                                />
+                            </div>
+
+                            {/* Text */}
+                            <div className="flex-1 text-center px-2">
+                                <strong className="text-sm font-bold break-words">
+                                    Plot #{stakedTokenIds.join(', #')} successfully {toastType === 'stake' ? 'staked' : 'unstaked'}
+                                </strong>
+                            </div>
+
+                            {/* Checkmark */}
+                            <div className="flex-shrink-0">
+                                <i className="ri-check-line text-2xl text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </Fragment>
     )
 }

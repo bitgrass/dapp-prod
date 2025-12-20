@@ -187,7 +187,7 @@ const TransactionTable = ({
                               ) : tx.type === "scan" ? (
                                 <span className="avatar avatar-md avatar-rounded me-2 bg-[var(--camel-variable-background)] flex items-center justify-center">
                                   <img
-                                    src="/assets/images/svg/leaf1.svg"
+                                    src="/assets/images/svg/EarnBo2.svg"
                                     alt="BCO2 Earned"
                                         width={40}
                                     height={40}
