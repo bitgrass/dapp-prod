@@ -153,6 +153,7 @@ const PortfolioTabs = ({
                       btgBalance={btgBalance}
                       btgPrice={btgPrice}
                       ethSupply={ethSupply}
+                      nftDataFromParent={allNftData}
                     />
                   )}
                 </div>

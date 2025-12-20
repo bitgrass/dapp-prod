@@ -13,6 +13,7 @@ interface NftData {
   collectionName: string;
   timestamp: number; // ✅ Added for sorting by buy date
   date?: string; // Optional formatted date string
+  isStaked?: boolean; // ✅ Added for staked status
 }
 
 interface NFTTableProps {
@@ -167,7 +168,7 @@ const NFTTable = ({
                         alt={nft.name || "NFT Image"}
                       />
 
-                      {/* Badge Overlay */}
+                      {/* Tier Badge - Top Right */}
                       {(() => {
                         const tier = getTier(Number(nft.tokenId));
                         if (!tier) return null;
@@ -195,8 +196,16 @@ const NFTTable = ({
                           alt={nft.name}
                           className="avatar avatar-md rounded-md me-2"
                         />
-                        <div>
-                          <p className="mb-0 font-semibold text-sm">{nft.name}</p>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="mb-0 font-semibold text-sm">{nft.name}</p>
+                            {nft.isStaked && (
+                              <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 flex items-center gap-2">
+                                <i className="bi bi-lock-fill text-sm"></i>
+                                Staked
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mb-0">
                             @{nft.collectionName || "N/A"}
                           </p>
@@ -206,10 +215,10 @@ const NFTTable = ({
                         {nft.description || "No description available."}
                       </p>
 
-                      {/* ✅ Show purchase date if available */}
+                      {/* ✅ Show purchase/staking date if available */}
                       {nft.date && (
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                          Purchased: {nft.date}
+                          {nft.isStaked ? 'Staked:' : 'Purchased:'} {nft.date}
                         </p>
                       )}
 

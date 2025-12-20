@@ -9,6 +9,21 @@ import { btgToken, nftInfo, EthInfo } from "@/shared/data/tokens/data";
 import CarbonAssetsCard from "./CarbonAssetsCard";
 import { useConnectedAddress } from "../useConnectedAddress";
 import { flushSync } from "react-dom";
+import { createThirdwebClient, getContract, defineChain, readContract } from "thirdweb";
+
+// Staking contract addresses
+const LEGENDARY_POOL_ADDRESS = "0x8Ce083356a01EF8229d69df897e348948182a72f";
+const PREMIUM_POOL_ADDRESS = "0xfdD53102A85AE52A201e2faa8Cc4668d7Bf8f81C";
+const STANDARD_POOL_ADDRESS = "0xDBfB6672125776176Bd9F154A0b4bbC8F63192A6";
+
+const client = createThirdwebClient({
+    clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
+});
+
+const baseChain = defineChain({
+    id: 8453,
+    rpc: "https://base-rpc.publicnode.com",
+});
 // ✅ CRITICAL FIX: More comprehensive deduplication
 function dedupeTransactions<T extends {
   transactionHash?: string;
@@ -27,9 +42,9 @@ function dedupeTransactions<T extends {
   for (const item of sorted) {
     let uniqueKey: string;
 
-    if (item.type === 'nft' && item.tokenId) {
-      // NFT: Use hash + tokenId + timestamp
-      uniqueKey = `nft::${item.transactionHash || 'no-hash'}::${item.tokenId}::${item.timestamp}`;
+    if (item.tokenId) {
+      // NFT: Use only tokenId to avoid duplicates between owned and staked
+      uniqueKey = `nft::${item.tokenId}`;
     } else if (item.transactionHash && item.type === 'crypto') {
       // Crypto: Use hash + grayValue (to distinguish different swaps in same tx)
       uniqueKey = `crypto::${item.transactionHash}::${item.grayValue || ''}`;
@@ -80,6 +95,7 @@ const Crypto = () => {
   const [nftTransactionCursor, setNftTransactionCursor] = useState(null);
   const [ethTransactionCursor, setEthTransactionCursor] = useState(null);
   const [nftData, setNftData] = useState<any[]>([]);
+  const [stakedNFTs, setStakedNFTs] = useState<Set<string>>(new Set());
   
   // ✅ Cache for API responses (5 minute TTL)
   const apiCache = useRef<Map<string, { data: any; timestamp: number }>>(new Map());
@@ -120,8 +136,96 @@ const Crypto = () => {
   const isInitialMount = useRef(true);
   const initialFetchComplete = useRef(false);
 
+  // Fetch staked NFTs from all pools and create NFT objects
+  const fetchStakedNFTs = useCallback(async (userAddress: string) => {
+    if (!userAddress) return { stakedIds: new Set<string>(), stakedNFTObjects: [] };
 
+    const stakedTokenIds = new Set<string>();
+    const stakedNFTObjects: any[] = [];
+    const pools = [
+      { address: LEGENDARY_POOL_ADDRESS, name: 'Legendary' },
+      { address: PREMIUM_POOL_ADDRESS, name: 'Premium' },
+      { address: STANDARD_POOL_ADDRESS, name: 'Standard' }
+    ];
 
+    try {
+      for (const pool of pools) {
+        const contract = getContract({
+          client,
+          chain: baseChain,
+          address: pool.address,
+        });
+
+        const stakeInfo = await readContract({
+          contract,
+          method: "function getStakeInfo(address _staker) view returns (uint256[] _tokensStaked, uint256 _rewards)",
+          params: [userAddress]
+        });
+
+        const tokenIds = stakeInfo[0] as bigint[];
+        
+        // Fetch individual stake timestamps for each token
+        for (let i = 0; i < tokenIds.length; i++) {
+          const id = tokenIds[i];
+          const tokenIdStr = id.toString();
+          stakedTokenIds.add(tokenIdStr);
+          
+          // Get staking timestamp for this specific token
+          let stakingTimestamp = Date.now() / 1000;
+          try {
+            const stakeData = await readContract({
+              contract,
+              method: "function userStakes(address, uint256) view returns (uint256)",
+              params: [userAddress, BigInt(i)]
+            });
+            stakingTimestamp = Number(stakeData);
+          } catch (error) {
+            console.log(`Using current time for token ${tokenIdStr} stake timestamp`);
+          }
+          
+          // Create NFT object for staked NFT
+          const tokenIdNum = Number(tokenIdStr);
+          let image = "/assets/images/apps/100m2v1.jpg";
+          let nftType = "Plot 100 m2";
+          
+          if (tokenIdNum >= 1 && tokenIdNum <= 400) {
+            image = "/assets/images/apps/1000m2v1.jpg";
+            nftType = "Plot 1000 m2";
+          } else if (tokenIdNum >= 401 && tokenIdNum <= 1200) {
+            image = "/assets/images/apps/500m2v1.jpg";
+            nftType = "Plot 500 m2";
+          }
+          
+          const formattedDate = new Date(stakingTimestamp * 1000).toLocaleString();
+          console.log(`Token ${tokenIdStr} staked at timestamp: ${stakingTimestamp}, formatted: ${formattedDate}`);
+          
+          stakedNFTObjects.push({
+            contract_address: "0x23308734dfaaae503c686720fff26126fcdc22c7",
+            name: nftType,
+            slug: null,
+            description: null,
+            image: image,
+            floor_price: null,
+            symbol: "PLOT",
+            tokenId: tokenIdStr,
+            collectionName: "Devtest",
+            timestamp: stakingTimestamp,
+            date: formattedDate,
+            isStaked: true,
+            stakedAt: stakingTimestamp
+          });
+        }
+
+        console.log(`[${pool.name} Pool] Staked NFTs:`, tokenIds.length);
+      }
+
+      console.log('Total staked NFTs:', stakedTokenIds.size);
+      return { stakedIds: stakedTokenIds, stakedNFTObjects };
+    } catch (error) {
+      console.error('Error fetching staked NFTs:', error);
+      return { stakedIds: stakedTokenIds, stakedNFTObjects };
+    }
+  }, []);
 
 
   // Fetch ETH Data
@@ -360,7 +464,7 @@ const Crypto = () => {
 
       const fetchedNftTxs = transactionsWithValue.map((tx: any) => {
         const tokenId = parseInt(tx.token_id);
-        let NftType = "Standard 100m²";
+        let NftType = "Plot 100 m2";
         let transactionType = "NFT Transfer";
 
         // Staking pool addresses
@@ -373,9 +477,9 @@ const Crypto = () => {
         const userAddress = address.toLowerCase();
 
         if (tokenId >= 1 && tokenId <= 400) {
-          NftType = "Legendary 1000m²";
+          NftType = "Plot 1000 m2";
         } else if (tokenId >= 401 && tokenId <= 1200) {
-          NftType = "Premium 500m²";
+          NftType = "Plot 500 m2";
         }
 
         // Check if this is a staking/unstaking transaction
@@ -673,7 +777,7 @@ const Crypto = () => {
           floor_price: null,
           symbol: nft.symbol || "N/A",
           tokenId: nft.token_id,
-          collectionName: nft.name || "Greener Future",
+          collectionName: nft.name || "Devtest",
         };
       });
 
@@ -731,8 +835,29 @@ const Crypto = () => {
 
   const allNftData = useMemo(() => {
     const deduped = dedupeTransactions([...nftData]);
-    return deduped.sort((a, b) => b.timestamp - a.timestamp); // Newest first
-  }, [nftData]);
+    // Add isStaked flag to each NFT
+    const withStakedFlag = deduped.map(nft => ({
+      ...nft,
+      isStaked: stakedNFTs.has(nft.tokenId)
+    }));
+    return withStakedFlag.sort((a, b) => b.timestamp - a.timestamp); // Newest first
+  }, [nftData, stakedNFTs]);
+
+  // Calculate NFT counts by tier
+  const nftCounts = useMemo(() => {
+    const counts = { legendary: 0, premium: 0, standard: 0 };
+    allNftData.forEach(nft => {
+      const tokenId = Number(nft.tokenId);
+      if (tokenId >= 1 && tokenId <= 400) {
+        counts.legendary++;
+      } else if (tokenId >= 401 && tokenId <= 1200) {
+        counts.premium++;
+      } else if (tokenId >= 1201 && tokenId <= 3200) {
+        counts.standard++;
+      }
+    });
+    return counts;
+  }, [allNftData]);
 
   const nftPagination = useMemo(() => {
     const totalPages = Math.ceil(allNftData.length / NFTS_PER_PAGE);
@@ -860,9 +985,19 @@ const Crypto = () => {
           console.log('✅ SCAN transactions loaded');
         });
 
-        const nftGridPromise = fetchNfts(null, 100).then(() => {
+        const nftGridPromise = fetchNfts(null, 100).then(async () => {
           setHasInitialNftLoad(true);
           console.log('✅ NFT grid loaded');
+          // Fetch staked NFTs after owned NFTs are loaded
+          const { stakedIds, stakedNFTObjects } = await fetchStakedNFTs(address);
+          setStakedNFTs(stakedIds);
+          // Add staked NFTs to the NFT data
+          if (stakedNFTObjects.length > 0) {
+            setNftData(prev => {
+              const combined = [...prev, ...stakedNFTObjects];
+              return dedupeTransactions(combined);
+            });
+          }
         });
 
         // Wait for all to complete
@@ -993,7 +1128,9 @@ const Crypto = () => {
               hasInitialNftLoad={hasInitialNftLoad}
               hasInitialTransaction={hasInitialTransaction}
             />
-            <CarbonAssetsCard />
+            <CarbonAssetsCard 
+
+            />
           </>
         );
     }

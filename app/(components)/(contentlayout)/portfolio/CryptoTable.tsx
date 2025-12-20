@@ -195,7 +195,8 @@ const CryptoTable = ({
     return { legendary, premium, standard };
   };
 
-  const { legendary, premium, standard } = getTierCounts(nftData);
+  // Use nftDataFromParent if available (includes staked NFTs), otherwise use local nftData
+  const { legendary, premium, standard } = getTierCounts(nftDataFromParent.length > 0 ? nftDataFromParent : nftData);
 
   const formatLargeValue = (value: number) => {
     // Handle invalid values
