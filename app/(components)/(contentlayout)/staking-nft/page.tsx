@@ -900,42 +900,44 @@ const StakingNFT = () => {
                                 The more NFTs you stake, the higher your earnings potential.
                             </p>
                         </div>
-                            
+
                         {/* Available and Staked Plots Cards */}
                         <div className="flex flex-row gap-3 max-w-md">
-                                {/* Available Plots */}
-                                <div className="box flex-1 bg-primary/10">
-                                    <div className="box-body !py-3 !px-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="p-2 bg-primary/20 rounded-lg">
-                                                <img src="../../../assets/images/svg/stakeI.svg" alt="Available" className="w-5 h-5" />
-                                            </div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                Available Plots
-                                            </div>
-                                            <div className="text-xl font-semibold ml-auto dark:text-white">
-                                                {ownedNFTs.length}
-                                            </div>
+                            {/* Available Plots */}
+                            <div className="box flex-1 bg-primary/10">
+                                <div className="box-body !py-3 !px-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-8 h-8 flex items-center justify-center bg-primary/10 rounded-[0.25rem] flex-shrink-0">
+                                            <svg width="18" height="21" viewBox="0 0 14 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M6.27047 1.68317e-05C7.84998 -0.00530149 9.24795 1.1071 9.56162 2.62363C9.6284 2.94798 9.41962 3.26618 9.09527 3.33323C8.77098 3.40015 8.45393 3.19106 8.38665 2.86688C8.19215 1.92595 7.30103 1.19579 6.27454 1.19923C5.71939 1.20122 5.18739 1.42364 4.79616 1.81753C4.40505 2.2114 4.18613 2.74501 4.1879 3.30007L4.19316 4.85084L11.3298 4.82663C12.4357 4.82336 13.0156 5.80526 13.0184 6.58947L13.0455 14.5533C13.0481 15.3376 12.4748 16.3233 11.3689 16.3275L1.71559 16.3603C0.609208 16.3639 0.0297015 15.3819 0.0269808 14.5974L-3.22911e-05 6.63363C-0.00246675 5.84928 0.570358 4.86326 1.67658 4.85938L2.99395 4.85491L2.98869 3.30414C2.98584 2.43082 3.32927 1.59146 3.94465 0.971779C4.56016 0.352082 5.39706 0.00308609 6.27047 1.68317e-05ZM1.68065 6.05957C1.41433 6.06061 1.1993 6.3157 1.20016 6.62956L1.22717 14.5934C1.22815 14.8684 1.39452 15.0976 1.6148 15.1497L1.71152 15.1611L11.3648 15.1283C11.5978 15.1271 11.792 14.9309 11.8359 14.6717L11.8453 14.5574L11.8183 6.59354C11.8171 6.31898 11.6505 6.0906 11.4306 6.03821L11.3339 6.02682L3.6445 6.0529C3.62897 6.05417 3.61349 6.05789 3.59764 6.05795C3.58183 6.058 3.56626 6.05437 3.55075 6.05322L1.68065 6.05957ZM6.11781 8.25546C6.29687 7.97889 6.73088 7.97735 6.91175 8.25277C7.42321 9.03188 8.07816 9.68239 8.86071 10.1886C9.13742 10.3675 9.13879 10.8015 8.8634 10.9825C8.08436 11.4939 7.43376 12.149 6.92762 12.9315C6.75976 13.191 6.36739 13.2089 6.16998 12.9829L6.13368 12.9341C5.68613 12.2524 5.12812 11.6699 4.47152 11.1956L4.18472 10.9984C3.90794 10.8194 3.90647 10.3853 4.18203 10.2044C4.96106 9.69298 5.61168 9.03797 6.11781 8.25546ZM6.51926 9.71896C6.25236 10.0343 5.9617 10.3269 5.64821 10.5959C5.96356 10.8628 6.25612 11.1535 6.52519 11.467C6.79205 11.1517 7.0828 10.859 7.39624 10.59C7.08093 10.3231 6.78828 10.0325 6.51926 9.71896Z" fill="rgb(var(--primary))" />
+                                            </svg>
                                         </div>
-                                    </div>
-                                </div>
-                                {/* Staked Plots */}
-                                <div className="box flex-1 bg-secondary/10">
-                                    <div className="box-body !py-3 !px-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="p-2 bg-secondary/20 rounded-lg">
-                                                <img src="../../../assets/images/svg/stakeIu.svg" alt="Staked" className="w-5 h-5" />
-                                            </div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                Staked Plots
-                                            </div>
-                                            <div className="text-xl font-semibold ml-auto dark:text-white">
-                                                {stakedNFTs.length}
-                                            </div>
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                            Available Plots
+                                        </div>
+                                        <div className="text-xl font-semibold ml-auto dark:text-white">
+                                            {ownedNFTs.length}
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            {/* Staked Plots */}
+                            <div className="box flex-1 bg-secondary/10">
+                                <div className="box-body !py-3 !px-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-8 h-8 flex items-center justify-center bg-secondary/10 rounded-[0.25rem] flex-shrink-0">
+                                            <img src="../../../assets/images/svg/stakeIu.svg" alt="Staked" className="w-5 h-5" />
+                                        </div>
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                            Staked Plots
+                                        </div>
+                                        <div className="text-xl font-semibold ml-auto dark:text-white">
+                                            {stakedNFTs.length}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right: Total Earned and Current Earnings Cards */}
@@ -953,9 +955,9 @@ const StakingNFT = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <img 
-                                    src="../../../assets/images/svg/bigEarn.svg" 
-                                    alt="Earnings" 
+                                <img
+                                    src="../../../assets/images/svg/bigEarn.svg"
+                                    alt="Earnings"
                                     className="absolute bottom-0 right-0 w-20 h-20 opacity-30"
                                 />
                             </div>
@@ -976,7 +978,7 @@ const StakingNFT = () => {
                                     <button
                                         onClick={handleClaimRewards}
                                         disabled={loading || parseFloat(currentEarnings) === 0}
-                                        className="w-full bg-secondary text-white py-3 px-4 rounded-[0.25rem] hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full bg-secondary text-white py-3 px-4 rounded-[0.25rem] hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed !font-medium"
                                     >
                                         {loading ? "Processing..." : "Claim BCO2"}
                                     </button>
@@ -1082,144 +1084,144 @@ const StakingNFT = () => {
 
                                 {/* Pool Cards */}
                                 <div className="grid grid-cols-1 gap-1">
-                                {/* Legendary Pool */}
-                                <div className="box border-1 dark:border-yellow-500/30 border-[#CA8A04]/30" style={{ marginBottom: '1rem' }}>
-                                    <div className="box-body !p-3">
-                                        <div className="grid grid-cols-5 gap-4 items-center">
-                                            {/* Pool Type */}
-                                            <div className="flex items-center gap-3">
-                                                <img src="../../../assets/images/svg/lsvg.svg" alt="Legendary" className="w-10 h-10" />
+                                    {/* Legendary Pool */}
+                                    <div className="box border-1 dark:border-yellow-500/30 border-[#CA8A04]/30" style={{ marginBottom: '1rem' }}>
+                                        <div className="box-body !p-3">
+                                            <div className="grid grid-cols-5 gap-4 items-center">
+                                                {/* Pool Type */}
+                                                <div className="flex items-center gap-3">
+                                                    <img src="../../../assets/images/svg/lsvg.svg" alt="Legendary" className="w-10 h-10" />
+                                                    <div>
+                                                        <h6 className="font-semibold text-sm mb-0">Legendary Pool</h6>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 1-400</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Your Staked Plots */}
                                                 <div>
-                                                    <h6 className="font-semibold text-sm mb-0">Legendary Pool</h6>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 1-400</p>
+                                                    <p className="text-2xl font-bold dark:text-white">{legendaryStats.staked}</p>
+                                                </div>
+
+                                                {/* Total Staked Plots */}
+                                                <div>
+                                                    <p className="text-2xl font-bold dark:text-white">{legendaryStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 400</span></p>
+                                                    <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
+                                                        <div
+                                                            className="bg-[#CA8A04] h-2 rounded-full transition-all duration-300"
+                                                            style={{ width: `${(legendaryStats.totalStaked / 400) * 100}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Your Earnings */}
+                                                <div>
+                                                    <p className="text-2xl font-bold dark:text-white">{parseFloat(legendaryStats.earnings).toFixed(4)}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
+                                                </div>
+
+                                                {/* Status */}
+                                                <div>
+                                                    <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 ms-1 flex items-center gap-2">
+                                                        <i className="bi bi-check-circle text-sm"></i>
+                                                        Active
+                                                    </span>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
 
-                                            {/* Your Staked Plots */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{legendaryStats.staked}</p>
-                                            </div>
+                                    {/* Premium Pool */}
+                                    <div className="box border-1 dark:border-blue-400/30 border-[#5ea9cc]/30" style={{ marginBottom: '1rem' }}>
+                                        <div className="box-body !p-3">
+                                            <div className="grid grid-cols-5 gap-4 items-center">
+                                                {/* Pool Type */}
+                                                <div className="flex items-center gap-3">
+                                                    <img src="../../../assets/images/svg/psvg.svg" alt="Premium" className="w-10 h-10" />
+                                                    <div>
+                                                        <h6 className="font-semibold text-sm mb-0">Premium Pool</h6>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 401-1200</p>
+                                                    </div>
+                                                </div>
 
-                                            {/* Total Staked Plots */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{legendaryStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 400</span></p>
-                                                <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
-                                                    <div
-                                                        className="bg-[#CA8A04] h-2 rounded-full transition-all duration-300"
-                                                        style={{ width: `${(legendaryStats.totalStaked / 400) * 100}%` }}
-                                                    ></div>
+                                                {/* Your Staked Plots */}
+                                                <div>
+                                                    <p className="text-2xl font-bold dark:text-white">{premiumStats.staked}</p>
+                                                </div>
+
+                                                {/* Total Staked Plots */}
+                                                <div>
+                                                    <p className="text-2xl font-bold dark:text-white">{premiumStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 800</span></p>
+                                                    <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
+                                                        <div
+                                                            className="bg-[#5ea9cc] h-2 rounded-full transition-all duration-300"
+                                                            style={{ width: `${(premiumStats.totalStaked / 800) * 100}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Your Earnings */}
+                                                <div>
+                                                    <p className="text-2xl font-bold dark:text-white">{parseFloat(premiumStats.earnings).toFixed(4)}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
+                                                </div>
+
+                                                {/* Status */}
+                                                <div>
+                                                    <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 ms-1 flex items-center gap-2">
+                                                        <i className="bi bi-check-circle text-sm"></i>
+                                                        Active
+                                                    </span>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
 
-                                            {/* Your Earnings */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{parseFloat(legendaryStats.earnings).toFixed(4)}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
-                                            </div>
+                                    {/* Standard Pool */}
+                                    <div className="box border-1 dark:border-secondary/30 border-secondary/30 mb-4">
+                                        <div className="box-body !p-3">
+                                            <div className="grid grid-cols-5 gap-4 items-center">
+                                                {/* Pool Type */}
+                                                <div className="flex items-center gap-3">
+                                                    <img src="../../../assets/images/svg/ssvg.svg" alt="Standard" className="w-10 h-10" />
+                                                    <div>
+                                                        <h6 className="font-semibold text-sm mb-0">Standard Pool</h6>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 1201-3200</p>
+                                                    </div>
+                                                </div>
 
-                                            {/* Status */}
-                                            <div>
-                                                <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 ms-1 flex items-center gap-2">
-                                                    <i className="bi bi-check-circle text-sm"></i>
-                                                    Active
-                                                </span>
+                                                {/* Your Staked Plots */}
+                                                <div>
+                                                    <p className="text-2xl font-bold dark:text-white">{standardStats.staked}</p>
+                                                </div>
+
+                                                {/* Total Staked Plots */}
+                                                <div>
+                                                    <p className="text-2xl font-bold dark:text-white">{standardStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 2000</span></p>
+                                                    <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
+                                                        <div
+                                                            className="bg-secondary h-2 rounded-full transition-all duration-300"
+                                                            style={{ width: `${(standardStats.totalStaked / 2000) * 100}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Your Earnings */}
+                                                <div>
+                                                    <p className="text-2xl font-bold dark:text-white">{parseFloat(standardStats.earnings).toFixed(4)}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
+                                                </div>
+
+                                                {/* Status */}
+                                                <div>
+                                                    <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 ms-1 flex items-center gap-2">
+                                                        <i className="bi bi-check-circle text-sm"></i>
+                                                        Active
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Premium Pool */}
-                                <div className="box border-1 dark:border-blue-400/30 border-[#5ea9cc]/30" style={{ marginBottom: '1rem' }}>
-                                    <div className="box-body !p-3">
-                                        <div className="grid grid-cols-5 gap-4 items-center">
-                                            {/* Pool Type */}
-                                            <div className="flex items-center gap-3">
-                                                <img src="../../../assets/images/svg/psvg.svg" alt="Premium" className="w-10 h-10" />
-                                                <div>
-                                                    <h6 className="font-semibold text-sm mb-0">Premium Pool</h6>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 401-1200</p>
-                                                </div>
-                                            </div>
-
-                                            {/* Your Staked Plots */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{premiumStats.staked}</p>
-                                            </div>
-
-                                            {/* Total Staked Plots */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{premiumStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 800</span></p>
-                                                <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
-                                                    <div
-                                                        className="bg-[#5ea9cc] h-2 rounded-full transition-all duration-300"
-                                                        style={{ width: `${(premiumStats.totalStaked / 800) * 100}%` }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-
-                                            {/* Your Earnings */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{parseFloat(premiumStats.earnings).toFixed(4)}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
-                                            </div>
-
-                                            {/* Status */}
-                                            <div>
-                                                <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 ms-1 flex items-center gap-2">
-                                                    <i className="bi bi-check-circle text-sm"></i>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Standard Pool */}
-                                <div className="box border-1 dark:border-secondary/30 border-secondary/30 mb-4">
-                                    <div className="box-body !p-3">
-                                        <div className="grid grid-cols-5 gap-4 items-center">
-                                            {/* Pool Type */}
-                                            <div className="flex items-center gap-3">
-                                                <img src="../../../assets/images/svg/ssvg.svg" alt="Standard" className="w-10 h-10" />
-                                                <div>
-                                                    <h6 className="font-semibold text-sm mb-0">Standard Pool</h6>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">Asset ID 1201-3200</p>
-                                                </div>
-                                            </div>
-
-                                            {/* Your Staked Plots */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{standardStats.staked}</p>
-                                            </div>
-
-                                            {/* Total Staked Plots */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{standardStats.totalStaked}<span className="text-sm text-gray-500 dark:text-gray-400"> / 2000</span></p>
-                                                <div className="w-1/2 bg-gray-300/50 dark:bg-gray-600/50 rounded-full h-2 mt-2">
-                                                    <div
-                                                        className="bg-secondary h-2 rounded-full transition-all duration-300"
-                                                        style={{ width: `${(standardStats.totalStaked / 2000) * 100}%` }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-
-                                            {/* Your Earnings */}
-                                            <div>
-                                                <p className="text-2xl font-bold dark:text-white">{parseFloat(standardStats.earnings).toFixed(4)}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">BCo2</p>
-                                            </div>
-
-                                            {/* Status */}
-                                            <div>
-                                                <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 ms-1 flex items-center gap-2">
-                                                    <i className="bi bi-check-circle text-sm"></i>
-                                                    Active
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                             </div>
                         </div>
 
