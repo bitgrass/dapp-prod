@@ -6,6 +6,9 @@ import { isApprovedForAll, setApprovalForAll, balanceOf } from "thirdweb/extensi
 import { useConnectedAddress } from '../useConnectedAddress'
 import { ethers } from "ethers"
 import { encodeFunctionData } from "viem"
+import { useSwitchChain } from 'wagmi'
+import { base } from 'wagmi/chains'
+import { usePrivy } from '@privy-io/react-auth'
 
 const client = createThirdwebClient({
     clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
@@ -42,8 +45,12 @@ const getPoolForTokenId = (tokenId: number): { address: string; name: string } =
     return { address: STANDARD_POOL_ADDRESS, name: 'Unknown' }
 }
 
+const BASE_CHAIN_ID = 8453
+
 const StakingNFT = () => {
     const { address, client: walletClient, clientReady } = useConnectedAddress()
+    const { switchChainAsync } = useSwitchChain()
+    const { user } = usePrivy()
     const [selectedNFTs, setSelectedNFTs] = useState<string[]>([])
     const [ownedNFTs, setOwnedNFTs] = useState<any[]>([])
     const [stakedNFTs, setStakedNFTs] = useState<any[]>([])
@@ -599,6 +606,89 @@ const StakingNFT = () => {
 
 
 
+    // Ensure wallet is on Base chain before transactions
+    const ensureBaseChain = async (): Promise<boolean> => {
+        if (!walletClient) {
+            console.error("Wallet not initialized")
+            return false
+        }
+
+        try {
+            // Check if user has embedded wallet
+            const hasEmbeddedWallet = user?.linkedAccounts?.some(
+                (account: any) => account.type === 'wallet' && account.walletClient === 'privy'
+            )
+            const hasExternalWallet = user?.linkedAccounts?.some(
+                (account: any) => account.type === 'wallet' && account.walletClient !== 'privy'
+            )
+
+            // For embedded Privy wallets, use switchChainAsync from wagmi
+            if (hasEmbeddedWallet && !hasExternalWallet) {
+                console.log('🔄 Using embedded wallet, ensuring Base chain via wagmi')
+                try {
+                    await switchChainAsync({ chainId: base.id })
+                    console.log('✅ Switched to Base network via wagmi')
+                    await new Promise(resolve => setTimeout(resolve, 2000))
+                    return true
+                } catch (switchError: any) {
+                    console.error('❌ Failed to switch chain:', switchError)
+                    alert('Failed to switch to Base network. Please try again.')
+                    return false
+                }
+            } else if (window.ethereum) {
+                // For external wallets, use window.ethereum
+                const currentChainId = await window.ethereum.request({ method: 'eth_chainId' })
+                const baseChainId = '0x2105' // Base Mainnet = 8453 in hex
+                
+                if (currentChainId !== baseChainId) {
+                    console.log(`🔄 Switching from chain ${currentChainId} to Base (${baseChainId})`)
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: baseChainId }],
+                        })
+                        console.log('✅ Switched to Base network')
+                        return true
+                    } catch (switchError: any) {
+                        if (switchError.code === 4902) {
+                            try {
+                                await window.ethereum.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: baseChainId,
+                                        chainName: 'Base',
+                                        nativeCurrency: {
+                                            name: 'Ethereum',
+                                            symbol: 'ETH',
+                                            decimals: 18
+                                        },
+                                        rpcUrls: ['https://mainnet.base.org'],
+                                        blockExplorerUrls: ['https://basescan.org']
+                                    }],
+                                })
+                                console.log('✅ Added and switched to Base network')
+                                return true
+                            } catch (addError) {
+                                console.error('❌ Failed to add Base network:', addError)
+                                alert('Failed to add Base network. Please add it manually.')
+                                return false
+                            }
+                        }
+                        console.error('❌ Failed to switch chain:', switchError)
+                        alert('Please switch your wallet to Base network.')
+                        return false
+                    }
+                }
+                return true
+            }
+            
+            return true
+        } catch (error) {
+            console.error('Error ensuring Base chain:', error)
+            return false
+        }
+    }
+
     const handleSelectNFT = (tokenId: string) => {
         setSelectedNFTs(prev => {
             if (prev.includes(tokenId)) {
@@ -617,6 +707,12 @@ const StakingNFT = () => {
 
         if (!walletClient) {
             console.error("Wallet not initialized. Please refresh the page.")
+            return
+        }
+
+        // Ensure we're on Base chain before proceeding
+        const onBaseChain = await ensureBaseChain()
+        if (!onBaseChain) {
             return
         }
 
@@ -730,6 +826,12 @@ const StakingNFT = () => {
             return
         }
 
+        // Ensure we're on Base chain before proceeding
+        const onBaseChain = await ensureBaseChain()
+        if (!onBaseChain) {
+            return
+        }
+
         setLoading(true)
         try {
             // Group NFTs by pool based on token ID
@@ -793,6 +895,12 @@ const StakingNFT = () => {
 
         if (parseFloat(currentEarnings) === 0) {
             console.error("No rewards to claim")
+            return
+        }
+
+        // Ensure we're on Base chain before proceeding
+        const onBaseChain = await ensureBaseChain()
+        if (!onBaseChain) {
             return
         }
 
@@ -1234,14 +1342,20 @@ const StakingNFT = () => {
                                     <div className="flex-grow">
                                         <nav className="nav nav-pills nav-style-3 flex md:mb-0 mb-4" aria-label="Tabs" role="tablist">
                                             <button
-                                                onClick={() => setActiveTab('stake')}
+                                                onClick={() => {
+                                                    setActiveTab('stake')
+                                                    setSelectedNFTs([])
+                                                }}
                                                 className={`nav-link text-defaulttextcolor !py-[0.35rem] !px-4 text-sm !font-medium text-center rounded-md hover:text-primary ${activeTab === 'stake' ? 'active' : ''}`}
                                             >
                                                 <i className="ri-grid-line me-1"></i>
                                                 Available Plots
                                             </button>
                                             <button
-                                                onClick={() => setActiveTab('unstake')}
+                                                onClick={() => {
+                                                    setActiveTab('unstake')
+                                                    setSelectedNFTs([])
+                                                }}
                                                 className={`nav-link text-defaulttextcolor !py-[0.35rem] !px-4 text-sm !font-medium text-center rounded-md hover:text-primary ${activeTab === 'unstake' ? 'active' : ''}`}
                                             >
                                                 <i className="ri-lock-line me-1"></i>
@@ -1370,8 +1484,8 @@ const StakingNFT = () => {
                                                             })}
                                                         </div>
 
-                                                        {/* Multi-stake button (only show if NFTs selected) */}
-                                                        {selectedNFTs.length > 0 && (
+                                                        {/* Multi-stake button (only show if NFTs selected in stake tab) */}
+                                                        {selectedNFTs.length > 0 && activeTab === 'stake' && (
                                                             <div className="mt-6 mb-4">
                                                                 <button
                                                                     onClick={handleStake}
@@ -1512,8 +1626,8 @@ const StakingNFT = () => {
                                                             })}
                                                         </div>
 
-                                                        {/* Multi-unstake button (only show if NFTs selected) */}
-                                                        {selectedNFTs.length > 0 && (
+                                                        {/* Multi-unstake button (only show if NFTs selected in unstake tab) */}
+                                                        {selectedNFTs.length > 0 && activeTab === 'unstake' && (
                                                             <div className="mt-6 mb-4">
                                                                 <button
                                                                     onClick={handleWithdraw}

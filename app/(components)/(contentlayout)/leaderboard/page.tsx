@@ -20,19 +20,16 @@ const CAMPAIGN_CHAIN_ID = 8453; // Base chain
 
 // Array of claim links from your Excel file - add all your claim links here
 const CLAIM_LINKS = [
-    "https://claim.linkdrop.io/#/redeem/4oUMwXAJt4Py?src=d",
-    "https://claim.linkdrop.io/#/redeem/C1q2oVuWGf7T?src=d",
-    "https://claim.linkdrop.io/#/redeem/6CAinCVyVXjB?src=d",
-    "https://claim.linkdrop.io/#/redeem/G9o47ZRHVoM5?src=d",
-    "https://claim.linkdrop.io/#/redeem/2U4vvL1kBAHT?src=d",
-    "https://claim.linkdrop.io/#/redeem/5sJPrjqbQNK7?src=d",
-    "https://claim.linkdrop.io/#/redeem/4jWHzecwCL3b?src=d",
-    "https://claim.linkdrop.io/#/redeem/BpLvuuZXeSZp?src=d",
-    "https://claim.linkdrop.io/#/redeem/34EdPeHm4nGy?src=d",
-    "https://claim.linkdrop.io/#/redeem/3d2ufaU7uwLy?src=d",
-    "https://claim.linkdrop.io/#/redeem/7ZJ5qYrpBzHZ?src=d",
-    "https://claim.linkdrop.io/#/redeem/GCMh4uw1qwVX?src=d",
-    "https://claim.linkdrop.io/#/redeem/Ck5eyAnTBdjc?src=d",
+    "https://claim.linkdrop.io/#/redeem/Cptb1iJtT9MH?src=d",
+    "https://claim.linkdrop.io/#/redeem/CXBtmfQgf9ip?src=d",
+    "https://claim.linkdrop.io/#/redeem/2i5s2g8izo33?src=d",
+    "https://claim.linkdrop.io/#/redeem/5NzZmsHUB9dN?src=d",
+    "https://claim.linkdrop.io/#/redeem/4JjQ29a8ApWL?src=d",
+    "https://claim.linkdrop.io/#/redeem/GmGFpow1adMa?src=d",
+    "https://claim.linkdrop.io/#/redeem/5ZaY5JzFXpjf?src=d",
+    "https://claim.linkdrop.io/#/redeem/7YCruSrUFTBa?src=d",
+    "https://claim.linkdrop.io/#/redeem/91c4Be31H8BX?src=d",
+    "https://claim.linkdrop.io/#/redeem/4eVPZgkVQgj1?src=d",
 ];
 
 // Initialize Linkdrop SDK helper
