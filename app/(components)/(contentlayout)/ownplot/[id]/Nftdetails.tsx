@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Seaport } from "@opensea/seaport-js";
 import { useAccount, useSwitchChain, useSendTransaction, useConnect, useConnectors } from 'wagmi';
@@ -128,6 +128,16 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
 
     const [isModalOpen, setModalOpen] = useState(false);
     const [isStandardMintModalOpen, setIsStandardMintModalOpen] = useState(false);
+    const imagesLoadedRef = useRef({
+        standard: false,
+        premium: false,
+        legendary: false
+    });
+    const [imageOpacity, setImageOpacity] = useState({
+        standard: 0,
+        premium: 0,
+        legendary: 0
+    });
     const [failureTxHash, setFailureTxHash] = useState("");
     const [failureImage, setFailureImage] = useState("");
     const OPENSEA_CONTRACT_ADDRESS = nftInfo.address;
@@ -1413,8 +1423,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     </div>
 
                     {/* Unique Content Per Tab */}
-                    {activeTab === "Standard 100m² Plot" && (
-                        <div className="mt-6">
+                    <div className={`mt-6 ${activeTab === "Standard 100m² Plot" ? '' : 'hidden'}`}>
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
@@ -1427,15 +1436,21 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     bitgrass.base.eth
                                                 </div>
 
-                                                <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
+                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ height: "500px", backgroundColor: "transparent" }}>
                                                     <div
-
-                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up "
+                                                        className="w-full h-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
                                                     >
                                                         <img
                                                             src="/assets/images/apps/100m2s.webp"
                                                             alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full"
+                                                            className="object-cover w-full h-full transition-opacity duration-500"
+                                                            style={{ opacity: imageOpacity.standard }}
+                                                            onLoad={() => {
+                                                                if (!imagesLoadedRef.current.standard) {
+                                                                    imagesLoadedRef.current.standard = true;
+                                                                    setImageOpacity(prev => ({ ...prev, standard: 1 }));
+                                                                }
+                                                            }}
                                                         />
                                                     </div>
                                                 </div>
@@ -1585,10 +1600,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                    {activeTab === "Premium 500m² Plot" && (
-                        <div className="mt-6">
+                    </div>
+                    <div className={`mt-6 ${activeTab === "Premium 500m² Plot" ? '' : 'hidden'}`}>
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
@@ -1601,15 +1614,21 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     bitgrass.base.eth
                                                 </div>
 
-                                                <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
+                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ height: "500px", backgroundColor: "transparent" }}>
                                                     <div
-
-                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up "
+                                                        className="w-full h-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
                                                     >
                                                         <img
                                                             src="/assets/images/apps/500m2s.webp"
                                                             alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full"
+                                                            className="object-cover w-full h-full transition-opacity duration-500"
+                                                            style={{ opacity: imageOpacity.premium }}
+                                                            onLoad={() => {
+                                                                if (!imagesLoadedRef.current.premium) {
+                                                                    imagesLoadedRef.current.premium = true;
+                                                                    setImageOpacity(prev => ({ ...prev, premium: 1 }));
+                                                                }
+                                                            }}
                                                         />
                                                     </div>
                                                 </div>
@@ -1729,10 +1748,8 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                    {activeTab === "Legendary 1000m² Plot" && (
-                        <div className="mt-6">
+                    </div>
+                    <div className={`mt-6 ${activeTab === "Legendary 1000m² Plot" ? '' : 'hidden'}`}>
                             <div className="box custom-box overflow-hidden mt-6">
                                 <div className="box-body">
                                     <div className="grid grid-cols-12 md:gap-x-[3rem]">
@@ -1746,15 +1763,21 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     bitgrass.base.eth
                                                 </div>
 
-                                                <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
+                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ height: "500px", backgroundColor: "transparent" }}>
                                                     <div
-
-                                                        className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden shadow-md .animate-fade-in-up"
+                                                        className="w-full h-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
                                                     >
                                                         <img
                                                             src="/assets/images/apps/1000m2s.webp"
                                                             alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full"
+                                                            className="object-cover w-full h-full transition-opacity duration-500"
+                                                            style={{ opacity: imageOpacity.legendary }}
+                                                            onLoad={() => {
+                                                                if (!imagesLoadedRef.current.legendary) {
+                                                                    imagesLoadedRef.current.legendary = true;
+                                                                    setImageOpacity(prev => ({ ...prev, legendary: 1 }));
+                                                                }
+                                                            }}
                                                         />
                                                     </div>
                                                 </div>
@@ -1873,9 +1896,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                    </div>
 
 
 
@@ -1995,7 +2016,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                     </div>
                 )}
 
-
+                </div>
             </div>
         </Fragment>
     );

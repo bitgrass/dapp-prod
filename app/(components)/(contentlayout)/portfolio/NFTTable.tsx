@@ -200,8 +200,8 @@ const NFTTable = ({
                           <div className="flex items-center justify-between mb-1">
                             <p className="mb-0 font-semibold text-sm">{nft.name}</p>
                             {nft.isStaked && (
-                              <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 flex items-center gap-2">
-                                <i className="bi bi-lock-fill text-sm"></i>
+                              <span style={{ fontSize: '12px' }} className="text-secondary text-sm rounded-sm !py-[0.35rem] !px-[0.35rem] badge !bg-secondary/10 flex items-center gap-1">
+                                <i className="ri-lock-line"></i>
                                 Staked
                               </span>
                             )}
@@ -247,8 +247,8 @@ const NFTTable = ({
                     <li className="page-item">
                       <button
                         className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${currentPage === 1
-                            ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
-                            : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
+                          ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
+                          : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
                           }`}
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
@@ -262,8 +262,8 @@ const NFTTable = ({
                       <li key={`nft-page-${pageNum}`} className="page-item">
                         <button
                           className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded font-semibold transition-colors text-sm ${currentPage === pageNum
-                              ? '!bg-secondary !text-white shadow-md border-secondary'
-                              : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
+                            ? '!bg-secondary !text-white shadow-md border-secondary'
+                            : 'bg-white dark:bg-bodybg hover:bg-gray-100 dark:hover:bg-gray-800'
                             }`}
                           onClick={() => handlePageChange(pageNum)}
                           disabled={currentPage === pageNum}
@@ -277,8 +277,8 @@ const NFTTable = ({
                     <li className="page-item">
                       <button
                         className={`page-link px-2 py-1.5 md:px-3 md:py-2 rounded transition-colors text-sm ${currentPage === totalPages
-                            ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
-                            : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
+                          ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
+                          : 'bg-white dark:bg-bodybg hover:bg-secondary hover:text-white'
                           }`}
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}

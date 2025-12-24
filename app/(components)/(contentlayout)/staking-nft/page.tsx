@@ -392,110 +392,60 @@ const StakingNFT = () => {
         }
     }, [address])
 
-    // Fetch total staked counts for all pools (once on mount)
+    // Fetch total staked counts for all pools (once on mount) - OPTIMIZED
     useEffect(() => {
         const fetchTotalStaked = async () => {
             try {
                 const moralisApiKey = process.env.NEXT_PUBLIC_MORALIS_APY_KEY || ""
 
-                // Fetch NFTs owned by each pool contract
-                const pools = [
-                    { address: LEGENDARY_POOL_ADDRESS, name: 'Legendary' },
-                    { address: PREMIUM_POOL_ADDRESS, name: 'Premium' },
-                    { address: STANDARD_POOL_ADDRESS, name: 'Standard' }
-                ]
+                // Helper function to fetch all pages for a single pool
+                const fetchPoolNFTs = async (poolAddress: string, poolName: string): Promise<number> => {
+                    let allNFTs: any[] = []
+                    let cursor = null
 
-                const poolCounts = { legendary: 0, premium: 0, standard: 0 }
+                    do {
+                        const url = cursor
+                            ? `https://deep-index.moralis.io/api/v2.2/${poolAddress}/nft?chain=base&format=decimal&limit=100&cursor=${cursor}`
+                            : `https://deep-index.moralis.io/api/v2.2/${poolAddress}/nft?chain=base&format=decimal&limit=100`
 
-                for (const pool of pools) {
-                    try {
-                        console.log(`\n=== Fetching NFTs for ${pool.name} Pool (${pool.address}) ===`)
-
-                        let allNFTs: any[] = []
-                        let cursor = null
-                        let pageCount = 0
-
-                        // Fetch all pages
-                        do {
-                            pageCount++
-                            const url = cursor
-                                ? `https://deep-index.moralis.io/api/v2.2/${pool.address}/nft?chain=base&format=decimal&limit=100&cursor=${cursor}`
-                                : `https://deep-index.moralis.io/api/v2.2/${pool.address}/nft?chain=base&format=decimal&limit=100`
-
-                            console.log(`Fetching page ${pageCount}:`, url)
-
-                            const response = await fetch(url, {
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-API-Key': moralisApiKey
-                                }
-                            })
-
-                            const data: any = await response.json()
-                            console.log(`Page ${pageCount} response:`, data)
-
-                            if (data.result) {
-                                console.log(`Page ${pageCount} has ${data.result.length} NFTs`)
-                                allNFTs = allNFTs.concat(data.result)
+                        const response = await fetch(url, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-API-Key': moralisApiKey
                             }
-
-                            cursor = data.cursor
-                            console.log(`Next cursor:`, cursor)
-                        } while (cursor)
-
-                        console.log(`Total NFTs fetched for ${pool.name}:`, allNFTs.length)
-
-                        // Filter for our NFT collection only
-                        const ourNFTs = allNFTs.filter((item: any) => {
-                            const matches = item.token_address?.toLowerCase() === NFT_COLLECTION_ADDRESS.toLowerCase()
-                            if (matches) {
-                                console.log(`Found our NFT: Token ID ${item.token_id}`)
-                            }
-                            return matches
                         })
 
-                        console.log(`${pool.name} Pool has ${ourNFTs.length} NFTs from our collection (total NFTs: ${allNFTs.length})`)
-                        console.log(`Looking for collection: ${NFT_COLLECTION_ADDRESS.toLowerCase()}`)
+                        const data: any = await response.json()
 
-                        // Store count
-                        if (pool.name === 'Legendary') poolCounts.legendary = ourNFTs.length
-                        if (pool.name === 'Premium') poolCounts.premium = ourNFTs.length
-                        if (pool.name === 'Standard') poolCounts.standard = ourNFTs.length
+                        if (data.result) {
+                            allNFTs = allNFTs.concat(data.result)
+                        }
 
-                    } catch (error) {
-                        console.error(`Error fetching total staked for ${pool.name} pool:`, error)
-                    }
+                        cursor = data.cursor
+                    } while (cursor)
+
+                    // Filter for our NFT collection only
+                    const ourNFTs = allNFTs.filter((item: any) => 
+                        item.token_address?.toLowerCase() === NFT_COLLECTION_ADDRESS.toLowerCase()
+                    )
+
+                    console.log(`${poolName} Pool: ${ourNFTs.length} staked NFTs`)
+                    return ourNFTs.length
                 }
 
-                console.log('\n=== Final Pool Counts ===')
-                console.log('Legendary:', poolCounts.legendary)
-                console.log('Premium:', poolCounts.premium)
-                console.log('Standard:', poolCounts.standard)
+                // Fetch all 3 pools in parallel for maximum speed
+                const [legendaryCount, premiumCount, standardCount] = await Promise.all([
+                    fetchPoolNFTs(LEGENDARY_POOL_ADDRESS, 'Legendary'),
+                    fetchPoolNFTs(PREMIUM_POOL_ADDRESS, 'Premium'),
+                    fetchPoolNFTs(STANDARD_POOL_ADDRESS, 'Standard')
+                ])
 
                 // Update all stats at once
-                console.log('Updating Legendary stats with totalStaked:', poolCounts.legendary)
-                setLegendaryStats(prev => {
-                    console.log('Legendary prev state:', prev)
-                    const newState = { ...prev, totalStaked: poolCounts.legendary }
-                    console.log('Legendary new state:', newState)
-                    return newState
-                })
+                setLegendaryStats(prev => ({ ...prev, totalStaked: legendaryCount }))
+                setPremiumStats(prev => ({ ...prev, totalStaked: premiumCount }))
+                setStandardStats(prev => ({ ...prev, totalStaked: standardCount }))
 
-                console.log('Updating Premium stats with totalStaked:', poolCounts.premium)
-                setPremiumStats(prev => {
-                    console.log('Premium prev state:', prev)
-                    const newState = { ...prev, totalStaked: poolCounts.premium }
-                    console.log('Premium new state:', newState)
-                    return newState
-                })
-
-                console.log('Updating Standard stats with totalStaked:', poolCounts.standard)
-                setStandardStats(prev => {
-                    console.log('Standard prev state:', prev)
-                    const newState = { ...prev, totalStaked: poolCounts.standard }
-                    console.log('Standard new state:', newState)
-                    return newState
-                })
+                console.log('Total Staked - Legendary:', legendaryCount, 'Premium:', premiumCount, 'Standard:', standardCount)
 
             } catch (error) {
                 console.error("Error fetching total staked:", error)
@@ -614,48 +564,33 @@ const StakingNFT = () => {
         }
 
         try {
-            // Check if user has embedded wallet
-            const hasEmbeddedWallet = user?.linkedAccounts?.some(
-                (account: any) => account.type === 'wallet' && account.walletClient === 'privy'
-            )
-            const hasExternalWallet = user?.linkedAccounts?.some(
-                (account: any) => account.type === 'wallet' && account.walletClient !== 'privy'
-            )
-
-            // For embedded Privy wallets, use switchChainAsync from wagmi
-            if (hasEmbeddedWallet && !hasExternalWallet) {
-                console.log('🔄 Using embedded wallet, ensuring Base chain via wagmi')
-                try {
-                    await switchChainAsync({ chainId: base.id })
-                    console.log('✅ Switched to Base network via wagmi')
-                    await new Promise(resolve => setTimeout(resolve, 2000))
-                    return true
-                } catch (switchError: any) {
-                    console.error('❌ Failed to switch chain:', switchError)
-                    alert('Failed to switch to Base network. Please try again.')
-                    return false
-                }
-            } else if (window.ethereum) {
-                // For external wallets, use window.ethereum
-                const currentChainId = await window.ethereum.request({ method: 'eth_chainId' })
-                const baseChainId = '0x2105' // Base Mainnet = 8453 in hex
-                
-                if (currentChainId !== baseChainId) {
-                    console.log(`🔄 Switching from chain ${currentChainId} to Base (${baseChainId})`)
+            // Always try wagmi switchChainAsync first (works for both embedded and external wallets)
+            console.log('🔄 Ensuring Base chain via wagmi')
+            try {
+                await switchChainAsync({ chainId: base.id })
+                console.log('✅ Switched to Base network')
+                await new Promise(resolve => setTimeout(resolve, 1000))
+                return true
+            } catch (switchError: any) {
+                // If wagmi fails and we have window.ethereum, try direct method
+                if (typeof window !== 'undefined' && window.ethereum) {
+                    console.log('🔄 Trying direct wallet switch')
                     try {
+                        const baseChainId = '0x2105' // Base Mainnet = 8453 in hex
                         await window.ethereum.request({
                             method: 'wallet_switchEthereumChain',
                             params: [{ chainId: baseChainId }],
                         })
-                        console.log('✅ Switched to Base network')
+                        console.log('✅ Switched to Base network via direct method')
                         return true
-                    } catch (switchError: any) {
-                        if (switchError.code === 4902) {
+                    } catch (directError: any) {
+                        if (directError.code === 4902) {
+                            // Chain not added, try to add it
                             try {
                                 await window.ethereum.request({
                                     method: 'wallet_addEthereumChain',
                                     params: [{
-                                        chainId: baseChainId,
+                                        chainId: '0x2105',
                                         chainName: 'Base',
                                         nativeCurrency: {
                                             name: 'Ethereum',
@@ -670,19 +605,15 @@ const StakingNFT = () => {
                                 return true
                             } catch (addError) {
                                 console.error('❌ Failed to add Base network:', addError)
-                                alert('Failed to add Base network. Please add it manually.')
-                                return false
                             }
                         }
-                        console.error('❌ Failed to switch chain:', switchError)
-                        alert('Please switch your wallet to Base network.')
-                        return false
                     }
                 }
-                return true
+                
+                console.error('❌ Failed to switch to Base chain:', switchError)
+                alert('Please switch your wallet to Base network.')
+                return false
             }
-            
-            return true
         } catch (error) {
             console.error('Error ensuring Base chain:', error)
             return false
@@ -697,6 +628,89 @@ const StakingNFT = () => {
                 return [...prev, tokenId]
             }
         })
+    }
+
+    const handleStakeSingle = async (tokenId: string) => {
+        if (!address || !walletClient) {
+            console.error("Please connect your wallet")
+            return
+        }
+
+        // Ensure we're on Base chain before proceeding
+        const onBaseChain = await ensureBaseChain()
+        if (!onBaseChain) {
+            return
+        }
+
+        setLoading(true)
+        try {
+            const pool = getPoolForTokenId(parseInt(tokenId))
+            console.log(`Staking NFT #${tokenId} in ${pool.name} pool...`)
+
+            // Check approval
+            const approved = await isApprovedForAll({
+                contract: nftContract,
+                owner: address,
+                operator: pool.address as `0x${string}`,
+            })
+
+            if (!approved) {
+                console.log(`Requesting approval for ${pool.name} pool...`)
+
+                const approvalData = encodeFunctionData({
+                    abi: [{
+                        name: 'setApprovalForAll',
+                        type: 'function',
+                        stateMutability: 'nonpayable',
+                        inputs: [
+                            { name: 'operator', type: 'address' },
+                            { name: 'approved', type: 'bool' }
+                        ],
+                        outputs: []
+                    }],
+                    functionName: 'setApprovalForAll',
+                    args: [pool.address as `0x${string}`, true]
+                })
+
+                const hash = await walletClient.sendTransaction({
+                    from: address,
+                    to: NFT_COLLECTION_ADDRESS,
+                    data: approvalData,
+                })
+                console.log(`Approval tx hash:`, hash)
+                await new Promise(resolve => setTimeout(resolve, 3000))
+            }
+
+            // Stake the NFT
+            const stakeData = encodeFunctionData({
+                abi: [{
+                    name: 'stake',
+                    type: 'function',
+                    stateMutability: 'nonpayable',
+                    inputs: [{ name: '_tokenIds', type: 'uint256[]' }],
+                    outputs: []
+                }],
+                functionName: 'stake',
+                args: [[BigInt(tokenId)]]
+            })
+
+            const stakeHash = await walletClient.sendTransaction({
+                from: address,
+                to: pool.address,
+                data: stakeData,
+            })
+            console.log(`Stake tx hash:`, stakeHash)
+
+            setStakedTokenIds([tokenId])
+            setToastType('stake')
+            setShowSuccessToast(true)
+            await new Promise(resolve => setTimeout(resolve, 3000))
+            window.location.reload()
+        } catch (error: any) {
+            console.error("Error staking NFT:", error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const handleStake = async () => {
@@ -810,6 +824,54 @@ const StakingNFT = () => {
             window.location.reload()
         } catch (error: any) {
             console.error("Error staking NFTs:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleWithdrawSingle = async (tokenId: string) => {
+        if (!address || !walletClient) {
+            console.error("Please connect your wallet")
+            return
+        }
+
+        // Ensure we're on Base chain before proceeding
+        const onBaseChain = await ensureBaseChain()
+        if (!onBaseChain) {
+            return
+        }
+
+        setLoading(true)
+        try {
+            const pool = getPoolForTokenId(parseInt(tokenId))
+            console.log(`Withdrawing NFT #${tokenId} from ${pool.name} pool...`)
+
+            const withdrawData = encodeFunctionData({
+                abi: [{
+                    name: 'withdraw',
+                    type: 'function',
+                    stateMutability: 'nonpayable',
+                    inputs: [{ name: '_tokenIds', type: 'uint256[]' }],
+                    outputs: []
+                }],
+                functionName: 'withdraw',
+                args: [[BigInt(tokenId)]]
+            })
+
+            const withdrawHash = await walletClient.sendTransaction({
+                from: address,
+                to: pool.address,
+                data: withdrawData,
+            })
+            console.log(`Withdraw tx hash:`, withdrawHash)
+
+            setStakedTokenIds([tokenId])
+            setToastType('unstake')
+            setShowSuccessToast(true)
+            await new Promise(resolve => setTimeout(resolve, 3000))
+            window.location.reload()
+        } catch (error: any) {
+            console.error("Error withdrawing NFT:", error)
         } finally {
             setLoading(false)
         }
@@ -1401,7 +1463,11 @@ const StakingNFT = () => {
                                                                         key={nft.id.toString()}
                                                                         className="xxl:col-span-3 xl:col-span-3 lg:col-span-3 md:col-span-6 sm:col-span-6 col-span-12"
                                                                     >
-                                                                        <div className={`box overflow-hidden transition-all duration-200 ${selectedNFTs.includes(nft.id.toString()) ? 'ring-4 ring-primary' : ''}`}>
+                                                                        <div 
+                                                                            className={`box overflow-hidden transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 ${selectedNFTs.includes(nft.id.toString()) ? 'ring-4 ring-primary scale-[1.02] shadow-xl' : ''}`}
+                                                                            style={{ transformStyle: 'preserve-3d' }}
+                                                                            onClick={() => handleSelectNFT(nft.id.toString())}
+                                                                        >
                                                                             <div className="relative aspect-[4/5]">
                                                                                 <img
                                                                                     src={tierImage}
@@ -1411,7 +1477,10 @@ const StakingNFT = () => {
 
                                                                                 {/* Plus icon for selection */}
                                                                                 <button
-                                                                                    onClick={() => handleSelectNFT(nft.id.toString())}
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation()
+                                                                                        handleSelectNFT(nft.id.toString())
+                                                                                    }}
                                                                                     className={`absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${selectedNFTs.includes(nft.id.toString())
                                                                                         ? 'bg-primary text-white scale-110'
                                                                                         : 'bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white'
@@ -1468,14 +1537,14 @@ const StakingNFT = () => {
 
                                                                                 {/* Stake Button */}
                                                                                 <button
-                                                                                    onClick={() => {
-                                                                                        setSelectedNFTs([nft.id.toString()])
-                                                                                        handleStake()
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation()
+                                                                                        handleStakeSingle(nft.id.toString())
                                                                                     }}
-                                                                                    disabled={loading}
-                                                                                    className="ti-btn w-full text-white bg-primary dark:bg-secondary hover:bg-primary/80 dark:hover:bg-secondary/80 px-6 py-2 !font-medium"
+                                                                                    disabled={loading || selectedNFTs.length > 1}
+                                                                                    className="ti-btn w-full text-white bg-primary dark:bg-secondary hover:bg-primary/80 dark:hover:bg-secondary/80 px-6 py-2 !font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                                                                 >
-                                                                                    Stake
+                                                                                    {loading ? 'Staking...' : 'Stake'}
                                                                                 </button>
                                                                             </div>
                                                                         </div>
@@ -1535,7 +1604,11 @@ const StakingNFT = () => {
                                                                         key={nft.tokenId.toString()}
                                                                         className="xxl:col-span-3 xl:col-span-3 lg:col-span-3 md:col-span-6 sm:col-span-6 col-span-12"
                                                                     >
-                                                                        <div className={`box overflow-hidden transition-all duration-200 ${selectedNFTs.includes(nft.tokenId.toString()) ? 'ring-4 ring-danger' : ''}`}>
+                                                                        <div 
+                                                                            className={`box overflow-hidden transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 ${selectedNFTs.includes(nft.tokenId.toString()) ? 'ring-4 ring-danger scale-[1.02] shadow-xl' : ''}`}
+                                                                            style={{ transformStyle: 'preserve-3d' }}
+                                                                            onClick={() => handleSelectNFT(nft.tokenId.toString())}
+                                                                        >
                                                                             <div className="relative aspect-[4/5]">
                                                                                 <img
                                                                                     src={tierImage}
@@ -1545,7 +1618,10 @@ const StakingNFT = () => {
 
                                                                                 {/* Plus icon for selection */}
                                                                                 <button
-                                                                                    onClick={() => handleSelectNFT(nft.tokenId.toString())}
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation()
+                                                                                        handleSelectNFT(nft.tokenId.toString())
+                                                                                    }}
                                                                                     className={`absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${selectedNFTs.includes(nft.tokenId.toString())
                                                                                         ? 'bg-danger text-white scale-110'
                                                                                         : 'bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 hover:bg-danger hover:text-white'
@@ -1573,7 +1649,7 @@ const StakingNFT = () => {
                                                                                             tokenId >= 1 && tokenId <= 400
                                                                                                 ? "/assets/images/svg/lsvg.svg"
                                                                                                 : tokenId >= 401 && tokenId <= 1200
-                                                                                                    ? "/assets/images/svg/ppsvg.svg"
+                                                                                                    ? "/assets/images/svg/psvg.svg"
                                                                                                     : "/assets/images/svg/ssvg.svg"
                                                                                         }
                                                                                         alt="Category"
@@ -1610,14 +1686,14 @@ const StakingNFT = () => {
 
                                                                                 {/* Unstake Button */}
                                                                                 <button
-                                                                                    onClick={() => {
-                                                                                        setSelectedNFTs([nft.tokenId.toString()])
-                                                                                        handleWithdraw()
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation()
+                                                                                        handleWithdrawSingle(nft.tokenId.toString())
                                                                                     }}
-                                                                                    disabled={loading}
-                                                                                    className="ti-btn w-full text-white bg-primary dark:bg-secondary hover:bg-primary/80 dark:hover:bg-secondary/80 px-6 py-2 !font-medium"
+                                                                                    disabled={loading || selectedNFTs.length > 1}
+                                                                                    className="ti-btn w-full text-white bg-primary dark:bg-secondary hover:bg-primary/80 dark:hover:bg-secondary/80 px-6 py-2 !font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                                                                 >
-                                                                                    Unstake
+                                                                                    {loading ? 'Unstaking...' : 'Unstake'}
                                                                                 </button>
                                                                             </div>
                                                                         </div>
