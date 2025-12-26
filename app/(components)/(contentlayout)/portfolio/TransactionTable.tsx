@@ -51,9 +51,9 @@ const TransactionTable = ({
   }, [transactions, currentPage, totalPages]);
 
   const NFT_TYPE_IMAGES: Record<string, string> = {
-    "Legendary 1000m²": "/assets/images/brand-logos/Legendary.svg",
-    "Premium 500m²": "/assets/images/brand-logos/Premium.svg",
-    "Standard 100m²": "/assets/images/brand-logos/Standard.svg",
+    "Plot 1000 m²": "/assets/images/brand-logos/Legendary.svg",
+    "Plot 500 m²": "/assets/images/brand-logos/Premium.svg",
+    "Plot 100 m²": "/assets/images/brand-logos/Standard.svg",
   };
 
   // ✅ CRITICAL: Generate STABLE unique keys with fallback

@@ -186,14 +186,14 @@ const Crypto = () => {
           // Create NFT object for staked NFT
           const tokenIdNum = Number(tokenIdStr);
           let image = "/assets/images/apps/100m2v1.jpg";
-          let nftType = "Plot 100 m2";
+          let nftType = "Plot 100 m²";
           
           if (tokenIdNum >= 1 && tokenIdNum <= 400) {
             image = "/assets/images/apps/1000m2v1.jpg";
-            nftType = "Plot 1000 m2";
+            nftType = "Plot 1000 m²";
           } else if (tokenIdNum >= 401 && tokenIdNum <= 1200) {
             image = "/assets/images/apps/500m2v1.jpg";
-            nftType = "Plot 500 m2";
+            nftType = "Plot 500 m²";
           }
           
           const formattedDate = new Date(stakingTimestamp * 1000).toLocaleString();
@@ -464,7 +464,7 @@ const Crypto = () => {
 
       const fetchedNftTxs = transactionsWithValue.map((tx: any) => {
         const tokenId = parseInt(tx.token_id);
-        let NftType = "Plot 100 m2";
+        let NftType = "Plot 100 m²";
         let transactionType = "NFT Transfer";
 
         // Staking pool addresses
@@ -477,9 +477,9 @@ const Crypto = () => {
         const userAddress = address.toLowerCase();
 
         if (tokenId >= 1 && tokenId <= 400) {
-          NftType = "Plot 1000 m2";
+          NftType = "Plot 1000 m²";
         } else if (tokenId >= 401 && tokenId <= 1200) {
-          NftType = "Plot 500 m2";
+          NftType = "Plot 500 m²";
         }
 
         // Check if this is a staking/unstaking transaction

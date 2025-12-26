@@ -1436,14 +1436,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     bitgrass.base.eth
                                                 </div>
 
-                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ height: "500px", backgroundColor: "transparent" }}>
+                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ backgroundColor: "transparent" }}>
                                                     <div
-                                                        className="w-full h-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
+                                                        className="w-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
                                                     >
                                                         <img
                                                             src="/assets/images/apps/100m2s.webp"
                                                             alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full transition-opacity duration-500"
+                                                            className="object-contain w-full transition-opacity duration-500 rounded-lg"
                                                             style={{ opacity: imageOpacity.standard }}
                                                             onLoad={() => {
                                                                 if (!imagesLoadedRef.current.standard) {
@@ -1614,14 +1614,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     bitgrass.base.eth
                                                 </div>
 
-                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ height: "500px", backgroundColor: "transparent" }}>
+                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ backgroundColor: "transparent" }}>
                                                     <div
-                                                        className="w-full h-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
+                                                        className="w-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
                                                     >
                                                         <img
                                                             src="/assets/images/apps/500m2s.webp"
                                                             alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full transition-opacity duration-500"
+                                                            className="object-contain w-full transition-opacity duration-500 rounded-lg"
                                                             style={{ opacity: imageOpacity.premium }}
                                                             onLoad={() => {
                                                                 if (!imagesLoadedRef.current.premium) {
@@ -1634,7 +1634,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <button
-                                                    className={`w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 flex items-center justify-center gap-2 ${
+                                                    className={`w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-6 flex items-center justify-center gap-2 ${
                                                         (isLoadingFetchAvailable || isBuying || !listedPremiumItems[0]) 
                                                         ? 'opacity-50 cursor-not-allowed' 
                                                         : 'cursor-pointer'
@@ -1763,14 +1763,14 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                     bitgrass.base.eth
                                                 </div>
 
-                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ height: "500px", backgroundColor: "transparent" }}>
+                                                <div className="w-full flex justify-center items-center rounded-lg overflow-hidden" style={{ backgroundColor: "transparent" }}>
                                                     <div
-                                                        className="w-full h-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
+                                                        className="w-full flex justify-center items-center rounded-lg overflow-hidden shadow-md"
                                                     >
                                                         <img
                                                             src="/assets/images/apps/1000m2s.webp"
                                                             alt="Custom NFT Preview"
-                                                            className="object-cover w-full h-full transition-opacity duration-500"
+                                                            className="object-contain w-full transition-opacity duration-500 rounded-lg"
                                                             style={{ opacity: imageOpacity.legendary }}
                                                             onLoad={() => {
                                                                 if (!imagesLoadedRef.current.legendary) {
@@ -1783,7 +1783,7 @@ const Nftdetails = ({ initialTabId }: NftdetailsProps) => {
                                                 </div>
 
                                                 <button
-                                                    className={`w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-2 flex items-center justify-center gap-2 ${
+                                                    className={`w-full bg-secondary text-white !font-medium m-0 btn btn-primary px-8 py-3 rounded-sm mt-6 flex items-center justify-center gap-2 ${
                                                         (isLoadingFetchAvailable || isBuying || !listedLegendaryItems[0]) 
                                                         ? 'opacity-50 cursor-not-allowed' 
                                                         : 'cursor-pointer'

@@ -61,7 +61,12 @@ const StakingNFT = () => {
     const [activeTab, setActiveTab] = useState<'stake' | 'unstake'>('stake')
     const [showSuccessToast, setShowSuccessToast] = useState(false)
     const [stakedTokenIds, setStakedTokenIds] = useState<string[]>([])
-    const [toastType, setToastType] = useState<'stake' | 'unstake'>('stake')
+    const [toastType, setToastType] = useState<'stake' | 'unstake' | 'claim'>('stake')
+    const [claimedAmount, setClaimedAmount] = useState("0")
+    const [processingTokenIds, setProcessingTokenIds] = useState<string[]>([])
+    const [showPendingToast, setShowPendingToast] = useState(false)
+    const [pendingProgress, setPendingProgress] = useState({ current: 0, total: 0 })
+    const [pendingType, setPendingType] = useState<'stake' | 'unstake'>('stake')
 
     // Pool stats
     const [legendaryStats, setLegendaryStats] = useState({ staked: 0, totalStaked: 0, earnings: "0" })
@@ -643,6 +648,11 @@ const StakingNFT = () => {
         }
 
         setLoading(true)
+        setProcessingTokenIds([tokenId])
+        setPendingType('stake')
+        setShowPendingToast(true)
+        setPendingProgress({ current: 0, total: 1 })
+        
         try {
             const pool = getPoolForTokenId(parseInt(tokenId))
             console.log(`Staking NFT #${tokenId} in ${pool.name} pool...`)
@@ -701,15 +711,24 @@ const StakingNFT = () => {
             })
             console.log(`Stake tx hash:`, stakeHash)
 
+            setPendingProgress({ current: 1, total: 1 })
+            setShowPendingToast(false)
             setStakedTokenIds([tokenId])
             setToastType('stake')
+            
+            // Show success toast immediately
             setShowSuccessToast(true)
-            await new Promise(resolve => setTimeout(resolve, 3000))
-            window.location.reload()
+            
+            // Reload after showing toast
+            setTimeout(() => {
+                window.location.reload()
+            }, 2000)
         } catch (error: any) {
             console.error("Error staking NFT:", error)
+            setShowPendingToast(false)
         } finally {
             setLoading(false)
+            setProcessingTokenIds([])
         }
     }
 
@@ -735,6 +754,10 @@ const StakingNFT = () => {
         console.log("🔍 Address valid:", /^0x[a-fA-F0-9]{40}$/.test(address))
 
         setLoading(true)
+        setPendingType('stake')
+        setShowPendingToast(true)
+        setPendingProgress({ current: 0, total: selectedNFTs.length })
+        
         try {
             // Group NFTs by pool based on token ID
             const nftsByPool: { [key: string]: { tokenIds: bigint[], poolName: string } } = {}
@@ -748,6 +771,8 @@ const StakingNFT = () => {
             }
 
             console.log("NFTs grouped by pool:", nftsByPool)
+            
+            let processedCount = 0
 
             // Check and approve for each pool if needed
             for (const [poolAddress, poolData] of Object.entries(nftsByPool)) {
@@ -793,6 +818,12 @@ const StakingNFT = () => {
             for (const [poolAddress, poolData] of Object.entries(nftsByPool)) {
                 console.log(`Staking ${poolData.tokenIds.length} NFTs in ${poolData.poolName} pool...`)
 
+                // Mark these tokens as processing and update progress immediately
+                const tokenIdsStr = poolData.tokenIds.map(id => id.toString())
+                setProcessingTokenIds(prev => [...prev, ...tokenIdsStr])
+                processedCount += poolData.tokenIds.length
+                setPendingProgress({ current: processedCount, total: selectedNFTs.length })
+
                 const stakeData = encodeFunctionData({
                     abi: [{
                         name: 'stake',
@@ -813,19 +844,30 @@ const StakingNFT = () => {
                     data: stakeData,
                 })
                 console.log(`Stake tx hash for ${poolData.poolName}:`, stakeHash)
+                
+                // Remove from processing
+                setProcessingTokenIds(prev => prev.filter(id => !tokenIdsStr.includes(id)))
             }
 
             console.log("All NFTs staked successfully!")
+            setShowPendingToast(false)
             setStakedTokenIds(selectedNFTs)
             setToastType('stake')
             setSelectedNFTs([])
+            
+            // Show success toast immediately
             setShowSuccessToast(true)
-            await new Promise(resolve => setTimeout(resolve, 3000))
-            window.location.reload()
+            
+            // Reload after showing toast
+            setTimeout(() => {
+                window.location.reload()
+            }, 2000)
         } catch (error: any) {
             console.error("Error staking NFTs:", error)
+            setShowPendingToast(false)
         } finally {
             setLoading(false)
+            setProcessingTokenIds([])
         }
     }
 
@@ -842,6 +884,11 @@ const StakingNFT = () => {
         }
 
         setLoading(true)
+        setProcessingTokenIds([tokenId])
+        setPendingType('unstake')
+        setShowPendingToast(true)
+        setPendingProgress({ current: 0, total: 1 })
+        
         try {
             const pool = getPoolForTokenId(parseInt(tokenId))
             console.log(`Withdrawing NFT #${tokenId} from ${pool.name} pool...`)
@@ -865,15 +912,24 @@ const StakingNFT = () => {
             })
             console.log(`Withdraw tx hash:`, withdrawHash)
 
+            setPendingProgress({ current: 1, total: 1 })
+            setShowPendingToast(false)
             setStakedTokenIds([tokenId])
             setToastType('unstake')
+            
+            // Show success toast immediately
             setShowSuccessToast(true)
-            await new Promise(resolve => setTimeout(resolve, 3000))
-            window.location.reload()
+            
+            // Reload after showing toast
+            setTimeout(() => {
+                window.location.reload()
+            }, 2000)
         } catch (error: any) {
             console.error("Error withdrawing NFT:", error)
+            setShowPendingToast(false)
         } finally {
             setLoading(false)
+            setProcessingTokenIds([])
         }
     }
 
@@ -895,6 +951,10 @@ const StakingNFT = () => {
         }
 
         setLoading(true)
+        setPendingType('unstake')
+        setShowPendingToast(true)
+        setPendingProgress({ current: 0, total: selectedNFTs.length })
+        
         try {
             // Group NFTs by pool based on token ID
             const nftsByPool: { [key: string]: { tokenIds: bigint[], poolName: string } } = {}
@@ -908,10 +968,18 @@ const StakingNFT = () => {
             }
 
             console.log("NFTs grouped by pool for withdrawal:", nftsByPool)
+            
+            let processedCount = 0
 
             // Withdraw NFTs from each pool (separate transaction per pool)
             for (const [poolAddress, poolData] of Object.entries(nftsByPool)) {
                 console.log(`Withdrawing ${poolData.tokenIds.length} NFTs from ${poolData.poolName} pool...`)
+
+                // Mark these tokens as processing and update progress immediately
+                const tokenIdsStr = poolData.tokenIds.map(id => id.toString())
+                setProcessingTokenIds(prev => [...prev, ...tokenIdsStr])
+                processedCount += poolData.tokenIds.length
+                setPendingProgress({ current: processedCount, total: selectedNFTs.length })
 
                 const withdrawData = encodeFunctionData({
                     abi: [{
@@ -933,17 +1001,27 @@ const StakingNFT = () => {
                     data: withdrawData,
                 })
                 console.log(`Withdraw tx hash for ${poolData.poolName}:`, withdrawHash)
+                
+                // Remove from processing
+                setProcessingTokenIds(prev => prev.filter(id => !tokenIdsStr.includes(id)))
             }
 
             console.log("All NFTs withdrawn successfully!")
+            setShowPendingToast(false)
             setStakedTokenIds(selectedNFTs)
             setToastType('unstake')
             setSelectedNFTs([])
+            
+            // Show success toast immediately
             setShowSuccessToast(true)
-            await new Promise(resolve => setTimeout(resolve, 3000))
-            window.location.reload()
+            
+            // Reload after showing toast
+            setTimeout(() => {
+                window.location.reload()
+            }, 2000)
         } catch (error: any) {
             console.error("Error withdrawing NFTs:", error)
+            setShowPendingToast(false)
         } finally {
             setLoading(false)
         }
@@ -1045,8 +1123,16 @@ const StakingNFT = () => {
             }
 
             console.log("All rewards claimed successfully!")
-            await new Promise(resolve => setTimeout(resolve, 3000))
-            window.location.reload()
+            
+            // Store claimed amount and show success toast
+            setClaimedAmount(currentEarnings)
+            setToastType('claim')
+            setShowSuccessToast(true)
+            
+            // Reload after showing toast
+            setTimeout(() => {
+                window.location.reload()
+            }, 2000)
         } catch (error: any) {
             console.error("Error claiming rewards:", error)
             console.error("Error details:", error.message || error)
@@ -1544,7 +1630,7 @@ const StakingNFT = () => {
                                                                                     disabled={loading || selectedNFTs.length > 1}
                                                                                     className="ti-btn w-full text-white bg-primary dark:bg-secondary hover:bg-primary/80 dark:hover:bg-secondary/80 px-6 py-2 !font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                                                                 >
-                                                                                    {loading ? 'Staking...' : 'Stake'}
+                                                                                    {processingTokenIds.includes(nft.id.toString()) ? 'Staking...' : 'Stake'}
                                                                                 </button>
                                                                             </div>
                                                                         </div>
@@ -1693,7 +1779,7 @@ const StakingNFT = () => {
                                                                                     disabled={loading || selectedNFTs.length > 1}
                                                                                     className="ti-btn w-full text-white bg-primary dark:bg-secondary hover:bg-primary/80 dark:hover:bg-secondary/80 px-6 py-2 !font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                                                                 >
-                                                                                    {loading ? 'Unstaking...' : 'Unstake'}
+                                                                                    {processingTokenIds.includes(nft.tokenId.toString()) ? 'Unstaking...' : 'Unstake'}
                                                                                 </button>
                                                                             </div>
                                                                         </div>
@@ -1736,6 +1822,41 @@ const StakingNFT = () => {
                 </div>
             </div>
 
+            {/* Pending Toast */}
+            {showPendingToast && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:left-auto md:right-6 md:translate-x-0 max-w-[90vw] md:max-w-none">
+                    <div
+                        role="alert"
+                        className="bg-camel shadow-lg rounded-md w-full max-w-2xl min-w-[320px] px-5 py-4"
+                    >
+                        <div className="flex items-center gap-4 w-full">
+                            {/* Icon */}
+                            <div className="flex-shrink-0">
+                                <img
+                                    src={pendingType === 'stake' ? '/assets/images/svg/Staked.svg' : '/assets/images/svg/Unstaked.svg'}
+                                    alt={pendingType === 'stake' ? 'Staking' : 'Unstaking'}
+                                    width={30}
+                                    height={30}
+                                    className="rounded"
+                                />
+                            </div>
+
+                            {/* Text */}
+                            <div className="flex-1 text-center px-2">
+                                <strong className="text-sm font-bold break-words">
+                                    Pending {pendingType === 'stake' ? 'Staking' : 'Unstaking'}: {pendingProgress.current}/{pendingProgress.total}
+                                </strong>
+                            </div>
+
+                            {/* Loader */}
+                            <div className="flex-shrink-0">
+                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Success Toast */}
             {showSuccessToast && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:left-auto md:right-6 md:translate-x-0 max-w-[90vw] md:max-w-none">
@@ -1747,8 +1868,14 @@ const StakingNFT = () => {
                             {/* Icon */}
                             <div className="flex-shrink-0">
                                 <img
-                                    src={toastType === 'stake' ? '/assets/images/svg/Staked.svg' : '/assets/images/svg/Unstaked.svg'}
-                                    alt={toastType === 'stake' ? 'Staked' : 'Unstaked'}
+                                    src={
+                                        toastType === 'claim' 
+                                            ? '/assets/images/svg/EarnBo2.svg'
+                                            : toastType === 'stake' 
+                                            ? '/assets/images/svg/Staked.svg' 
+                                            : '/assets/images/svg/Unstaked.svg'
+                                    }
+                                    alt={toastType === 'claim' ? 'Claimed' : toastType === 'stake' ? 'Staked' : 'Unstaked'}
                                     width={30}
                                     height={30}
                                     className="rounded"
@@ -1758,7 +1885,10 @@ const StakingNFT = () => {
                             {/* Text */}
                             <div className="flex-1 text-center px-2">
                                 <strong className="text-sm font-bold break-words">
-                                    Plot #{stakedTokenIds.join(', #')} successfully {toastType === 'stake' ? 'staked' : 'unstaked'}
+                                    {toastType === 'claim' 
+                                        ? `Successfully Claimed: ${claimedAmount} BCO2`
+                                        : `Plot #{stakedTokenIds.join(', #')} successfully ${toastType === 'stake' ? 'staked' : 'unstaked'}`
+                                    }
                                 </strong>
                             </div>
 
