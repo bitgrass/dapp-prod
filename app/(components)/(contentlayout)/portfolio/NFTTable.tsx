@@ -215,12 +215,6 @@ const NFTTable = ({
                         {nft.description || "No description available."}
                       </p>
 
-                      {/* ✅ Show purchase/staking date if available */}
-                      {nft.date && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                          {nft.isStaked ? 'Staked:' : 'Purchased:'} {nft.date}
-                        </p>
-                      )}
 
                       <div className="grid">
                         <Link href="/leaderboard" className="ti-btn ti-btn-primary w-full">
