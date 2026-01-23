@@ -12,9 +12,9 @@ import { flushSync } from "react-dom";
 import { createThirdwebClient, getContract, defineChain, readContract } from "thirdweb";
 
 // Staking contract addresses
-const LEGENDARY_POOL_ADDRESS = "0x8Ce083356a01EF8229d69df897e348948182a72f";
-const PREMIUM_POOL_ADDRESS = "0xfdD53102A85AE52A201e2faa8Cc4668d7Bf8f81C";
-const STANDARD_POOL_ADDRESS = "0xDBfB6672125776176Bd9F154A0b4bbC8F63192A6";
+const LEGENDARY_POOL_ADDRESS = "0xAbdD77516765235e3121773bcB4E33984c604D7C";
+const PREMIUM_POOL_ADDRESS = "0xCe6409e0146ffFa252Dbb3105c1D5285c73b4274";
+const STANDARD_POOL_ADDRESS = "0xE70886Db1d0F52B3B8Ced3538E048d8263C16302";
 
 const client = createThirdwebClient({
     clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
@@ -200,7 +200,7 @@ const Crypto = () => {
           console.log(`Token ${tokenIdStr} staked at timestamp: ${stakingTimestamp}, formatted: ${formattedDate}`);
           
           stakedNFTObjects.push({
-            contract_address: "0x23308734dfaaae503c686720fff26126fcdc22c7",
+            contract_address: "0x95273ead1dc63b4d809018f10c3e659c5fb0b8a5",
             name: nftType,
             slug: null,
             description: null,
@@ -468,9 +468,9 @@ const Crypto = () => {
         let transactionType = "NFT Transfer";
 
         // Staking pool addresses
-        const LEGENDARY_POOL = "0x8Ce083356a01EF8229d69df897e348948182a72f".toLowerCase();
-        const PREMIUM_POOL = "0xfdD53102A85AE52A201e2faa8Cc4668d7Bf8f81C".toLowerCase();
-        const STANDARD_POOL = "0xDBfB6672125776176Bd9F154A0b4bbC8F63192A6".toLowerCase();
+        const LEGENDARY_POOL = "0xAbdD77516765235e3121773bcB4E33984c604D7C".toLowerCase();
+        const PREMIUM_POOL = "0xCe6409e0146ffFa252Dbb3105c1D5285c73b4274".toLowerCase();
+        const STANDARD_POOL = "0xE70886Db1d0F52B3B8Ced3538E048d8263C16302".toLowerCase();
         
         const fromAddress = tx.from_address?.toLowerCase();
         const toAddress = tx.to_address?.toLowerCase();
@@ -623,9 +623,9 @@ const Crypto = () => {
     try {
       const API_KEY = process.env.NEXT_PUBLIC_MORALIS_APY_KEY;
       const SCAN_TOKEN_ADDRESS = "0x20429F731096e359910921994A267d32ef576720";
-      const LEGENDARY_POOL = "0x8Ce083356a01EF8229d69df897e348948182a72f".toLowerCase();
-      const PREMIUM_POOL = "0xfdD53102A85AE52A201e2faa8Cc4668d7Bf8f81C".toLowerCase();
-      const STANDARD_POOL = "0xDBfB6672125776176Bd9F154A0b4bbC8F63192A6".toLowerCase();
+      const LEGENDARY_POOL = "0xAbdD77516765235e3121773bcB4E33984c604D7C".toLowerCase();
+      const PREMIUM_POOL = "0xCe6409e0146ffFa252Dbb3105c1D5285c73b4274".toLowerCase();
+      const STANDARD_POOL = "0xE70886Db1d0F52B3B8Ced3538E048d8263C16302".toLowerCase();
 
       const params = new URLSearchParams({
         chain: "base",
