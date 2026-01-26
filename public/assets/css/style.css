@@ -14316,9 +14316,11 @@ h6 {
     border-radius: 0.25rem;
 
   }
-
-
-
+}
+.ock-text-foreground.ock-bg-default.absolute.right-0.bottom-0.flex.translate-y-\[102\%\].flex-col.gap-2.z-10.min-w-80.rounded.border.p-2.ock-border-radius {
+  height: 310px;
+  max-height: 310px;
+  overflow-y: auto;
 }
 [data-testid="ockTokenRow_Container"] {
   background-color: rgb(var(--camel-10));
@@ -14457,7 +14459,7 @@ margin-top: 10px;
   
 
   [data-testid="ockTokenChip_Button"] {
-margin-left: 15px;
+  margin-left: 15px;
   }
 
   [data-testid="ockTokenRow_Container"] {
@@ -14466,7 +14468,7 @@ margin-left: 15px;
 
   }
   [data-testid="ockSwapMessage_Message"] {
-margin-top: 10px;
+  margin-top: 10px;
 
 
   }
