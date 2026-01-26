@@ -2,7 +2,7 @@
 import Seo from '@/shared/layout-components/seo/seo'
 import React, { Fragment, useState, useEffect } from 'react'
 import { createThirdwebClient, getContract, defineChain, prepareContractCall, sendTransaction, readContract } from "thirdweb"
-import { isApprovedForAll, setApprovalForAll, balanceOf } from "thirdweb/extensions/erc721"
+import { isApprovedForAll, setApprovalForAll } from "thirdweb/extensions/erc721"
 import { useConnectedAddress } from '../useConnectedAddress'
 import { ethers } from "ethers"
 import { encodeFunctionData } from "viem"
@@ -123,254 +123,98 @@ const StakingNFT = () => {
             try {
                 console.log("Fetching NFTs for address:", address)
 
-                // Get user's NFT balance
-                const balance = await balanceOf({
-                    contract: nftContract,
-                    owner: address,
-                })
-
-                console.log("NFT Balance:", balance.toString())
-
-                // Fetch owned tokens using ownerOf in parallel batches
+                // Use Moralis API to fetch user's NFTs from the collection directly (much faster)
+                const moralisApiKey = process.env.NEXT_PUBLIC_MORALIS_APY_KEY || ""
                 const ownedNFTsList: any[] = []
-                const targetBalance = Number(balance)
-                const maxTokensToCheck = 3200
-                const batchSize = 100 // Large batches for speed
+                let cursor: string | null = null
 
-                console.log(`User has ${targetBalance} NFTs, checking tokens 0-${maxTokensToCheck} in batches...`)
+                console.log("Fetching owned NFTs via Moralis API...")
 
-                try {
-                    for (let start = 0; start < maxTokensToCheck && ownedNFTsList.length < targetBalance; start += batchSize) {
-                        const end = Math.min(start + batchSize, maxTokensToCheck)
+                do {
+                    const url : any = cursor
+                        ? `https://deep-index.moralis.io/api/v2.2/${address}/nft?chain=base&format=decimal&token_addresses=${NFT_COLLECTION_ADDRESS}&limit=100&cursor=${cursor}`
+                        : `https://deep-index.moralis.io/api/v2.2/${address}/nft?chain=base&format=decimal&token_addresses=${NFT_COLLECTION_ADDRESS}&limit=100`
 
-                        // Create batch of promises
-                        const promises = []
-                        for (let i = start; i < end; i++) {
-                            promises.push(
-                                readContract({
-                                    contract: nftContract,
-                                    method: "function ownerOf(uint256 tokenId) view returns (address)",
-                                    params: [BigInt(i)]
-                                })
-                                    .then(owner => ({ tokenId: i, owner }))
-                                    .catch((error) => {
-                                        // Log errors for tokens we know exist
-                                        if (i === 531 || i === 1213) {
-                                            console.error(`Error fetching token ${i}:`, error.message || error)
-                                        }
-                                        return null
-                                    })
-                            )
+                    const response = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-API-Key': moralisApiKey
                         }
+                    })
 
-                        // Execute batch in parallel
-                        const results = await Promise.all(promises)
+                    const data = await response.json()
 
-                        // Debug: check if we got any valid results
-                        const validCount = results.filter(r => r !== null).length
-                        if (start === 500 || start === 1200) {
-                            console.log(`Batch ${start}-${end}: ${validCount} valid results out of ${results.length}`)
-                        }
-
-                        // Process results
-                        for (const result of results) {
-                            if (result && result.owner.toLowerCase() === address.toLowerCase()) {
-                                console.log(`Found owned NFT: #${result.tokenId}`)
-
-                                ownedNFTsList.push({
-                                    id: BigInt(result.tokenId),
-                                    metadata: {
-                                        id: result.tokenId,
-                                        name: `NFT #${result.tokenId}`,
-                                        image: null,
-                                    }
-                                })
-                            }
-                        }
-
-                        // Log progress
-                        if (start % 200 === 0) {
-                            console.log(`Checked ${start + batchSize} tokens, found ${ownedNFTsList.length}/${targetBalance}`)
-                        }
-
-                        // Stop if we found all NFTs
-                        if (ownedNFTsList.length >= targetBalance) {
-                            console.log(`Found all ${targetBalance} NFTs, stopping search`)
-                            break
+                    if (data.result && Array.isArray(data.result)) {
+                        for (const nft of data.result) {
+                            const tokenId = parseInt(nft.token_id)
+                            ownedNFTsList.push({
+                                id: BigInt(tokenId),
+                                metadata: {
+                                    id: tokenId,
+                                    name: `NFT #${tokenId}`,
+                                    image: nft.token_uri || null,
+                                }
+                            })
                         }
                     }
 
-                    console.log(`Finished checking, found ${ownedNFTsList.length} NFTs`)
-                } catch (error) {
-                    console.error("Error fetching NFTs:", error)
-                }
+                    cursor = data.cursor || null
+                } while (cursor)
 
-                // Fetch staked NFTs from all 3 pools
-                let stakedTokenIdsList: bigint[] = []
-                let allStakedNFTs: any[] = []
-                let totalEarnings = BigInt(0)
+                console.log(`Found ${ownedNFTsList.length} owned NFTs via Moralis`)
 
-                try {
-                    console.log("Fetching staked NFTs from all pools...")
+                // Fetch staked NFTs from all 3 pools in parallel
+                const fetchStakedNFTs = async () => {
+                    let stakedTokenIdsList: bigint[] = []
+                    let allStakedNFTs: any[] = []
 
-                    // Fetch from Legendary Pool
-                    try {
-                        const legendaryInfo = await readContract({
+                    const [legendaryInfo, premiumInfo, standardInfo] = await Promise.all([
+                        readContract({
                             contract: legendaryPoolContract,
                             method: "function getStakeInfo(address _staker) view returns (uint256[] _tokensStaked, uint256 _rewards)",
                             params: [address]
-                        })
-
-                        if (legendaryInfo && legendaryInfo[0] && legendaryInfo[0].length > 0) {
-                            const tokens = legendaryInfo[0] as bigint[]
-                            stakedTokenIdsList = stakedTokenIdsList.concat(tokens)
-                            allStakedNFTs = allStakedNFTs.concat(tokens.map(t => ({ tokenId: t, pool: 'Legendary' })))
-                        }
-
-                        // Set legendary stats (preserve totalStaked from Moralis)
-                        setLegendaryStats(prev => ({
-                            ...prev,
-                            staked: legendaryInfo[0]?.length || 0
-                        }))
-                    } catch (error) {
-                        console.log("No legendary staked NFTs:", error)
-                    }
-
-                    // Fetch from Premium Pool
-                    try {
-                        const premiumInfo = await readContract({
+                        }).catch(() => null),
+                        readContract({
                             contract: premiumPoolContract,
                             method: "function getStakeInfo(address _staker) view returns (uint256[] _tokensStaked, uint256 _rewards)",
                             params: [address]
-                        })
-
-                        if (premiumInfo && premiumInfo[0] && premiumInfo[0].length > 0) {
-                            const tokens = premiumInfo[0] as bigint[]
-                            stakedTokenIdsList = stakedTokenIdsList.concat(tokens)
-                            allStakedNFTs = allStakedNFTs.concat(tokens.map(t => ({ tokenId: t, pool: 'Premium' })))
-                        }
-
-                        // Set premium stats (preserve totalStaked from Moralis)
-                        setPremiumStats(prev => ({
-                            ...prev,
-                            staked: premiumInfo[0]?.length || 0
-                        }))
-                    } catch (error) {
-                        console.log("No premium staked NFTs:", error)
-                    }
-
-                    // Fetch from Standard Pool
-                    try {
-                        const standardInfo = await readContract({
+                        }).catch(() => null),
+                        readContract({
                             contract: standardPoolContract,
                             method: "function getStakeInfo(address _staker) view returns (uint256[] _tokensStaked, uint256 _rewards)",
                             params: [address]
-                        })
+                        }).catch(() => null)
+                    ])
 
-                        if (standardInfo && standardInfo[0] && standardInfo[0].length > 0) {
-                            const tokens = standardInfo[0] as bigint[]
-                            stakedTokenIdsList = stakedTokenIdsList.concat(tokens)
-                            allStakedNFTs = allStakedNFTs.concat(tokens.map(t => ({ tokenId: t, pool: 'Standard' })))
-                        }
-
-                        // Set standard stats (preserve totalStaked from Moralis)
-                        setStandardStats(prev => ({
-                            ...prev,
-                            staked: standardInfo[0]?.length || 0
-                        }))
-                    } catch (error) {
-                        console.log("No standard staked NFTs:", error)
+                    if (legendaryInfo && legendaryInfo[0] && legendaryInfo[0].length > 0) {
+                        const tokens = legendaryInfo[0] as bigint[]
+                        stakedTokenIdsList = stakedTokenIdsList.concat(tokens)
+                        allStakedNFTs = allStakedNFTs.concat(tokens.map(t => ({ tokenId: t, pool: 'Legendary' })))
                     }
+                    setLegendaryStats(prev => ({ ...prev, staked: legendaryInfo?.[0]?.length || 0 }))
+
+                    if (premiumInfo && premiumInfo[0] && premiumInfo[0].length > 0) {
+                        const tokens = premiumInfo[0] as bigint[]
+                        stakedTokenIdsList = stakedTokenIdsList.concat(tokens)
+                        allStakedNFTs = allStakedNFTs.concat(tokens.map(t => ({ tokenId: t, pool: 'Premium' })))
+                    }
+                    setPremiumStats(prev => ({ ...prev, staked: premiumInfo?.[0]?.length || 0 }))
+
+                    if (standardInfo && standardInfo[0] && standardInfo[0].length > 0) {
+                        const tokens = standardInfo[0] as bigint[]
+                        stakedTokenIdsList = stakedTokenIdsList.concat(tokens)
+                        allStakedNFTs = allStakedNFTs.concat(tokens.map(t => ({ tokenId: t, pool: 'Standard' })))
+                    }
+                    setStandardStats(prev => ({ ...prev, staked: standardInfo?.[0]?.length || 0 }))
 
                     console.log(`Total staked NFTs: ${allStakedNFTs.length}`)
                     setStakedNFTs(allStakedNFTs)
-                    setCurrentEarnings(ethers.formatUnits(totalEarnings.toString(), 18))
-
-                } catch (error) {
-                    console.log("Error fetching staked NFTs:", error)
-                    setStakedNFTs([])
                     setCurrentEarnings("0")
+
+                    return stakedTokenIdsList
                 }
 
-                // Calculate total earned per pool using Moralis API
-                try {
-                    console.log("Fetching total earned from Moralis API...")
-
-                    const moralisApiKey = process.env.NEXT_PUBLIC_MORALIS_APY_KEY || ""
-
-                    // Use Moralis to get token transfers for this wallet
-                    const response = await fetch(
-                        `https://deep-index.moralis.io/api/v2.2/${address}/erc20/transfers?chain=base&contract_addresses=${encodeURIComponent('0x20429f731096e359910921994a267d32ef576720')}&limit=100&order=DESC`,
-                        {
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-API-Key': moralisApiKey
-                            }
-                        }
-                    )
-
-                    const data = await response.json()
-                    console.log("Moralis response:", data)
-
-                    if (data.result && Array.isArray(data.result)) {
-                        console.log(`Found ${data.result.length} SCAN token transfers`)
-
-                        let totalAll = BigInt(0)
-                        let legendaryTotal = BigInt(0)
-                        let premiumTotal = BigInt(0)
-                        let standardTotal = BigInt(0)
-
-                        // Filter for transfers FROM staking contracts TO user
-                        for (const tx of data.result) {
-                            const fromAddress = tx.from_address?.toLowerCase()
-                            const toAddress = tx.to_address?.toLowerCase()
-
-                            if (toAddress === address.toLowerCase()) {
-                                const value = BigInt(tx.value)
-
-                                if (fromAddress === LEGENDARY_POOL_ADDRESS.toLowerCase()) {
-                                    legendaryTotal += value
-                                    totalAll += value
-                                    console.log(`✅ Legendary claim: ${ethers.formatUnits(value.toString(), 18)} SCAN`)
-                                } else if (fromAddress === PREMIUM_POOL_ADDRESS.toLowerCase()) {
-                                    premiumTotal += value
-                                    totalAll += value
-                                    console.log(`✅ Premium claim: ${ethers.formatUnits(value.toString(), 18)} SCAN`)
-                                } else if (fromAddress === STANDARD_POOL_ADDRESS.toLowerCase()) {
-                                    standardTotal += value
-                                    totalAll += value
-                                    console.log(`✅ Standard claim: ${ethers.formatUnits(value.toString(), 18)} SCAN`)
-                                }
-                            }
-                        }
-
-                        // Update pool stats with total earned
-                        setLegendaryStats(prev => ({
-                            ...prev,
-                            earnings: ethers.formatUnits(legendaryTotal.toString(), 18)
-                        }))
-
-                        setPremiumStats(prev => ({
-                            ...prev,
-                            earnings: ethers.formatUnits(premiumTotal.toString(), 18)
-                        }))
-
-                        setStandardStats(prev => ({
-                            ...prev,
-                            earnings: ethers.formatUnits(standardTotal.toString(), 18)
-                        }))
-
-                        const totalEarnedEther = ethers.formatUnits(totalAll.toString(), 18)
-                        console.log(`Total earned: ${totalEarnedEther} SCAN`)
-                        setTotalEarned(totalEarnedEther)
-                    } else {
-                        console.log("No transfers found")
-                        setTotalEarned("0")
-                    }
-                } catch (error: any) {
-                    console.error("Error fetching total earned:", error)
-                    setTotalEarned("0")
-                }
+                const stakedTokenIdsList = await fetchStakedNFTs()
 
                 // Filter out staked NFTs from owned list
                 const unstakedNFTs = ownedNFTsList.filter(nft =>
@@ -403,15 +247,16 @@ const StakingNFT = () => {
             try {
                 const moralisApiKey = process.env.NEXT_PUBLIC_MORALIS_APY_KEY || ""
 
-                // Helper function to fetch all pages for a single pool
+                // Helper function to fetch staked count for a single pool
+                // Uses token_addresses filter to only fetch our NFT collection (much faster)
                 const fetchPoolNFTs = async (poolAddress: string, poolName: string): Promise<number> => {
-                    let allNFTs: any[] = []
-                    let cursor = null
+                    let totalCount = 0
+                    let cursor: string | null = null
 
                     do {
                         const url = cursor
-                            ? `https://deep-index.moralis.io/api/v2.2/${poolAddress}/nft?chain=base&format=decimal&limit=100&cursor=${cursor}`
-                            : `https://deep-index.moralis.io/api/v2.2/${poolAddress}/nft?chain=base&format=decimal&limit=100`
+                            ? `https://deep-index.moralis.io/api/v2.2/${poolAddress}/nft?chain=base&format=decimal&token_addresses=${NFT_COLLECTION_ADDRESS}&limit=100&cursor=${cursor}`
+                            : `https://deep-index.moralis.io/api/v2.2/${poolAddress}/nft?chain=base&format=decimal&token_addresses=${NFT_COLLECTION_ADDRESS}&limit=100`
 
                         const response = await fetch(url, {
                             headers: {
@@ -423,19 +268,14 @@ const StakingNFT = () => {
                         const data: any = await response.json()
 
                         if (data.result) {
-                            allNFTs = allNFTs.concat(data.result)
+                            totalCount += data.result.length
                         }
 
-                        cursor = data.cursor
+                        cursor = data.cursor || null
                     } while (cursor)
 
-                    // Filter for our NFT collection only
-                    const ourNFTs = allNFTs.filter((item: any) => 
-                        item.token_address?.toLowerCase() === NFT_COLLECTION_ADDRESS.toLowerCase()
-                    )
-
-                    console.log(`${poolName} Pool: ${ourNFTs.length} staked NFTs`)
-                    return ourNFTs.length
+                    console.log(`${poolName} Pool: ${totalCount} staked NFTs`)
+                    return totalCount
                 }
 
                 // Fetch all 3 pools in parallel for maximum speed
@@ -459,6 +299,101 @@ const StakingNFT = () => {
 
         fetchTotalStaked()
     }, [])
+
+    // Load cached Total Earned immediately on mount (before address is ready)
+    useEffect(() => {
+        // Try to get last known address from localStorage
+        const lastAddress = localStorage.getItem('lastConnectedAddress')
+        if (lastAddress) {
+            const cached = localStorage.getItem(`totalEarned_${lastAddress.toLowerCase()}`)
+            if (cached) {
+                setTotalEarned(cached)
+            }
+        }
+    }, [])
+
+    // Sync Total Earned with Moralis when address is available
+    useEffect(() => {
+        if (!address) return
+
+        const addressLower = address.toLowerCase()
+        const cacheKey = `totalEarned_${addressLower}`
+
+        // Save address for next page load
+        localStorage.setItem('lastConnectedAddress', address)
+
+        // Load cached value for this address
+        const cached = localStorage.getItem(cacheKey)
+        if (cached) {
+            setTotalEarned(cached)
+        }
+
+        // Fetch from Moralis in background to sync
+        const fetchTotalEarned = async () => {
+            try {
+                const moralisApiKey = process.env.NEXT_PUBLIC_MORALIS_APY_KEY || ""
+                const legendaryLower = LEGENDARY_POOL_ADDRESS.toLowerCase()
+                const premiumLower = PREMIUM_POOL_ADDRESS.toLowerCase()
+                const standardLower = STANDARD_POOL_ADDRESS.toLowerCase()
+
+                const response = await fetch(
+                    `https://deep-index.moralis.io/api/v2.2/${address}/erc20/transfers?chain=base&contract_addresses=${REWARD_TOKEN_ADDRESS}&limit=100&order=DESC`,
+                    {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-API-Key': moralisApiKey
+                        }
+                    }
+                )
+
+                const data = await response.json()
+
+                if (data.result && Array.isArray(data.result)) {
+                    let totalAll = BigInt(0)
+                    let legendaryTotal = BigInt(0)
+                    let premiumTotal = BigInt(0)
+                    let standardTotal = BigInt(0)
+
+                    for (const tx of data.result) {
+                        const fromAddress = tx.from_address?.toLowerCase()
+                        const toAddress = tx.to_address?.toLowerCase()
+
+                        if (toAddress === addressLower) {
+                            const value = BigInt(tx.value)
+
+                            if (fromAddress === legendaryLower) {
+                                legendaryTotal += value
+                                totalAll += value
+                            } else if (fromAddress === premiumLower) {
+                                premiumTotal += value
+                                totalAll += value
+                            } else if (fromAddress === standardLower) {
+                                standardTotal += value
+                                totalAll += value
+                            }
+                        }
+                    }
+
+                    const totalEarnedValue = ethers.formatUnits(totalAll.toString(), 18)
+                    
+                    setLegendaryStats(prev => ({ ...prev, earnings: ethers.formatUnits(legendaryTotal.toString(), 18) }))
+                    setPremiumStats(prev => ({ ...prev, earnings: ethers.formatUnits(premiumTotal.toString(), 18) }))
+                    setStandardStats(prev => ({ ...prev, earnings: ethers.formatUnits(standardTotal.toString(), 18) }))
+                    
+                    // Only update if Moralis value is higher (to avoid reverting recent claims not yet indexed)
+                    const cachedValue = localStorage.getItem(cacheKey)
+                    if (!cachedValue || parseFloat(totalEarnedValue) >= parseFloat(cachedValue)) {
+                        setTotalEarned(totalEarnedValue)
+                        localStorage.setItem(cacheKey, totalEarnedValue)
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching total earned:", error)
+            }
+        }
+
+        fetchTotalEarned()
+    }, [address])
 
     // Separate effect for refreshing live earnings
     useEffect(() => {
@@ -1136,6 +1071,19 @@ const StakingNFT = () => {
             
             // Store claimed amount and show success toast
             setClaimedAmount(currentEarnings)
+            
+            // Update Total Earned immediately (add claimed amount to current total)
+            const newTotalEarned = parseFloat(totalEarned) + parseFloat(currentEarnings)
+            setTotalEarned(newTotalEarned.toString())
+            
+            // Save to localStorage so it persists after reload
+            if (address) {
+                localStorage.setItem(`totalEarned_${address.toLowerCase()}`, newTotalEarned.toString())
+            }
+            
+            // Reset current earnings to 0 since they've been claimed
+            setCurrentEarnings("0")
+            
             setToastType('claim')
             setShowSuccessToast(true)
             
