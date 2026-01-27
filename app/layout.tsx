@@ -48,6 +48,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Prevent dark mode flash - apply dark class immediately (dark is default) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var isLight = localStorage.getItem('ynexlighttheme') === 'light';
+                if (!isLight) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.setAttribute('data-header-styles', 'dark');
+                  document.documentElement.setAttribute('data-menu-styles', 'dark');
+                }
+              })();
+            `,
+          }}
+        />
         {/* PWA Meta + Icons */}
         <meta name="theme-color" content="#000000" />
         <link rel="icon" href="/favicon.ico" />
