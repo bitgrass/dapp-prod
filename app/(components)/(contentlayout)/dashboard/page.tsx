@@ -302,8 +302,17 @@ const Dashboard = () => {
                                 >
                                     <div className="grid grid-cols-12 gap-x-6">
                                         <div className="xl:col-span-3 sm:col-span-6 col-span-12">
-                                            <div className="box">
+                                            <div className="box relative">
                                                 <div className="box-body">
+                                                    {/* Info icon with tooltip */}
+                                                    <div className="absolute top-3 right-3 group">
+                                                        <div className="w-[18px] h-[18px] rounded-full border-2 border-secondary text-secondary flex items-center justify-center cursor-help text-[11px] font-semibold">
+                                                            i
+                                                        </div>
+                                                        <div className="absolute right-0 top-5 hidden group-hover:block bg-camel text-defaulttextcolor text-xs rounded px-3 py-2 w-48 z-50 shadow-lg">
+                                                            Total amount of carbon credits that have been tokenized on the Bitgrass platform.
+                                                        </div>
+                                                    </div>
                                                     <div className="flex gap-3 flex-wrap items-start justify-between">
                                                         <div className="flex-grow flex items-start sm:mb-0">
                                                             <div className="me-4">
@@ -324,8 +333,17 @@ const Dashboard = () => {
                                             </div>
                                         </div>
                                         <div className="xl:col-span-3 sm:col-span-6 col-span-12">
-                                            <div className="box">
+                                            <div className="box relative">
                                                 <div className="box-body">
+                                                    {/* Info icon with tooltip */}
+                                                    <div className="absolute top-3 right-3 group">
+                                                        <div className="w-[18px] h-[18px] rounded-full border-2 border-secondary text-secondary flex items-center justify-center cursor-help text-[11px] font-semibold">
+                                                            i
+                                                        </div>
+                                                        <div className="absolute right-0 top-5 hidden group-hover:block bg-camel text-defaulttextcolor text-xs rounded px-3 py-2 w-48 z-50 shadow-lg">
+                                                            Total land area covered by carbon offset projects on the platform.
+                                                        </div>
+                                                    </div>
                                                     <div className="flex gap-3 flex-wrap items-start justify-between">
                                                         <div className="flex-grow flex items-start  sm:mb-0">
                                                             <div className="me-4">
@@ -346,8 +364,17 @@ const Dashboard = () => {
                                             </div>
                                         </div>
                                         <div className="xl:col-span-3 sm:col-span-6 col-span-12">
-                                            <div className="box">
+                                            <div className="box relative">
                                                 <div className="box-body">
+                                                    {/* Info icon with tooltip */}
+                                                    <div className="absolute top-3 right-3 group">
+                                                        <div className="w-[18px] h-[18px] rounded-full border-2 border-secondary text-secondary flex items-center justify-center cursor-help text-[11px] font-semibold">
+                                                            i
+                                                        </div>
+                                                        <div className="absolute right-0 top-5 hidden group-hover:block bg-camel text-defaulttextcolor text-xs rounded px-3 py-2 w-48 z-50 shadow-lg">
+                                                            Total carbon units measured in kilotonnes available across all projects.
+                                                        </div>
+                                                    </div>
                                                     <div className="flex gap-3 flex-wrap items-start justify-between">
                                                         <div className="flex-grow flex items-start  sm:mb-0">
                                                             <div className="me-4">
@@ -368,8 +395,17 @@ const Dashboard = () => {
                                             </div>
                                         </div>
                                         <div className="xl:col-span-3 sm:col-span-6 col-span-12">
-                                            <div className="box">
+                                            <div className="box relative">
                                                 <div className="box-body">
+                                                    {/* Info icon with tooltip */}
+                                                    <div className="absolute top-3 right-3 group">
+                                                        <div className="w-[18px] h-[18px] rounded-full border-2 border-secondary text-secondary flex items-center justify-center cursor-help text-[11px] font-semibold">
+                                                            i
+                                                        </div>
+                                                        <div className="absolute right-0 top-5 hidden group-hover:block bg-camel text-defaulttextcolor text-xs rounded px-3 py-2 w-48 z-50 shadow-lg">
+                                                            Total carbon credits that have been permanently retired and removed from circulation.
+                                                        </div>
+                                                    </div>
                                                     <div className="flex gap-3 flex-wrap items-start justify-between">
                                                         <div className="flex-grow flex items-start sm:mb-0">
                                                             <div className="me-4">

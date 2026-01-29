@@ -2,7 +2,7 @@
 import Seo from '@/shared/layout-components/seo/seo'
 import React, { Fragment, useState, useEffect } from 'react'
 import { createThirdwebClient, getContract, defineChain, prepareContractCall, sendTransaction, readContract } from "thirdweb"
-import { isApprovedForAll, setApprovalForAll } from "thirdweb/extensions/erc721"
+import { isApprovedForAll, setApprovalForAll, balanceOf } from "thirdweb/extensions/erc721"
 import { useConnectedAddress } from '../useConnectedAddress'
 import { ethers } from "ethers"
 import { encodeFunctionData } from "viem"
@@ -55,6 +55,7 @@ const StakingNFT = () => {
     const [ownedNFTs, setOwnedNFTs] = useState<any[]>([])
     const [stakedNFTs, setStakedNFTs] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
+    const [claimingRewards, setClaimingRewards] = useState(false)
     const [loadingNFTs, setLoadingNFTs] = useState(true)
     const [currentEarnings, setCurrentEarnings] = useState("0")
     const [totalEarned, setTotalEarned] = useState("0")
@@ -109,6 +110,84 @@ const StakingNFT = () => {
         if (poolAddress === LEGENDARY_POOL_ADDRESS) return legendaryPoolContract
         if (poolAddress === PREMIUM_POOL_ADDRESS) return premiumPoolContract
         return standardPoolContract
+    }
+
+    // Reusable function to refresh NFT data in background
+    const refreshNFTData = async () => {
+        if (!address) return
+        
+        const moralisApiKey = process.env.NEXT_PUBLIC_MORALIS_APY_KEY || ""
+        
+        try {
+            // Fetch owned NFTs
+            const ownedNFTsList: any[] = []
+            let cursor: string | null = null
+
+            do {
+                const url: any = cursor
+                    ? `https://deep-index.moralis.io/api/v2.2/${address}/nft?chain=base&format=decimal&token_addresses=${NFT_COLLECTION_ADDRESS}&limit=100&cursor=${cursor}`
+                    : `https://deep-index.moralis.io/api/v2.2/${address}/nft?chain=base&format=decimal&token_addresses=${NFT_COLLECTION_ADDRESS}&limit=100`
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-API-Key': moralisApiKey
+                    }
+                })
+
+                const data = await response.json()
+
+                if (data.result && Array.isArray(data.result)) {
+                    for (const nft of data.result) {
+                        const tokenId = parseInt(nft.token_id)
+                        ownedNFTsList.push({
+                            id: BigInt(tokenId),
+                            metadata: {
+                                id: tokenId,
+                                name: `NFT #${tokenId}`,
+                                image: nft.token_uri || null,
+                            }
+                        })
+                    }
+                }
+
+                cursor = data.cursor || null
+            } while (cursor)
+
+            // Fetch staked NFTs from all pools in parallel
+            const [legendaryInfo, premiumInfo, standardInfo] = await Promise.all([
+                readContract({
+                    contract: legendaryPoolContract,
+                    method: "function getStakeInfo(address _staker) view returns (uint256[] _tokensStaked, uint256 _rewards)",
+                    params: [address]
+                }).catch(() => null),
+                readContract({
+                    contract: premiumPoolContract,
+                    method: "function getStakeInfo(address _staker) view returns (uint256[] _tokensStaked, uint256 _rewards)",
+                    params: [address]
+                }).catch(() => null),
+                readContract({
+                    contract: standardPoolContract,
+                    method: "function getStakeInfo(address _staker) view returns (uint256[] _tokensStaked, uint256 _rewards)",
+                    params: [address]
+                }).catch(() => null)
+            ])
+
+            let stakedTokenIdsList: bigint[] = []
+            
+            if (legendaryInfo?.[0]) stakedTokenIdsList = stakedTokenIdsList.concat(legendaryInfo[0] as bigint[])
+            if (premiumInfo?.[0]) stakedTokenIdsList = stakedTokenIdsList.concat(premiumInfo[0] as bigint[])
+            if (standardInfo?.[0]) stakedTokenIdsList = stakedTokenIdsList.concat(standardInfo[0] as bigint[])
+
+            // Filter out staked NFTs from owned list
+            const unstakedNFTs = ownedNFTsList.filter(nft =>
+                !stakedTokenIdsList.some(stakedId => stakedId === nft.id)
+            )
+
+            console.log("Background refresh complete - Available:", unstakedNFTs.length, "Staked:", stakedTokenIdsList.length)
+        } catch (error) {
+            console.error("Error in background refresh:", error)
+        }
     }
 
     // Fetch owned and staked NFTs
@@ -241,56 +320,29 @@ const StakingNFT = () => {
         }
     }, [address])
 
-    // Fetch total staked counts for all pools (once on mount) - OPTIMIZED
+    // Fetch total staked counts using NFT balanceOf (fast - single RPC call per pool)
     useEffect(() => {
         const fetchTotalStaked = async () => {
             try {
-                const moralisApiKey = process.env.NEXT_PUBLIC_MORALIS_APY_KEY || ""
-
-                // Helper function to fetch staked count for a single pool
-                // Uses token_addresses filter to only fetch our NFT collection (much faster)
-                const fetchPoolNFTs = async (poolAddress: string, poolName: string): Promise<number> => {
-                    let totalCount = 0
-                    let cursor: string | null = null
-
-                    do {
-                        const url = cursor
-                            ? `https://deep-index.moralis.io/api/v2.2/${poolAddress}/nft?chain=base&format=decimal&token_addresses=${NFT_COLLECTION_ADDRESS}&limit=100&cursor=${cursor}`
-                            : `https://deep-index.moralis.io/api/v2.2/${poolAddress}/nft?chain=base&format=decimal&token_addresses=${NFT_COLLECTION_ADDRESS}&limit=100`
-
-                        const response = await fetch(url, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-API-Key': moralisApiKey
-                            }
-                        })
-
-                        const data: any = await response.json()
-
-                        if (data.result) {
-                            totalCount += data.result.length
-                        }
-
-                        cursor = data.cursor || null
-                    } while (cursor)
-
-                    console.log(`${poolName} Pool: ${totalCount} staked NFTs`)
-                    return totalCount
-                }
-
-                // Fetch all 3 pools in parallel for maximum speed
-                const [legendaryCount, premiumCount, standardCount] = await Promise.all([
-                    fetchPoolNFTs(LEGENDARY_POOL_ADDRESS, 'Legendary'),
-                    fetchPoolNFTs(PREMIUM_POOL_ADDRESS, 'Premium'),
-                    fetchPoolNFTs(STANDARD_POOL_ADDRESS, 'Standard')
+                // Read NFT balance of each pool address in parallel
+                const [legendaryBalance, premiumBalance, standardBalance] = await Promise.all([
+                    balanceOf({
+                        contract: nftContract,
+                        owner: LEGENDARY_POOL_ADDRESS
+                    }).catch(() => BigInt(0)),
+                    balanceOf({
+                        contract: nftContract,
+                        owner: PREMIUM_POOL_ADDRESS
+                    }).catch(() => BigInt(0)),
+                    balanceOf({
+                        contract: nftContract,
+                        owner: STANDARD_POOL_ADDRESS
+                    }).catch(() => BigInt(0))
                 ])
 
-                // Update all stats at once
-                setLegendaryStats(prev => ({ ...prev, totalStaked: legendaryCount }))
-                setPremiumStats(prev => ({ ...prev, totalStaked: premiumCount }))
-                setStandardStats(prev => ({ ...prev, totalStaked: standardCount }))
-
-                console.log('Total Staked - Legendary:', legendaryCount, 'Premium:', premiumCount, 'Standard:', standardCount)
+                setLegendaryStats(prev => ({ ...prev, totalStaked: Number(legendaryBalance) }))
+                setPremiumStats(prev => ({ ...prev, totalStaked: Number(premiumBalance) }))
+                setStandardStats(prev => ({ ...prev, totalStaked: Number(standardBalance) }))
 
             } catch (error) {
                 console.error("Error fetching total staked:", error)
@@ -300,32 +352,36 @@ const StakingNFT = () => {
         fetchTotalStaked()
     }, [])
 
-    // Load cached Total Earned immediately on mount (before address is ready)
-    useEffect(() => {
-        // Try to get last known address from localStorage
-        const lastAddress = localStorage.getItem('lastConnectedAddress')
-        if (lastAddress) {
-            const cached = localStorage.getItem(`totalEarned_${lastAddress.toLowerCase()}`)
-            if (cached) {
-                setTotalEarned(cached)
-            }
-        }
-    }, [])
+
 
     // Sync Total Earned with Moralis when address is available
     useEffect(() => {
-        if (!address) return
+        if (!address) {
+            // Reset to 0 when no wallet connected
+            setTotalEarned("0")
+            setLegendaryStats(prev => ({ ...prev, earnings: "0" }))
+            setPremiumStats(prev => ({ ...prev, earnings: "0" }))
+            setStandardStats(prev => ({ ...prev, earnings: "0" }))
+            return
+        }
 
         const addressLower = address.toLowerCase()
         const cacheKey = `totalEarned_${addressLower}`
+        const poolEarningsCacheKey = `poolEarnings_${addressLower}`
 
-        // Save address for next page load
-        localStorage.setItem('lastConnectedAddress', address)
-
-        // Load cached value for this address
+        // Load cached values for this address instantly
         const cached = localStorage.getItem(cacheKey)
         if (cached) {
             setTotalEarned(cached)
+        }
+        const poolCached = localStorage.getItem(poolEarningsCacheKey)
+        if (poolCached) {
+            try {
+                const poolData = JSON.parse(poolCached)
+                setLegendaryStats(prev => ({ ...prev, earnings: poolData.legendary || "0" }))
+                setPremiumStats(prev => ({ ...prev, earnings: poolData.premium || "0" }))
+                setStandardStats(prev => ({ ...prev, earnings: poolData.standard || "0" }))
+            } catch (e) {}
         }
 
         // Fetch from Moralis in background to sync
@@ -375,16 +431,25 @@ const StakingNFT = () => {
                     }
 
                     const totalEarnedValue = ethers.formatUnits(totalAll.toString(), 18)
+                    const legendaryEarnings = ethers.formatUnits(legendaryTotal.toString(), 18)
+                    const premiumEarnings = ethers.formatUnits(premiumTotal.toString(), 18)
+                    const standardEarnings = ethers.formatUnits(standardTotal.toString(), 18)
                     
-                    setLegendaryStats(prev => ({ ...prev, earnings: ethers.formatUnits(legendaryTotal.toString(), 18) }))
-                    setPremiumStats(prev => ({ ...prev, earnings: ethers.formatUnits(premiumTotal.toString(), 18) }))
-                    setStandardStats(prev => ({ ...prev, earnings: ethers.formatUnits(standardTotal.toString(), 18) }))
+                    setLegendaryStats(prev => ({ ...prev, earnings: legendaryEarnings }))
+                    setPremiumStats(prev => ({ ...prev, earnings: premiumEarnings }))
+                    setStandardStats(prev => ({ ...prev, earnings: standardEarnings }))
                     
                     // Only update if Moralis value is higher (to avoid reverting recent claims not yet indexed)
                     const cachedValue = localStorage.getItem(cacheKey)
                     if (!cachedValue || parseFloat(totalEarnedValue) >= parseFloat(cachedValue)) {
                         setTotalEarned(totalEarnedValue)
                         localStorage.setItem(cacheKey, totalEarnedValue)
+                        // Cache pool earnings too
+                        localStorage.setItem(poolEarningsCacheKey, JSON.stringify({
+                            legendary: legendaryEarnings,
+                            premium: premiumEarnings,
+                            standard: standardEarnings
+                        }))
                     }
                 }
             } catch (error) {
@@ -648,16 +713,29 @@ const StakingNFT = () => {
 
             setPendingProgress({ current: 1, total: 1 })
             setShowPendingToast(false)
+            
+            // Optimistically update UI - move staked NFT from available to staked
+            
+            // Remove from owned/available NFTs
+            setOwnedNFTs(prev => prev.filter(nft => nft.id !== BigInt(tokenId)))
+            
+            // Add to staked NFTs
+            setStakedNFTs(prev => [...prev, { tokenId: BigInt(tokenId), pool: pool.name }])
+            
+            // Update pool stats
+            if (pool.name === 'Legendary') {
+                setLegendaryStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+            } else if (pool.name === 'Premium') {
+                setPremiumStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+            } else if (pool.name === 'Standard') {
+                setStandardStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+            }
+            
             setStakedTokenIds([tokenId])
             setToastType('stake')
-            
-            // Show success toast immediately
+            setSelectedNFTs([])
             setShowSuccessToast(true)
-            
-            // Reload after showing toast
-            setTimeout(() => {
-                window.location.reload()
-            }, 2000)
+            setTimeout(() => setShowSuccessToast(false), 4000)
         } catch (error: any) {
             console.error("Error staking NFT:", error)
             setShowPendingToast(false)
@@ -793,15 +871,35 @@ const StakingNFT = () => {
             setShowPendingToast(false)
             await new Promise(resolve => setTimeout(resolve, 300))
             
+            // Optimistically update UI - move staked NFTs from available to staked
+            const stakedIds = selectedNFTs.map(id => BigInt(id))
+            
+            // Remove from owned/available NFTs
+            setOwnedNFTs(prev => prev.filter(nft => 
+                !stakedIds.some(id => id === nft.id)
+            ))
+            
+            // Add to staked NFTs and update pool stats
+            const newStakedNFTs: any[] = []
+            for (const tokenId of selectedNFTs) {
+                const pool = getPoolForTokenId(parseInt(tokenId))
+                newStakedNFTs.push({ tokenId: BigInt(tokenId), pool: pool.name })
+                
+                if (pool.name === 'Legendary') {
+                    setLegendaryStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                } else if (pool.name === 'Premium') {
+                    setPremiumStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                } else if (pool.name === 'Standard') {
+                    setStandardStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                }
+            }
+            setStakedNFTs(prev => [...prev, ...newStakedNFTs])
+            
             setStakedTokenIds(selectedNFTs)
             setToastType('stake')
             setSelectedNFTs([])
             setShowSuccessToast(true)
-            
-            // Reload after showing toast
-            setTimeout(() => {
-                window.location.reload()
-            }, 2500)
+            setTimeout(() => setShowSuccessToast(false), 4000)
         } catch (error: any) {
             console.error("Error staking NFTs:", error)
             setShowPendingToast(false)
@@ -854,16 +952,37 @@ const StakingNFT = () => {
 
             setPendingProgress({ current: 1, total: 1 })
             setShowPendingToast(false)
+            
+            // Optimistically update UI - move unstaked NFT from staked to available
+            // (pool already defined above)
+            
+            // Remove from staked NFTs
+            setStakedNFTs(prev => prev.filter(nft => nft.tokenId !== BigInt(tokenId)))
+            
+            // Add to owned/available NFTs
+            setOwnedNFTs(prev => [...prev, {
+                id: BigInt(tokenId),
+                metadata: {
+                    id: parseInt(tokenId),
+                    name: `NFT #${tokenId}`,
+                    image: null,
+                }
+            }])
+            
+            // Update pool stats
+            if (pool.name === 'Legendary') {
+                setLegendaryStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+            } else if (pool.name === 'Premium') {
+                setPremiumStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+            } else if (pool.name === 'Standard') {
+                setStandardStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+            }
+            
             setStakedTokenIds([tokenId])
             setToastType('unstake')
-            
-            // Show success toast immediately
+            setSelectedNFTs([])
             setShowSuccessToast(true)
-            
-            // Reload after showing toast
-            setTimeout(() => {
-                window.location.reload()
-            }, 2000)
+            setTimeout(() => setShowSuccessToast(false), 4000)
         } catch (error: any) {
             console.error("Error withdrawing NFT:", error)
             setShowPendingToast(false)
@@ -955,15 +1074,42 @@ const StakingNFT = () => {
             setShowPendingToast(false)
             await new Promise(resolve => setTimeout(resolve, 300))
             
+            // Optimistically update UI - move unstaked NFTs from staked to available
+            const unstakedIds = selectedNFTs.map(id => BigInt(id))
+            
+            // Remove from staked NFTs
+            setStakedNFTs(prev => prev.filter(nft => 
+                !unstakedIds.some(id => id === nft.tokenId)
+            ))
+            
+            // Add to owned/available NFTs
+            const newOwnedNFTs = selectedNFTs.map(tokenId => ({
+                id: BigInt(tokenId),
+                metadata: {
+                    id: parseInt(tokenId),
+                    name: `NFT #${tokenId}`,
+                    image: null,
+                }
+            }))
+            setOwnedNFTs(prev => [...prev, ...newOwnedNFTs])
+            
+            // Update pool stats
+            for (const tokenId of selectedNFTs) {
+                const pool = getPoolForTokenId(parseInt(tokenId))
+                if (pool.name === 'Legendary') {
+                    setLegendaryStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                } else if (pool.name === 'Premium') {
+                    setPremiumStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                } else if (pool.name === 'Standard') {
+                    setStandardStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                }
+            }
+            
             setStakedTokenIds(selectedNFTs)
             setToastType('unstake')
             setSelectedNFTs([])
             setShowSuccessToast(true)
-            
-            // Reload after showing toast
-            setTimeout(() => {
-                window.location.reload()
-            }, 2500)
+            setTimeout(() => setShowSuccessToast(false), 4000)
         } catch (error: any) {
             console.error("Error withdrawing NFTs:", error)
             setShowPendingToast(false)
@@ -989,12 +1135,12 @@ const StakingNFT = () => {
             return
         }
 
-        setLoading(true)
+        setClaimingRewards(true)
         try {
             console.log("Claiming rewards from all pools...")
 
-            // Get current claimable rewards from each pool
-            const pools = []
+            // Get current claimable rewards from each pool (track amounts for UI update)
+            const pools: { address: string, name: string, rewards: bigint }[] = []
 
             // Check Legendary pool
             try {
@@ -1004,7 +1150,7 @@ const StakingNFT = () => {
                     params: [address]
                 })
                 if (legendaryInfo && legendaryInfo[1] && legendaryInfo[1] > BigInt(0)) {
-                    pools.push({ address: LEGENDARY_POOL_ADDRESS, name: 'Legendary' })
+                    pools.push({ address: LEGENDARY_POOL_ADDRESS, name: 'Legendary', rewards: legendaryInfo[1] as bigint })
                 }
             } catch (error) {
                 console.log("No legendary rewards to claim")
@@ -1018,7 +1164,7 @@ const StakingNFT = () => {
                     params: [address]
                 })
                 if (premiumInfo && premiumInfo[1] && premiumInfo[1] > BigInt(0)) {
-                    pools.push({ address: PREMIUM_POOL_ADDRESS, name: 'Premium' })
+                    pools.push({ address: PREMIUM_POOL_ADDRESS, name: 'Premium', rewards: premiumInfo[1] as bigint })
                 }
             } catch (error) {
                 console.log("No premium rewards to claim")
@@ -1032,7 +1178,7 @@ const StakingNFT = () => {
                     params: [address]
                 })
                 if (standardInfo && standardInfo[1] && standardInfo[1] > BigInt(0)) {
-                    pools.push({ address: STANDARD_POOL_ADDRESS, name: 'Standard' })
+                    pools.push({ address: STANDARD_POOL_ADDRESS, name: 'Standard', rewards: standardInfo[1] as bigint })
                 }
             } catch (error) {
                 console.log("No standard rewards to claim")
@@ -1076,9 +1222,34 @@ const StakingNFT = () => {
             const newTotalEarned = parseFloat(totalEarned) + parseFloat(currentEarnings)
             setTotalEarned(newTotalEarned.toString())
             
-            // Save to localStorage so it persists after reload
+            // Update Your Earnings per pool (add claimed rewards to each pool's earnings)
+            let newLegendaryEarnings = parseFloat(legendaryStats.earnings)
+            let newPremiumEarnings = parseFloat(premiumStats.earnings)
+            let newStandardEarnings = parseFloat(standardStats.earnings)
+            
+            for (const pool of pools) {
+                const rewardAmount = parseFloat(ethers.formatUnits(pool.rewards.toString(), 18))
+                if (pool.name === 'Legendary') {
+                    newLegendaryEarnings += rewardAmount
+                    setLegendaryStats(prev => ({ ...prev, earnings: newLegendaryEarnings.toString() }))
+                } else if (pool.name === 'Premium') {
+                    newPremiumEarnings += rewardAmount
+                    setPremiumStats(prev => ({ ...prev, earnings: newPremiumEarnings.toString() }))
+                } else if (pool.name === 'Standard') {
+                    newStandardEarnings += rewardAmount
+                    setStandardStats(prev => ({ ...prev, earnings: newStandardEarnings.toString() }))
+                }
+            }
+            
+            // Save to localStorage so it persists
             if (address) {
-                localStorage.setItem(`totalEarned_${address.toLowerCase()}`, newTotalEarned.toString())
+                const addressLower = address.toLowerCase()
+                localStorage.setItem(`totalEarned_${addressLower}`, newTotalEarned.toString())
+                localStorage.setItem(`poolEarnings_${addressLower}`, JSON.stringify({
+                    legendary: newLegendaryEarnings.toString(),
+                    premium: newPremiumEarnings.toString(),
+                    standard: newStandardEarnings.toString()
+                }))
             }
             
             // Reset current earnings to 0 since they've been claimed
@@ -1086,16 +1257,12 @@ const StakingNFT = () => {
             
             setToastType('claim')
             setShowSuccessToast(true)
-            
-            // Reload after showing toast
-            setTimeout(() => {
-                window.location.reload()
-            }, 2000)
+            setTimeout(() => setShowSuccessToast(false), 4000)
         } catch (error: any) {
             console.error("Error claiming rewards:", error)
             console.error("Error details:", error.message || error)
         } finally {
-            setLoading(false)
+            setClaimingRewards(false)
         }
     }
 
@@ -1160,6 +1327,15 @@ const StakingNFT = () => {
                             {/* Total Earned */}
                             <div className="box relative overflow-hidden">
                                 <div className="box-body">
+                                    {/* Info icon with tooltip */}
+                                    <div className="absolute top-3 right-3 group z-10">
+                                        <div className="w-[18px] h-[18px] rounded-full border-2 border-secondary text-secondary flex items-center justify-center cursor-help text-[11px] font-semibold">
+                                            i
+                                        </div>
+                                        <div className="absolute right-0 top-5 hidden group-hover:block bg-camel text-defaulttextcolor text-xs rounded px-3 py-2 w-48 z-50 shadow-lg">
+                                            Total BCO2 rewards you have claimed from all staking pools.
+                                        </div>
+                                    </div>
                                     <div>
                                         <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                                             Total Earned
@@ -1176,8 +1352,17 @@ const StakingNFT = () => {
                                 />
                             </div>
                             {/* Current Earnings */}
-                            <div className="box">
+                            <div className="box relative">
                                 <div className="box-body">
+                                    {/* Info icon with tooltip */}
+                                    <div className="absolute top-3 right-3 group">
+                                        <div className="w-[18px] h-[18px] rounded-full border-2 border-secondary text-secondary flex items-center justify-center cursor-help text-[11px] font-semibold">
+                                            i
+                                        </div>
+                                        <div className="absolute right-0 top-5 hidden group-hover:block bg-camel text-defaulttextcolor text-xs rounded px-3 py-2 w-48 z-50 shadow-lg">
+                                            Current earnings are rewards accumulated from your staked NFTs. Claim them to add to your total earned.
+                                        </div>
+                                    </div>
                                     <div className="mb-3">
                                         <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                                             Current Earnings
@@ -1191,10 +1376,10 @@ const StakingNFT = () => {
                                     </div>
                                     <button
                                         onClick={handleClaimRewards}
-                                        disabled={loading || parseFloat(currentEarnings) === 0}
+                                        disabled={claimingRewards || parseFloat(currentEarnings) === 0}
                                         className="w-full bg-secondary text-white py-3 px-4 rounded-[0.25rem] hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed !font-medium"
                                     >
-                                        {loading ? "Processing..." : "Claim BCO2"}
+                                        {claimingRewards ? "Claiming..." : "Claim BCO2"}
                                     </button>
                                 </div>
                             </div>
