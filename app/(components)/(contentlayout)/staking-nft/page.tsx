@@ -68,6 +68,9 @@ const StakingNFT = () => {
     const [showPendingToast, setShowPendingToast] = useState(false)
     const [pendingProgress, setPendingProgress] = useState({ current: 0, total: 0 })
     const [pendingType, setPendingType] = useState<'stake' | 'unstake'>('stake')
+    const [showErrorToast, setShowErrorToast] = useState(false)
+    const [errorToastTitle, setErrorToastTitle] = useState("")
+    const [errorToastMessage, setErrorToastMessage] = useState("")
 
     // Pool stats
     const [legendaryStats, setLegendaryStats] = useState({ staked: 0, totalStaked: 0, earnings: "0" })
@@ -635,6 +638,35 @@ const StakingNFT = () => {
         })
     }
 
+    // Helper function to check if user has enough ETH for gas
+    const checkGasBalance = async (): Promise<boolean> => {
+        if (!address) return false
+        try {
+            const moralisApiKey = process.env.NEXT_PUBLIC_MORALIS_APY_KEY || ""
+            const response = await fetch(
+                `https://deep-index.moralis.io/api/v2.2/wallets/${address}/tokens?chain=base`,
+                {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-API-Key': moralisApiKey
+                    }
+                }
+            )
+            const data = await response.json()
+            
+            // Find native ETH balance
+            const nativeToken = data.result?.find((token: any) => token.native_token === true)
+            const balanceWei = BigInt(nativeToken?.balance || '0')
+            
+            // Require at least 0.000002 ETH for gas
+            const minGas = BigInt('2000000000000') // 0.000002 ETH in wei
+            return balanceWei >= minGas
+        } catch (error) {
+            console.error("Error checking balance:", error)
+            return true // Allow to proceed if check fails
+        }
+    }
+
     const handleStakeSingle = async (tokenId: string) => {
         if (!address || !walletClient) {
             console.error("Please connect your wallet")
@@ -644,6 +676,16 @@ const StakingNFT = () => {
         // Ensure we're on Base chain before proceeding
         const onBaseChain = await ensureBaseChain()
         if (!onBaseChain) {
+            return
+        }
+
+        // Check if user has enough ETH for gas
+        const hasGas = await checkGasBalance()
+        if (!hasGas) {
+            setErrorToastTitle("Insufficient funds for gas fee")
+            setErrorToastMessage("You must fund your wallet with ETH")
+            setShowErrorToast(true)
+            setTimeout(() => setShowErrorToast(false), 6000)
             return
         }
 
@@ -682,13 +724,25 @@ const StakingNFT = () => {
                     args: [pool.address as `0x${string}`, true]
                 })
 
-                const hash = await walletClient.sendTransaction({
-                    from: address,
-                    to: NFT_COLLECTION_ADDRESS,
-                    data: approvalData,
-                })
-                console.log(`Approval tx hash:`, hash)
-                await new Promise(resolve => setTimeout(resolve, 3000))
+                try {
+                    const hash = await walletClient.sendTransaction({
+                        from: address,
+                        to: NFT_COLLECTION_ADDRESS,
+                        data: approvalData,
+                    })
+                    console.log(`Approval tx hash:`, hash)
+                    await new Promise(resolve => setTimeout(resolve, 3000))
+                } catch (approvalError: any) {
+                    console.error("Approval error:", approvalError)
+                    setShowPendingToast(false)
+                    setErrorToastTitle("Insufficient funds for gas fee")
+                    setErrorToastMessage("You must fund your wallet with ETH")
+                    setShowErrorToast(true)
+                    setTimeout(() => setShowErrorToast(false), 6000)
+                    setLoading(false)
+                    setProcessingTokenIds([])
+                    return
+                }
             }
 
             // Stake the NFT
@@ -704,11 +758,24 @@ const StakingNFT = () => {
                 args: [[BigInt(tokenId)]]
             })
 
-            const stakeHash = await walletClient.sendTransaction({
-                from: address,
-                to: pool.address,
-                data: stakeData,
-            })
+            let stakeHash
+            try {
+                stakeHash = await walletClient.sendTransaction({
+                    from: address,
+                    to: pool.address,
+                    data: stakeData,
+                })
+            } catch (txError: any) {
+                console.error("Transaction error:", txError)
+                setShowPendingToast(false)
+                setErrorToastTitle("Insufficient funds for gas fee")
+                setErrorToastMessage("You must fund your wallet with ETH")
+                setShowErrorToast(true)
+                setTimeout(() => setShowErrorToast(false), 6000)
+                setLoading(false)
+                setProcessingTokenIds([])
+                return
+            }
             console.log(`Stake tx hash:`, stakeHash)
 
             setPendingProgress({ current: 1, total: 1 })
@@ -722,13 +789,13 @@ const StakingNFT = () => {
             // Add to staked NFTs
             setStakedNFTs(prev => [...prev, { tokenId: BigInt(tokenId), pool: pool.name }])
             
-            // Update pool stats
+            // Update pool stats (both staked and totalStaked)
             if (pool.name === 'Legendary') {
-                setLegendaryStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                setLegendaryStats(prev => ({ ...prev, staked: prev.staked + 1, totalStaked: prev.totalStaked + 1 }))
             } else if (pool.name === 'Premium') {
-                setPremiumStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                setPremiumStats(prev => ({ ...prev, staked: prev.staked + 1, totalStaked: prev.totalStaked + 1 }))
             } else if (pool.name === 'Standard') {
-                setStandardStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                setStandardStats(prev => ({ ...prev, staked: prev.staked + 1, totalStaked: prev.totalStaked + 1 }))
             }
             
             setStakedTokenIds([tokenId])
@@ -739,6 +806,10 @@ const StakingNFT = () => {
         } catch (error: any) {
             console.error("Error staking NFT:", error)
             setShowPendingToast(false)
+            setErrorToastTitle("Insufficient funds for gas fee")
+            setErrorToastMessage("You must fund your wallet with ETH")
+            setShowErrorToast(true)
+            setTimeout(() => setShowErrorToast(false), 6000)
         } finally {
             setLoading(false)
             setProcessingTokenIds([])
@@ -759,6 +830,16 @@ const StakingNFT = () => {
         // Ensure we're on Base chain before proceeding
         const onBaseChain = await ensureBaseChain()
         if (!onBaseChain) {
+            return
+        }
+
+        // Check if user has enough ETH for gas
+        const hasGas = await checkGasBalance()
+        if (!hasGas) {
+            setErrorToastTitle("Insufficient funds for gas fee")
+            setErrorToastMessage("You must fund your wallet with ETH")
+            setShowErrorToast(true)
+            setTimeout(() => setShowErrorToast(false), 6000)
             return
         }
 
@@ -820,13 +901,25 @@ const StakingNFT = () => {
 
                     console.log(`🔍 Sending approval tx with from: ${address}`)
 
-                    const hash = await walletClient.sendTransaction({
-                        from: address,
-                        to: NFT_COLLECTION_ADDRESS,
-                        data: approvalData,
-                    })
-                    console.log(`Approval tx hash for ${poolData.poolName}:`, hash)
-                    await new Promise(resolve => setTimeout(resolve, 3000))
+                    try {
+                        const hash = await walletClient.sendTransaction({
+                            from: address,
+                            to: NFT_COLLECTION_ADDRESS,
+                            data: approvalData,
+                        })
+                        console.log(`Approval tx hash for ${poolData.poolName}:`, hash)
+                        await new Promise(resolve => setTimeout(resolve, 3000))
+                    } catch (approvalError: any) {
+                        console.error("Approval error:", approvalError)
+                        setShowPendingToast(false)
+                        setErrorToastTitle("Insufficient funds for gas fee")
+                        setErrorToastMessage("You must fund your wallet with ETH")
+                        setShowErrorToast(true)
+                        setTimeout(() => setShowErrorToast(false), 6000)
+                        setLoading(false)
+                        setProcessingTokenIds([])
+                        return
+                    }
                 }
             }
 
@@ -854,11 +947,24 @@ const StakingNFT = () => {
 
                 console.log(`🔍 Sending stake tx with from: ${address}, to: ${poolAddress}`)
 
-                const stakeHash = await walletClient.sendTransaction({
-                    from: address,
-                    to: poolAddress,
-                    data: stakeData,
-                })
+                let stakeHash
+                try {
+                    stakeHash = await walletClient.sendTransaction({
+                        from: address,
+                        to: poolAddress,
+                        data: stakeData,
+                    })
+                } catch (txError: any) {
+                    console.error("Transaction error:", txError)
+                    setShowPendingToast(false)
+                    setErrorToastTitle("Insufficient funds for gas fee")
+                    setErrorToastMessage("You must fund your wallet with ETH")
+                    setShowErrorToast(true)
+                    setTimeout(() => setShowErrorToast(false), 6000)
+                    setLoading(false)
+                    setProcessingTokenIds([])
+                    return
+                }
                 console.log(`Stake tx hash for ${poolData.poolName}:`, stakeHash)
                 
                 // Wait for nonce to update before next transaction
@@ -882,18 +988,18 @@ const StakingNFT = () => {
                 !stakedIds.some(id => id === nft.id)
             ))
             
-            // Add to staked NFTs and update pool stats
+            // Add to staked NFTs and update pool stats (both staked and totalStaked)
             const newStakedNFTs: any[] = []
             for (const tokenId of selectedNFTs) {
                 const pool = getPoolForTokenId(parseInt(tokenId))
                 newStakedNFTs.push({ tokenId: BigInt(tokenId), pool: pool.name })
                 
                 if (pool.name === 'Legendary') {
-                    setLegendaryStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                    setLegendaryStats(prev => ({ ...prev, staked: prev.staked + 1, totalStaked: prev.totalStaked + 1 }))
                 } else if (pool.name === 'Premium') {
-                    setPremiumStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                    setPremiumStats(prev => ({ ...prev, staked: prev.staked + 1, totalStaked: prev.totalStaked + 1 }))
                 } else if (pool.name === 'Standard') {
-                    setStandardStats(prev => ({ ...prev, staked: prev.staked + 1 }))
+                    setStandardStats(prev => ({ ...prev, staked: prev.staked + 1, totalStaked: prev.totalStaked + 1 }))
                 }
             }
             setStakedNFTs(prev => [...prev, ...newStakedNFTs])
@@ -906,6 +1012,10 @@ const StakingNFT = () => {
         } catch (error: any) {
             console.error("Error staking NFTs:", error)
             setShowPendingToast(false)
+            setErrorToastTitle("Insufficient funds for gas fee")
+            setErrorToastMessage("You must fund your wallet with ETH")
+            setShowErrorToast(true)
+            setTimeout(() => setShowErrorToast(false), 6000)
         } finally {
             setLoading(false)
             setProcessingTokenIds([])
@@ -921,6 +1031,16 @@ const StakingNFT = () => {
         // Ensure we're on Base chain before proceeding
         const onBaseChain = await ensureBaseChain()
         if (!onBaseChain) {
+            return
+        }
+
+        // Check if user has enough ETH for gas
+        const hasGas = await checkGasBalance()
+        if (!hasGas) {
+            setErrorToastTitle("Insufficient funds for gas fee")
+            setErrorToastMessage("You must fund your wallet with ETH")
+            setShowErrorToast(true)
+            setTimeout(() => setShowErrorToast(false), 6000)
             return
         }
 
@@ -946,11 +1066,24 @@ const StakingNFT = () => {
                 args: [[BigInt(tokenId)]]
             })
 
-            const withdrawHash = await walletClient.sendTransaction({
-                from: address,
-                to: pool.address,
-                data: withdrawData,
-            })
+            let withdrawHash
+            try {
+                withdrawHash = await walletClient.sendTransaction({
+                    from: address,
+                    to: pool.address,
+                    data: withdrawData,
+                })
+            } catch (txError: any) {
+                console.error("Transaction error:", txError)
+                setShowPendingToast(false)
+                setErrorToastTitle("Insufficient funds for gas fee")
+                setErrorToastMessage("You must fund your wallet with ETH")
+                setShowErrorToast(true)
+                setTimeout(() => setShowErrorToast(false), 6000)
+                setLoading(false)
+                setProcessingTokenIds([])
+                return
+            }
             console.log(`Withdraw tx hash:`, withdrawHash)
 
             setPendingProgress({ current: 1, total: 1 })
@@ -972,13 +1105,13 @@ const StakingNFT = () => {
                 }
             }])
             
-            // Update pool stats
+            // Update pool stats (both staked and totalStaked)
             if (pool.name === 'Legendary') {
-                setLegendaryStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                setLegendaryStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1), totalStaked: Math.max(0, prev.totalStaked - 1) }))
             } else if (pool.name === 'Premium') {
-                setPremiumStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                setPremiumStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1), totalStaked: Math.max(0, prev.totalStaked - 1) }))
             } else if (pool.name === 'Standard') {
-                setStandardStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                setStandardStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1), totalStaked: Math.max(0, prev.totalStaked - 1) }))
             }
             
             setStakedTokenIds([tokenId])
@@ -989,6 +1122,10 @@ const StakingNFT = () => {
         } catch (error: any) {
             console.error("Error withdrawing NFT:", error)
             setShowPendingToast(false)
+            setErrorToastTitle("Insufficient funds for gas fee")
+            setErrorToastMessage("You must fund your wallet with ETH")
+            setShowErrorToast(true)
+            setTimeout(() => setShowErrorToast(false), 6000)
         } finally {
             setLoading(false)
             setProcessingTokenIds([])
@@ -1009,6 +1146,16 @@ const StakingNFT = () => {
         // Ensure we're on Base chain before proceeding
         const onBaseChain = await ensureBaseChain()
         if (!onBaseChain) {
+            return
+        }
+
+        // Check if user has enough ETH for gas
+        const hasGas = await checkGasBalance()
+        if (!hasGas) {
+            setErrorToastTitle("Insufficient funds for gas fee")
+            setErrorToastMessage("You must fund your wallet with ETH")
+            setShowErrorToast(true)
+            setTimeout(() => setShowErrorToast(false), 6000)
             return
         }
 
@@ -1060,11 +1207,24 @@ const StakingNFT = () => {
 
                 console.log(`🔍 Sending withdraw tx with from: ${address}, to: ${poolAddress}`)
 
-                const withdrawHash = await walletClient.sendTransaction({
-                    from: address,
-                    to: poolAddress,
-                    data: withdrawData,
-                })
+                let withdrawHash
+                try {
+                    withdrawHash = await walletClient.sendTransaction({
+                        from: address,
+                        to: poolAddress,
+                        data: withdrawData,
+                    })
+                } catch (txError: any) {
+                    console.error("Transaction error:", txError)
+                    setShowPendingToast(false)
+                    setErrorToastTitle("Insufficient funds for gas fee")
+                    setErrorToastMessage("You must fund your wallet with ETH")
+                    setShowErrorToast(true)
+                    setTimeout(() => setShowErrorToast(false), 6000)
+                    setLoading(false)
+                    setProcessingTokenIds([])
+                    return
+                }
                 console.log(`Withdraw tx hash for ${poolData.poolName}:`, withdrawHash)
                 
                 // Wait for nonce to update before next transaction
@@ -1099,15 +1259,15 @@ const StakingNFT = () => {
             }))
             setOwnedNFTs(prev => [...prev, ...newOwnedNFTs])
             
-            // Update pool stats
+            // Update pool stats (both staked and totalStaked)
             for (const tokenId of selectedNFTs) {
                 const pool = getPoolForTokenId(parseInt(tokenId))
                 if (pool.name === 'Legendary') {
-                    setLegendaryStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                    setLegendaryStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1), totalStaked: Math.max(0, prev.totalStaked - 1) }))
                 } else if (pool.name === 'Premium') {
-                    setPremiumStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                    setPremiumStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1), totalStaked: Math.max(0, prev.totalStaked - 1) }))
                 } else if (pool.name === 'Standard') {
-                    setStandardStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1) }))
+                    setStandardStats(prev => ({ ...prev, staked: Math.max(0, prev.staked - 1), totalStaked: Math.max(0, prev.totalStaked - 1) }))
                 }
             }
             
@@ -1119,6 +1279,16 @@ const StakingNFT = () => {
         } catch (error: any) {
             console.error("Error withdrawing NFTs:", error)
             setShowPendingToast(false)
+            
+            // Check for insufficient funds / gas errors
+            const errorMsg = error?.message?.toLowerCase() || ''
+            const errorName = error?.name?.toLowerCase() || ''
+            if (errorMsg.includes('insufficient') || errorMsg.includes('gas') || errorMsg.includes('reverted') || errorMsg.includes('estimate') || errorName.includes('estimategas') || errorName.includes('execution')) {
+                setErrorToastTitle("Insufficient funds for gas fee")
+                setErrorToastMessage("You must fund your wallet with ETH")
+                setShowErrorToast(true)
+                setTimeout(() => setShowErrorToast(false), 6000)
+            }
         } finally {
             setLoading(false)
         }
@@ -1138,6 +1308,16 @@ const StakingNFT = () => {
         // Ensure we're on Base chain before proceeding
         const onBaseChain = await ensureBaseChain()
         if (!onBaseChain) {
+            return
+        }
+
+        // Check if user has enough ETH for gas
+        const hasGas = await checkGasBalance()
+        if (!hasGas) {
+            setErrorToastTitle("Insufficient funds for gas fee")
+            setErrorToastMessage("You must fund your wallet with ETH")
+            setShowErrorToast(true)
+            setTimeout(() => setShowErrorToast(false), 6000)
             return
         }
 
@@ -2052,6 +2232,49 @@ const StakingNFT = () => {
                             {/* Checkmark */}
                             <div className="flex-shrink-0">
                                 <i className="ri-check-line text-2xl text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Error Toast */}
+            {showErrorToast && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:left-auto md:right-6 md:translate-x-0">
+                    <div
+                        role="alert"
+                        className="bg-bgW shadow-lg rounded-md w-full max-w-md min-w-[320px] px-5 py-4 text-redW"
+                    >
+                        <div className="flex items-center gap-3">
+                            {/* Left custom icon */}
+                            <div className="flex-shrink-0">
+                                <img
+                                    src="/assets/images/svg/errorIcon.svg"
+                                    alt="Warning"
+                                    width={25}
+                                    height={25}
+                                    className="mt-0.5"
+                                />
+                            </div>
+
+                            {/* Text content and Close */}
+                            <div className="flex justify-between items-start flex-1">
+                                {/* Title + Description */}
+                                <div className="flex flex-col">
+                                    <strong className="text-sm font-bold">{errorToastTitle}</strong>
+                                    <p className="text-xs">{errorToastMessage}</p>
+                                </div>
+
+                                {/* Close button */}
+                                <button
+                                    onClick={() => setShowErrorToast(false)}
+                                    className="text-redW hover:text-red-400 transition-colors duration-200 ml-4 mt-0.5"
+                                    aria-label="Close"
+                                >
+                                    <svg className="w-2.5 h-2.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M1 1L15 15M15 1L1 15" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
