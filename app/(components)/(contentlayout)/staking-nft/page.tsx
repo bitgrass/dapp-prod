@@ -861,6 +861,9 @@ const StakingNFT = () => {
                 })
                 console.log(`Stake tx hash for ${poolData.poolName}:`, stakeHash)
                 
+                // Wait for nonce to update before next transaction
+                await new Promise(resolve => setTimeout(resolve, 3000))
+                
                 // Remove from processing
                 setProcessingTokenIds(prev => prev.filter(id => !tokenIdsStr.includes(id)))
             }
@@ -1064,6 +1067,9 @@ const StakingNFT = () => {
                 })
                 console.log(`Withdraw tx hash for ${poolData.poolName}:`, withdrawHash)
                 
+                // Wait for nonce to update before next transaction
+                await new Promise(resolve => setTimeout(resolve, 3000))
+                
                 // Remove from processing
                 setProcessingTokenIds(prev => prev.filter(id => !tokenIdsStr.includes(id)))
             }
@@ -1211,6 +1217,9 @@ const StakingNFT = () => {
                     data: claimData,
                 })
                 console.log(`Claim tx hash for ${pool.name}:`, claimHash)
+                
+                // Wait for nonce to update before next transaction
+                await new Promise(resolve => setTimeout(resolve, 3000))
             }
 
             console.log("All rewards claimed successfully!")

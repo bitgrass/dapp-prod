@@ -519,30 +519,28 @@ export function useConnectedAddress() {
             w.address?.toLowerCase() === stableAddress.toLowerCase()
           )
 
-          // For EXTERNAL wallets, use their provider directly
-          if (matchingWallet?.walletClientType !== 'privy') {
-            
-            if (matchingWallet?.getEthereumProvider) {
-              try {
-                const provider = await matchingWallet.getEthereumProvider()
-                if (provider) {
-                  setWalletClient(ensureSendTransaction(provider))
-                  setClientReady(true)
-                  return
-                }
-              } catch (err) {
+          // For ALL wallets (including embedded), try to get provider directly
+          if (matchingWallet?.getEthereumProvider) {
+            try {
+              const provider = await matchingWallet.getEthereumProvider()
+              if (provider) {
+                setWalletClient(ensureSendTransaction(provider))
+                setClientReady(true)
+                return
               }
+            } catch (err) {
+              console.log("Failed to get provider from wallet:", err)
             }
+          }
 
-            if ((matchingWallet as any)?.walletClient) {
-              setWalletClient(ensureSendTransaction((matchingWallet as any).walletClient))
-              setClientReady(true)
-              return
-            }
+          if ((matchingWallet as any)?.walletClient) {
+            setWalletClient(ensureSendTransaction((matchingWallet as any).walletClient))
+            setClientReady(true)
+            return
           }
         }
 
-        // Use wagmi client for embedded wallets
+        // Fallback to wagmi client
         if (wagmiClient) {
           setWalletClient(wagmiClient)
           setClientReady(true)
